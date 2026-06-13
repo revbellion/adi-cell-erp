@@ -13,7 +13,7 @@
                 <span class="fw-semibold"><i class="fas fa-plus-circle me-2 text-success"></i>Tambah Stok Masuk</span>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('stock.in.store') }}">
+                <form autocomplete="off" method="POST" action="{{ route('stock.in.store') }}">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Barang</label>

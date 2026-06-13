@@ -49,7 +49,7 @@
                             </button>
 
                             @if($account->is_active)
-                            <form action="{{ route('accounts.destroy', $account->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('accounts.destroy', $account->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Nonaktifkan akun {{ $account->name }}?')">
@@ -72,7 +72,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahAkun">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('accounts.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('accounts.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Akun</h5>
@@ -112,7 +112,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditAkun">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditAkun">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditAkun">
             @csrf
             @method('PUT')
             <div class="modal-header">

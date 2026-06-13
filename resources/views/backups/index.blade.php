@@ -34,7 +34,7 @@
                     <i class="fas fa-exclamation-triangle me-1"></i>
                     <strong>Perhatian!</strong> Semua data saat ini akan diganti dengan data dari file backup.
                 </div>
-                <form method="POST" action="{{ route('backups.restore') }}" enctype="multipart/form-data">
+                <form autocomplete="off" method="POST" action="{{ route('backups.restore') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Pilih File Backup (.sql)</label>
@@ -59,7 +59,7 @@
                     <i class="fas fa-exclamation-triangle me-1"></i>
                     <strong>Bahaya!</strong> Aksi ini akan menghapus SELURUH data transaksi (pendapatan, pengeluaran, mutasi, piutang, modal awal). Struktur akun tetap aman.
                 </div>
-                <form method="POST" action="{{ route('backups.reset') }}" onsubmit="return confirmReset()">
+                <form autocomplete="off" method="POST" action="{{ route('backups.reset') }}" onsubmit="return confirmReset()">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Ketik <strong>RESET</strong> untuk konfirmasi:</label>

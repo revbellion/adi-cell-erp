@@ -54,7 +54,7 @@
                                 <i class="fas fa-edit"></i>
                             </button>
                             @if($product->is_active)
-                            <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Nonaktifkan barang {{ $product->name }}?')">
@@ -77,7 +77,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahBarang">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('products.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('products.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Barang</h5>
@@ -132,7 +132,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditBarang">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditBarang">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditBarang">
             @csrf
             @method('PUT')
             <div class="modal-header">

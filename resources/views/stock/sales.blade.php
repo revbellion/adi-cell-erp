@@ -13,7 +13,7 @@
                 <span class="fw-semibold"><i class="fas fa-cash-register me-2 text-warning"></i>Catat Penjualan</span>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('stock.sales.store') }}">
+                <form autocomplete="off" method="POST" action="{{ route('stock.sales.store') }}">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Barang</label>

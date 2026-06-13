@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Piutang')
 
 @section('content')
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<form method="GET" action="{{ route('receivables.index') }}" class="row g-2 mb-4">
+<form autocomplete="off" method="GET" action="{{ route('receivables.index') }}" class="row g-2 mb-4">
     <div class="col-auto">
         <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm" style="width:auto;">
     </div>
@@ -100,7 +100,7 @@
                             @endif
                             @endif
 
-                            <form action="{{ route('receivables.destroy', $receivable->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('receivables.destroy', $receivable->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Hapus piutang ini?')">
@@ -127,7 +127,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahPiutang">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('receivables.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('receivables.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Piutang</h5>
@@ -162,7 +162,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditPiutang">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditPiutang">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditPiutang">
             @csrf
             @method('PUT')
             <div class="modal-header">
@@ -198,7 +198,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalBayarPiutang">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('receivables.pay') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('receivables.pay') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Bayar Piutang</h5>

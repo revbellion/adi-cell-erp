@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Pengeluaran')
 
 @section('content')
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<form method="GET" action="{{ route('expenses.index') }}" class="row g-2 mb-4">
+<form autocomplete="off" method="GET" action="{{ route('expenses.index') }}" class="row g-2 mb-4">
     <div class="col-auto">
         <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm" style="width:auto;">
     </div>
@@ -72,7 +72,7 @@
                                 data-description="{{ $expense->description }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ route('expenses.destroy', $expense->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('expenses.destroy', $expense->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Hapus pengeluaran ini?')">
@@ -99,7 +99,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahPengeluaran">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('expenses.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('expenses.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Pengeluaran</h5>
@@ -147,7 +147,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditPengeluaran">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditPengeluaran">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditPengeluaran">
             @csrf
             @method('PUT')
             <div class="modal-header">

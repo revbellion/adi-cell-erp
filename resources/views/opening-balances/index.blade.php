@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Settings')
 
 @section('content')
@@ -8,7 +8,7 @@
 
 <div class="card card-modern shadow-sm">
     <div class="card-body">
-        <form method="GET" action="{{ route('opening-balances.index') }}" class="row g-2 align-items-center mb-4">
+        <form autocomplete="off" method="GET" action="{{ route('opening-balances.index') }}" class="row g-2 align-items-center mb-4">
             <div class="col-auto">
                 <label class="fw-semibold" style="color:#374151;">Periode:</label>
             </div>
@@ -17,7 +17,7 @@
             </div>
         </form>
 
-        <form method="POST" action="{{ route('opening-balances.store') }}">
+        <form autocomplete="off" method="POST" action="{{ route('opening-balances.store') }}">
             @csrf
             <input type="hidden" name="period" value="{{ $period }}">
 

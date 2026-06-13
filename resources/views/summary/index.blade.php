@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Ringkasan Bulanan</h4>
-    <form method="GET" action="{{ route('summary.index') }}" class="d-flex align-items-center gap-2">
+    <form autocomplete="off" method="GET" action="{{ route('summary.index') }}" class="d-flex align-items-center gap-2">
         <label class="form-label mb-0 text-muted" style="font-size:0.85rem;">Tampilkan</label>
         <select name="months" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
             <option value="3" {{ $months == 3 ? 'selected' : '' }}>3 Bulan</option>

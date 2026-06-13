@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<form method="GET" action="{{ route('incomes.index') }}" class="row g-2 mb-4">
+<form autocomplete="off" method="GET" action="{{ route('incomes.index') }}" class="row g-2 mb-4">
     <div class="col-auto">
         <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm" style="width:auto;">
     </div>
@@ -76,7 +76,7 @@
                                 data-account-id="{{ $income->account_id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ route('incomes.destroy', $income->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('incomes.destroy', $income->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Hapus pendapatan ini?')">
@@ -103,7 +103,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahPendapatan">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('incomes.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('incomes.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Pendapatan</h5>
@@ -151,7 +151,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditPendapatan">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditPendapatan">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditPendapatan">
             @csrf
             @method('PUT')
             <div class="modal-header">

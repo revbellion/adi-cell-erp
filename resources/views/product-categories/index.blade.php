@@ -32,7 +32,7 @@
                                 data-name="{{ $category->name }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ route('product-categories.destroy', $category->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('product-categories.destroy', $category->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Hapus kategori {{ $category->name }}?')">
@@ -54,7 +54,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahKategori">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('product-categories.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('product-categories.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Kategori</h5>
@@ -76,7 +76,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditKategori">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditKategori">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditKategori">
             @csrf
             @method('PUT')
             <div class="modal-header">

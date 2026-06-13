@@ -5,7 +5,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">Tagihan Bulanan</h4>
     <div class="d-flex gap-2 align-items-center">
-        <form method="GET" class="d-flex gap-2 align-items-center" id="form-periode">
+        <form autocomplete="off" method="GET" class="d-flex gap-2 align-items-center" id="form-periode">
             <a href="{{ url('bills?period=' . \Carbon\Carbon::parse($period . '-01')->subMonth()->format('Y-m')) }}" class="btn btn-modern btn-outline-secondary btn-sm">
                 <i class="fas fa-chevron-left"></i>
             </a>
@@ -79,7 +79,7 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
                     data-is-active="{{ $bill->is_active ? '1' : '0' }}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <form action="{{ route('bills.destroy', $bill->id) }}" method="POST" class="d-inline">
+                <form autocomplete="off" action="{{ route('bills.destroy', $bill->id) }}" method="POST" class="d-inline">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Hapus tagihan {{ $bill->name }} beserta riwayat pembayarannya?')">
@@ -105,7 +105,7 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
 <!-- Modal Tambah -->
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahTagihan">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('bills.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('bills.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Tagihan</h5>
@@ -157,7 +157,7 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
 <!-- Modal Edit -->
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditTagihan">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditTagihan">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditTagihan">
             @csrf
             @method('PUT')
             <div class="modal-header">
@@ -215,7 +215,7 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
 <!-- Modal Bayar -->
 <div class="modal fade modal-modern" tabindex="-1" id="modalBayarTagihan">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formBayarTagihan" novalidate>
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formBayarTagihan" novalidate>
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Bayar Tagihan</h5>

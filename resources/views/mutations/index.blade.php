@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Mutasi')
 
 @section('content')
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<form method="GET" action="{{ route('mutations.index') }}" class="row g-2 mb-4">
+<form autocomplete="off" method="GET" action="{{ route('mutations.index') }}" class="row g-2 mb-4">
     <div class="col-auto">
         <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm" style="width:auto;">
     </div>
@@ -62,7 +62,7 @@
                                 data-description="{{ $mutasi->description }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="{{ route('mutations.destroy', $mutasi->id) }}" method="POST" class="d-inline">
+                            <form autocomplete="off" action="{{ route('mutations.destroy', $mutasi->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="return confirm('Hapus mutasi ini?')">
@@ -89,7 +89,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahMutasi">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('mutations.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('mutations.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Tambah Mutasi</h5>
@@ -137,7 +137,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalEditMutasi">
     <div class="modal-dialog">
-        <form method="POST" action="" class="modal-content" id="formEditMutasi">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditMutasi">
             @csrf
             @method('PUT')
             <div class="modal-header">

@@ -14,7 +14,7 @@
             <i class="fas fa-arrow-right-arrow-left me-1"></i>Transfer
         </button>
     </div>
-    <form method="GET" action="{{ route('dashboard') }}">
+    <form autocomplete="off" method="GET" action="{{ route('dashboard') }}">
         <input type="month" name="period" value="{{ $period }}" onchange="this.form.submit()"
                class="form-control form-control-sm" style="width:auto;display:inline-block;border-radius:8px;">
     </form>
@@ -371,7 +371,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalCepatPendapatan">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('incomes.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('incomes.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Catat Pendapatan</h5>
@@ -419,7 +419,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalCepatPengeluaran">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('expenses.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('expenses.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Catat Pengeluaran</h5>
@@ -467,7 +467,7 @@
 
 <div class="modal fade modal-modern" tabindex="-1" id="modalCepatTransfer">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('mutations.store') }}" class="modal-content">
+        <form autocomplete="off" method="POST" action="{{ route('mutations.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title fw-bold"><i class="fas fa-arrow-right-arrow-left me-2"></i>Transfer Cepat</h5>
