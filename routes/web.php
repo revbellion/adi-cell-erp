@@ -9,6 +9,8 @@ use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BillController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SummaryController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +23,8 @@ Route::resource('incomes', IncomeController::class)->only(['index', 'store', 'up
 Route::resource('accounts', AccountController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('bills', BillController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('bills/{recurring_bill}/pay', [BillController::class, 'pay'])->name('bills.pay');
+Route::resource('product-categories', ProductCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('receivables', ReceivableController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('receivables/pay', [ReceivableController::class, 'pay'])->name('receivables.pay');
 

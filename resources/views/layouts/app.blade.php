@@ -523,6 +523,29 @@
         </div>
 
         @php
+            $stokActive = request()->routeIs('product-categories.*') || request()->routeIs('products.*');
+        @endphp
+        <div class="nav-item">
+            <a class="nav-link group-header {{ $stokActive ? 'active' : '' }}"
+               data-bs-toggle="collapse" data-bs-target="#collapseStok"
+               onclick="return false;" role="button" aria-expanded="{{ $stokActive ? 'true' : 'false' }}">
+                <i class="fas fa-box"></i>
+                <span class="nav-label">Stok Barang</span>
+                <i class="fas fa-chevron-down caret {{ $stokActive ? 'open' : '' }}"></i>
+            </a>
+            <div class="collapse submenu {{ $stokActive ? 'show' : '' }}" id="collapseStok">
+                <a class="nav-link sub-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">
+                    <i class="fas fa-cube"></i>
+                    <span class="nav-label">Barang</span>
+                </a>
+                <a class="nav-link sub-link {{ request()->routeIs('product-categories.*') ? 'active' : '' }}" href="{{ route('product-categories.index') }}">
+                    <i class="fas fa-tag"></i>
+                    <span class="nav-label">Kategori</span>
+                </a>
+            </div>
+        </div>
+
+        @php
             $pengaturanActive = request()->routeIs('opening-balances.*') || request()->routeIs('accounts.*') || request()->routeIs('backups.*');
         @endphp
         <div class="nav-item">
