@@ -8,6 +8,8 @@ use App\Models\Mutation;
 use App\Models\Expense;
 use App\Models\Receivable;
 use App\Models\Income;
+use App\Models\Product;
+use App\Models\StockTransaction;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -110,6 +112,17 @@ class DashboardService
             ];
         }
 
+        $products = Product::with('category')->active()->get();
+        $totalStockValue = $products->sum('stock_value');
+        $lowStockCount = $products->filter(fn($p) => $p->is_low_stock)->count();
+
+        $stockPurchasePeriod = StockTransaction::where('type', 'in')
+            ->whereBetween('date', [$dateStart, $dateEnd])
+            ->sum(DB::raw('qty * price'));
+        $stockSalePeriod = StockTransaction::where('type', 'out')
+            ->whereBetween('date', [$dateStart, $dateEnd])
+            ->sum(DB::raw('qty * price'));
+
         return [
             'accounts' => $accounts,
             'totalEquity' => $totalEquity,
@@ -127,6 +140,10 @@ class DashboardService
             'recentReceivables' => $recentReceivables,
             'dailyProfits' => $dailyProfits,
             'chartMonths' => $this->getChartData(),
+            'totalStockValue' => $totalStockValue,
+            'lowStockCount' => $lowStockCount,
+            'stockPurchasePeriod' => $stockPurchasePeriod,
+            'stockSalePeriod' => $stockSalePeriod,
         ];
     }
 

@@ -144,6 +144,71 @@
 
 </div>
 
+@if($totalStockValue > 0 || $lowStockCount > 0)
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid #8b5cf6;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">NILAI STOK</p>
+                        <h4 class="fw-bold mb-0">{{ rp($totalStockValue) }}</h4>
+                    </div>
+                    <div class="rounded-3 p-2" style="background:#f5f3ff;">
+                        <i class="fas fa-box" style="color:#8b5cf6;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BARANG HAMPIR HABIS</p>
+                        <h4 class="fw-bold mb-0 {{ $lowStockCount > 0 ? 'text-danger' : '' }}">{{ $lowStockCount }}</h4>
+                    </div>
+                    <div class="rounded-3 p-2" style="background:{{ $lowStockCount > 0 ? '#fef2f2' : '#ecfdf5' }};">
+                        <i class="fas {{ $lowStockCount > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle' }}" style="color:{{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid #f59e0b;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PEMBELIAN STOK</p>
+                        <h4 class="fw-bold mb-0">{{ rp($stockPurchasePeriod) }}</h4>
+                    </div>
+                    <div class="rounded-3 p-2" style="background:#fffbeb;">
+                        <i class="fas fa-arrow-down" style="color:#f59e0b;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $stockSalePeriod >= $stockPurchasePeriod ? '#10b981' : '#ef4444' }};">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENJUALAN STOK</p>
+                        <h4 class="fw-bold mb-0">{{ rp($stockSalePeriod) }}</h4>
+                    </div>
+                    <div class="rounded-3 p-2" style="background:#{{ $stockSalePeriod >= $stockPurchasePeriod ? 'ecfdf5' : 'fef2f2' }};">
+                        <i class="fas fa-arrow-up" style="color:{{ $stockSalePeriod >= $stockPurchasePeriod ? '#10b981' : '#ef4444' }};"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @php $bs = $billSummary; @endphp
 @if($bs['total'] > 0)
 <div class="row g-3 mb-4">
