@@ -91,6 +91,7 @@
                                 data-name="{{ $product->name }}"
                                 data-price="{{ $product->selling_price }}"
                                 data-unit="{{ $product->unit }}"
+                                data-stock="{{ $product->stock }}"
                                 style="border-radius:10px;height:100%;"
                                 {{ $product->stock < 1 ? 'disabled' : '' }}>
                                 <div class="fw-semibold" style="font-size:0.85rem;">{{ $product->name }}</div>
@@ -210,7 +211,7 @@ function renderCart() {
 
         html += '<div class="d-flex align-items-center gap-2 mb-2 p-2 rounded-3" style="background:rgba(255,255,255,0.04);border:1px solid var(--border-subtle);">';
         html += '<div class="flex-grow-1"><div class="fw-semibold" style="font-size:0.85rem;">' + item.name + '</div>';
-        html += '<small class="text-muted">' + formatRp(item.price) + ' / ' + item.unit + '</small></div>';
+        html += '<small class="text-muted">' + formatRp(item.price) + ' / ' + item.unit + ' (sisa ' + (item.stock - item.qty) + ')</small></div>';
         html += '<div class="d-flex align-items-center gap-1"><button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 pos-qty-minus" data-id="' + id + '" style="border-radius:6px;font-size:0.7rem;">−</button>';
         html += '<span class="fw-bold px-2" style="min-width:24px;text-align:center;">' + item.qty + '</span>';
         html += '<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 pos-qty-plus" data-id="' + id + '" style="border-radius:6px;font-size:0.7rem;">+</button></div>';
@@ -231,20 +232,21 @@ function renderCart() {
     hitungKembali();
 }
 
-function addToCart(id, name, price, unit) {
-    if (cart[id]) {
-        cart[id].qty++;
-    } else {
-        cart[id] = { id: id, name: name, price: price, unit: unit, qty: 1 };
-    }
+function addToCart(id, name, price, unit, stock) {
+    var newQty = cart[id] ? cart[id].qty + 1 : 1;
+    if (newQty > stock) newQty = stock;
+    cart[id] = { id: id, name: name, price: price, unit: unit, stock: stock, qty: newQty };
     renderCart();
 }
 
 function updateQty(id, delta) {
     if (!cart[id]) return;
-    cart[id].qty += delta;
-    if (cart[id].qty < 1) {
+    var newQty = cart[id].qty + delta;
+    if (delta > 0 && newQty > cart[id].stock) newQty = cart[id].stock;
+    if (newQty < 1) {
         delete cart[id];
+    } else {
+        cart[id].qty = newQty;
     }
     renderCart();
 }
@@ -274,7 +276,7 @@ function syncForm() {
 document.getElementById('pos-product-grid').addEventListener('click', function (e) {
     var btn = e.target.closest('.pos-product-btn');
     if (!btn || btn.disabled) return;
-    addToCart(parseInt(btn.dataset.id), btn.dataset.name, parseInt(btn.dataset.price), btn.dataset.unit);
+    addToCart(parseInt(btn.dataset.id), btn.dataset.name, parseInt(btn.dataset.price), btn.dataset.unit, parseInt(btn.dataset.stock));
 });
 
 // Cart events via delegation
