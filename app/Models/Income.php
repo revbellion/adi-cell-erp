@@ -27,4 +27,9 @@ class Income extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+    public function stockTransaction(): BelongsTo
+    {
+        return $this->belongsTo(StockTransaction::class);
+    }
 }

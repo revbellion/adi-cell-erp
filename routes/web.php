@@ -31,6 +31,7 @@ Route::post('stock/in', [StockController::class, 'storeIn'])->name('stock.in.sto
 Route::get('stock/sales', [StockController::class, 'sales'])->name('stock.sales');
 Route::post('stock/sales', [StockController::class, 'storeSale'])->name('stock.sales.store');
 Route::get('stock/report', [StockController::class, 'report'])->name('stock.report');
+Route::delete('stock/transactions/{stock_transaction}', [StockController::class, 'destroy'])->name('stock.transactions.destroy');
 Route::resource('receivables', ReceivableController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('receivables/pay', [ReceivableController::class, 'pay'])->name('receivables.pay');
 

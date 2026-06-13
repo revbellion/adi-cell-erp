@@ -86,7 +86,8 @@
                                 <th>Jumlah</th>
                                 <th>Total</th>
                                 <th>Akun</th>
-                                <th class="pe-3">Keterangan</th>
+                                <th>Keterangan</th>
+                                <th class="pe-3">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -97,11 +98,21 @@
                                 <td>{{ $trx->qty }} {{ $trx->product->unit ?? '' }}</td>
                                 <td class="fw-semibold">{{ rp($trx->total) }}</td>
                                 <td>{{ $trx->account->name ?? '-' }}</td>
-                                <td class="pe-3">{{ $trx->description ?? '-' }}</td>
+                                <td>{{ $trx->description ?? '-' }}</td>
+                                <td class="pe-3">
+                                    <form autocomplete="off" action="{{ route('stock.transactions.destroy', $trx->id) }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Yakin hapus penjualan {{ $trx->product->name ?? '' }} ({{ $trx->qty }} {{ $trx->product->unit ?? '' }})?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-modern btn-danger btn-sm py-0 px-2" style="font-size:0.7rem;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">Belum ada penjualan</td>
+                                <td colspan="7" class="text-center text-muted py-4">Belum ada penjualan</td>
                             </tr>
                             @endforelse
                         </tbody>

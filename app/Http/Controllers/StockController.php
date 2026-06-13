@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Product;
+use App\Models\StockTransaction;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 
@@ -63,6 +64,17 @@ class StockController extends Controller
         }
 
         return redirect()->back()->with('success', 'Penjualan berhasil dicatat.');
+    }
+
+    public function destroy(StockTransaction $stockTransaction)
+    {
+        if ($stockTransaction->type === 'in') {
+            $this->stockService->deleteStockIn($stockTransaction);
+            return redirect()->back()->with('success', 'Transaksi stok masuk berhasil dihapus.');
+        }
+
+        $this->stockService->deleteSale($stockTransaction);
+        return redirect()->back()->with('success', 'Penjualan berhasil dihapus.');
     }
 
     public function report()

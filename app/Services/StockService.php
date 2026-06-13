@@ -29,11 +29,12 @@ class StockService
             $product->increment('stock', $data['qty']);
 
             Expense::create([
-                'account_id'  => $data['account_id'],
-                'category'    => 'Stok Masuk',
-                'amount'      => $total,
-                'description' => 'Pembelian ' . $product->name . ' (' . $data['qty'] . ' ' . $product->unit . ')',
-                'date'        => $data['date'] . ' ' . now()->format('H:i:s'),
+                'account_id'          => $data['account_id'],
+                'category'            => 'Stok Masuk',
+                'amount'              => $total,
+                'description'         => 'Pembelian ' . $product->name . ' (' . $data['qty'] . ' ' . $product->unit . ')',
+                'date'                => $data['date'] . ' ' . now()->format('H:i:s'),
+                'stock_transaction_id'=> $transaction->id,
             ]);
 
             return $transaction;
@@ -63,14 +64,39 @@ class StockService
             $product->decrement('stock', $data['qty']);
 
             Income::create([
-                'account_id'  => $data['account_id'],
-                'category'    => 'Penjualan',
-                'amount'      => $total,
-                'description' => 'Penjualan ' . $product->name . ' (' . $data['qty'] . ' ' . $product->unit . ')',
-                'date'        => $data['date'] . ' ' . now()->format('H:i:s'),
+                'account_id'          => $data['account_id'],
+                'category'            => 'Penjualan',
+                'amount'              => $total,
+                'description'         => 'Penjualan ' . $product->name . ' (' . $data['qty'] . ' ' . $product->unit . ')',
+                'date'                => $data['date'] . ' ' . now()->format('H:i:s'),
+                'stock_transaction_id'=> $transaction->id,
             ]);
 
             return $transaction;
+        });
+    }
+
+    public function deleteStockIn(StockTransaction $transaction): void
+    {
+        DB::transaction(function () use ($transaction) {
+            $product = $transaction->product;
+            $product->decrement('stock', $transaction->qty);
+
+            Expense::where('stock_transaction_id', $transaction->id)->delete();
+
+            $transaction->delete();
+        });
+    }
+
+    public function deleteSale(StockTransaction $transaction): void
+    {
+        DB::transaction(function () use ($transaction) {
+            $product = $transaction->product;
+            $product->increment('stock', $transaction->qty);
+
+            Income::where('stock_transaction_id', $transaction->id)->delete();
+
+            $transaction->delete();
         });
     }
 
