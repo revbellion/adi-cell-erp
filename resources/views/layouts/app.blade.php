@@ -550,6 +550,10 @@
                     <i class="fas fa-arrow-up"></i>
                     <span class="nav-label">Penjualan</span>
                 </a>
+                <a class="nav-link sub-link {{ request()->routeIs('stock.opname') ? 'active' : '' }}" href="{{ route('stock.opname') }}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span class="nav-label">Stok Opname</span>
+                </a>
                 <a class="nav-link sub-link {{ request()->routeIs('stock.report') ? 'active' : '' }}" href="{{ route('stock.report') }}">
                     <i class="fas fa-chart-bar"></i>
                     <span class="nav-label">Laporan</span>

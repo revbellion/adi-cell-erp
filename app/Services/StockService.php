@@ -100,6 +100,30 @@ class StockService
         });
     }
 
+    public function recordOpname(array $items): void
+    {
+        DB::transaction(function () use ($items) {
+            foreach ($items as $item) {
+                $product = Product::findOrFail($item['product_id']);
+
+                StockTransaction::create([
+                    'product_id'  => $product->id,
+                    'type'        => 'opname',
+                    'qty'         => $item['qty'],
+                    'price'       => $item['price'] ?? 0,
+                    'account_id'  => null,
+                    'description' => $item['description'] ?? 'Stok opname',
+                    'date'        => now()->format('Y-m-d H:i:s'),
+                ]);
+
+                $product->update([
+                    'stock'          => $item['qty'],
+                    'purchase_price' => $item['price'] ?? $product->purchase_price,
+                ]);
+            }
+        });
+    }
+
     public function getStockInHistory()
     {
         return StockTransaction::with('product', 'account')

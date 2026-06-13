@@ -77,6 +77,33 @@ class StockController extends Controller
         return redirect()->back()->with('success', 'Penjualan berhasil dihapus.');
     }
 
+    public function opname()
+    {
+        $products = Product::with('category')->active()->orderBy('name')->get();
+        return view('stock.opname', compact('products'));
+    }
+
+    public function storeOpname(Request $request)
+    {
+        $validated = $request->validate([
+            'items'            => 'required|array|min:1',
+            'items.*.id'       => 'required|exists:products,id',
+            'items.*.qty'      => 'required|integer|min:0',
+            'items.*.price'    => 'nullable|integer|min:0',
+            'items.*.desc'     => 'nullable|string|max:255',
+        ]);
+
+        $items = collect($validated['items'])->filter(fn($i) => $i['qty'] > 0)->values()->toArray();
+
+        if (empty($items)) {
+            return redirect()->back()->with('error', 'Tidak ada barang dengan stok > 0.');
+        }
+
+        $this->stockService->recordOpname($items);
+
+        return redirect()->back()->with('success', 'Stok opname berhasil disimpan.');
+    }
+
     public function report()
     {
         $data = $this->stockService->getReportData();
