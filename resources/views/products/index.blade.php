@@ -41,6 +41,9 @@
                         </td>
                         <td>{{ $product->unit }}</td>
                         <td class="pe-3">
+                            <a href="{{ route('products.history', $product->id) }}" class="btn btn-modern btn-info btn-sm">
+                                <i class="fas fa-history"></i>
+                            </a>
                             <button type="button" class="btn btn-modern btn-primary btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#modalEditBarang"
                                 data-id="{{ $product->id }}"

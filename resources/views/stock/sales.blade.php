@@ -143,6 +143,12 @@
                                 </td>
                                 <td class="fw-semibold">{{ rp($receipt->total) }}</td>
                                 <td class="pe-3">
+                                    <a href="{{ route('stock.receipt.pdf', $receipt->receipt_id) }}" target="_blank" class="btn btn-modern btn-primary btn-sm py-0 px-2" style="font-size:0.7rem;">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <a href="{{ route('stock.receipt', $receipt->receipt_id) }}" target="_blank" class="btn btn-modern btn-success btn-sm py-0 px-2" style="font-size:0.7rem;">
+                                        <i class="fas fa-print"></i>
+                                    </a>
                                     <form autocomplete="off" action="{{ route('stock.sales.destroy', $receipt->receipt_id) }}" method="POST" class="d-inline"
                                         onsubmit="return confirm('Yakin hapus penjualan {{ $receipt->receipt_id }}?')">
                                         @csrf
@@ -317,6 +323,16 @@ document.getElementById('formPenjualan').addEventListener('submit', function (e)
     }
     syncForm();
 });
+
+// Auto-print PDF after successful submit
+@if(session('receipt_id'))
+document.addEventListener('DOMContentLoaded', function () {
+    var r = '{{ session('receipt_id') }}';
+    if (confirm('Cetak resi untuk ' + r + '?')) {
+        window.open('{{ route('stock.receipt.pdf', session('receipt_id')) }}', '_blank');
+    }
+});
+@endif
 </script>
 @endpush
 

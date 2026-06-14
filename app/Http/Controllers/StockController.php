@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Product;
 use App\Models\StockTransaction;
 use App\Services\StockService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class StockController extends Controller
@@ -67,7 +68,7 @@ class StockController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Penjualan berhasil dicatat. No: ' . $receiptId);
+        return redirect()->back()->with('success', 'Penjualan berhasil dicatat. No: ' . $receiptId)->with('receipt_id', $receiptId);
     }
 
     public function destroy(string $receiptId)
@@ -80,6 +81,31 @@ class StockController extends Controller
     {
         $this->stockService->deleteStockIn($stockTransaction);
         return redirect()->back()->with('success', 'Transaksi stok masuk berhasil dihapus.');
+    }
+
+    public function receipt(string $receiptId)
+    {
+        $receipt = $this->stockService->getReceipt($receiptId);
+
+        if (!$receipt) {
+            return redirect()->route('stock.sales')->with('error', 'Nota tidak ditemukan.');
+        }
+
+        return view('stock.receipt', compact('receipt'));
+    }
+
+    public function receiptPdf(string $receiptId)
+    {
+        $receipt = $this->stockService->getReceipt($receiptId);
+
+        if (!$receipt) {
+            return redirect()->route('stock.sales')->with('error', 'Nota tidak ditemukan.');
+        }
+
+        $pdf = Pdf::loadView('stock.receipt-pdf', compact('receipt'));
+        $pdf->setPaper([0, 0, 226, 500], 'portrait');
+
+        return $pdf->stream('resi-' . $receiptId . '.pdf');
     }
 
     public function opname()

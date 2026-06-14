@@ -93,7 +93,7 @@
                                 <td class="ps-3">{{ tgl($trx->date) }}</td>
                                 <td>{{ $trx->product->name ?? '-' }}</td>
                                 <td>{{ $trx->qty }} {{ $trx->product->unit ?? '' }}</td>
-                                <td class="fw-semibold">{{ rp($trx->total) }}</td>
+                                <td class="fw-semibold">{{ rp($trx->qty * $trx->price) }}</td>
                                 <td>{{ $trx->account->name ?? '-' }}</td>
                                 <td>{{ $trx->description ?? '-' }}</td>
                                 <td class="pe-3">

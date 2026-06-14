@@ -25,6 +25,7 @@ Route::resource('accounts', AccountController::class)->only(['index', 'store', '
 Route::resource('bills', BillController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('bills/{recurring_bill}/pay', [BillController::class, 'pay'])->name('bills.pay');
 Route::resource('product-categories', ProductCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::get('products/{product}/history', [ProductController::class, 'history'])->name('products.history');
 Route::resource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::get('stock/in', [StockController::class, 'stockIn'])->name('stock.in');
 Route::post('stock/in', [StockController::class, 'storeIn'])->name('stock.in.store');
@@ -34,6 +35,8 @@ Route::get('stock/report', [StockController::class, 'report'])->name('stock.repo
 Route::get('stock/opname', [StockController::class, 'opname'])->name('stock.opname');
 Route::post('stock/opname', [StockController::class, 'storeOpname'])->name('stock.opname.store');
 Route::delete('stock/in/{stock_transaction}', [StockController::class, 'destroyStockIn'])->name('stock.in.destroy');
+Route::get('stock/receipt/{receiptId}', [StockController::class, 'receipt'])->name('stock.receipt');
+Route::get('stock/receipt/{receiptId}/pdf', [StockController::class, 'receiptPdf'])->name('stock.receipt.pdf');
 Route::delete('stock/sales/{receiptId}', [StockController::class, 'destroy'])->name('stock.sales.destroy');
 Route::resource('receivables', ReceivableController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('receivables/pay', [ReceivableController::class, 'pay'])->name('receivables.pay');

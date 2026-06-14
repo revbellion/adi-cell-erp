@@ -184,6 +184,37 @@ class StockService
         return $receipts;
     }
 
+    public function getProductHistory(int $productId)
+    {
+        return StockTransaction::with('product', 'account')
+            ->where('product_id', $productId)
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(30);
+    }
+
+    public function getReceipt(string $receiptId): ?object
+    {
+        $items = StockTransaction::with('product', 'income')
+            ->where('receipt_id', $receiptId)
+            ->where('type', 'out')
+            ->get();
+
+        if ($items->isEmpty()) return null;
+
+        $income = $items->first()->income;
+        $total = $items->sum(fn($i) => $i->qty * $i->price);
+
+        return (object) [
+            'receipt_id' => $receiptId,
+            'date'       => $items->first()->date,
+            'items'      => $items,
+            'income'     => $income,
+            'total'      => $total,
+            'item_count' => $items->sum('qty'),
+        ];
+    }
+
     public function getReportData()
     {
         $products = Product::with('category')->active()->get();

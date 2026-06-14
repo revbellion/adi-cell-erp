@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        protected StockService $stockService
+    ) {}
+
     public function index()
     {
         $products = Product::with('category')->latest()->get();
@@ -57,5 +62,11 @@ class ProductController extends Controller
         $product->update(['is_active' => false]);
 
         return redirect()->back()->with('success', 'Barang berhasil dinonaktifkan.');
+    }
+
+    public function history(Product $product)
+    {
+        $transactions = $this->stockService->getProductHistory($product->id);
+        return view('products.history', compact('product', 'transactions'));
     }
 }

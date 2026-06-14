@@ -39,8 +39,4 @@ class StockTransaction extends Model
         return $query->where('type', $type);
     }
 
-    public function getTotalAttribute(): int
-    {
-        return $this->qty * $this->price;
-    }
 }

@@ -69,7 +69,7 @@ class DashboardService
         $totalReceivable = Receivable::unpaid()->sum('amount');
         $totalEquity = $accounts->sum('balance') + $totalReceivable;
 
-        $cashAccount = $accounts->firstWhere('name', 'CASH');
+        $cashAccount = $accounts->firstWhere('name', 'Cash');
         $cashBalance = $cashAccount ? (int) $cashAccount->balance : 0;
 
         $bcaAccount = $accounts->firstWhere('name', 'BCA');
