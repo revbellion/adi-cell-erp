@@ -87,6 +87,12 @@
     </div>
 </div>
 
+@if($products->hasPages())
+<div class="d-flex justify-content-center mt-3">
+    {{ $products->links() }}
+</div>
+@endif
+
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahBarang">
     <div class="modal-dialog">
         <form autocomplete="off" method="POST" action="{{ route('products.store') }}" class="modal-content">

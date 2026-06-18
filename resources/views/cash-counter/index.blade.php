@@ -53,6 +53,34 @@
 
             <div class="card card-modern mb-3">
                 <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="fas fa-wallet" style="color:var(--theme-primary);font-size:0.9rem;"></i>
+                        <span style="font-weight:600;font-size:0.85rem;color:var(--text-primary);">Akun Kas</span>
+                    </div>
+                    <select id="account-select" class="form-select form-select-sm mb-3" style="font-size:0.85rem;" onchange="onAccountChange()">
+                        <option value="">-- Pilih Akun --</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account->id }}" data-balance="{{ $balances[$account->id] ?? 0 }}">
+                                {{ $account->name }} ({{ ucfirst($account->type) }})
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <div id="account-balance-info" class="d-none mb-3 p-2 rounded-3" style="background:var(--border-subtle);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="font-size:0.8rem;color:var(--text-muted);">Saldo Sistem:</span>
+                            <span id="system-balance" class="fw-bold" style="font-size:0.9rem;color:var(--text-primary);">Rp 0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <span style="font-size:0.8rem;color:var(--text-muted);">Uang Fisik:</span>
+                            <span id="physical-balance" class="fw-bold" style="font-size:0.9rem;color:var(--text-primary);">Rp 0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1 pt-1" style="border-top:1px solid var(--border-subtle);">
+                            <span style="font-size:0.8rem;color:var(--text-muted);">Selisih:</span>
+                            <span id="diff-balance" class="fw-bold" style="font-size:0.9rem;">Rp 0</span>
+                        </div>
+                    </div>
+
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="fas fa-bullseye" style="color:var(--theme-primary);font-size:0.9rem;"></i>
                         <span style="font-weight:600;font-size:0.85rem;color:var(--text-primary);">Target Kas</span>
@@ -60,6 +88,9 @@
                     <div class="input-group input-group-sm">
                         <span class="input-group-text" style="background:var(--bg-card);border-color:var(--border-subtle);color:var(--text-muted);font-size:0.8rem;">Rp</span>
                         <input type="number" id="target-amount" class="form-control form-control-sm" min="0" placeholder="Masukkan target..." style="font-size:0.85rem;" oninput="updateTotal()">
+                        <button class="btn btn-sm btn-modern btn-outline-secondary" onclick="fillTargetFromBalance()" title="Isi dari saldo sistem" style="font-size:0.7rem;padding:0.2rem 0.5rem;">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
                     </div>
                     <div id="target-result-panel" class="mt-2 d-none">
                         <div class="d-flex justify-content-between align-items-center py-1">
@@ -69,6 +100,18 @@
                         <div class="d-flex justify-content-between align-items-center py-1">
                             <span style="font-size:0.8rem;color:var(--text-muted);">Selisih:</span>
                             <span id="target-diff" class="fw-bold" style="font-size:0.85rem;">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div id="adjust-panel" class="mt-3 d-none">
+                        <div class="p-2 rounded-3" style="background:var(--border-subtle);">
+                            <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">PENYESUAIAN KAS</div>
+                            <button id="btn-adjust-income" class="btn btn-sm btn-modern btn-success w-100 mb-1 d-none" onclick="createAdjustment('income')">
+                                <i class="fas fa-plus me-1"></i> <span id="adjust-income-text">Buat Pendapatan Penyesuaian</span>
+                            </button>
+                            <button id="btn-adjust-expense" class="btn btn-sm btn-modern btn-danger w-100 d-none" onclick="createAdjustment('expense')">
+                                <i class="fas fa-minus me-1"></i> <span id="adjust-expense-text">Buat Pengeluaran Penyesuaian</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -285,6 +328,8 @@ const denoms = [
 
 let chartInstance = null;
 const DENOM_KEYS = denoms.map(d => d.key);
+let currentSessionId = null;
+let savedAccountId = null;
 
 function getDenomValue(key) {
     const d = denoms.find(x => x.key === key);
@@ -349,6 +394,8 @@ function updateTotal() {
     document.getElementById('modal-total-display').textContent = formatRupiah(grandTotal);
 
     updateTargetCash(grandTotal);
+    updateAccountBalanceInfo(grandTotal);
+    updateAdjustPanel(grandTotal);
     updateChart(grandTotal);
 }
 
@@ -379,6 +426,126 @@ function updateTargetCash(grandTotal) {
         diffEl.textContent = formatRupiah(Math.abs(diff));
         diffEl.style.color = '#ef4444';
     }
+}
+
+function onAccountChange() {
+    const select = document.getElementById('account-select');
+    const accountId = select.value;
+    const infoPanel = document.getElementById('account-balance-info');
+
+    if (!accountId) {
+        infoPanel.classList.add('d-none');
+        document.getElementById('adjust-panel').classList.add('d-none');
+        return;
+    }
+
+    const option = select.options[select.selectedIndex];
+    const balance = parseInt(option.dataset.balance) || 0;
+
+    document.getElementById('system-balance').textContent = formatRupiah(balance);
+    infoPanel.classList.remove('d-none');
+
+    updateAccountBalanceInfo(getGrandTotal());
+    updateAdjustPanel(getGrandTotal());
+}
+
+function fillTargetFromBalance() {
+    const select = document.getElementById('account-select');
+    if (!select.value) { showToast('Pilih akun terlebih dahulu'); return; }
+    const option = select.options[select.selectedIndex];
+    const balance = parseInt(option.dataset.balance) || 0;
+    document.getElementById('target-amount').value = balance;
+    updateTotal();
+    showToast('Target diisi dari saldo sistem');
+}
+
+function updateAccountBalanceInfo(grandTotal) {
+    const select = document.getElementById('account-select');
+    if (!select.value) return;
+    const infoPanel = document.getElementById('account-balance-info');
+    infoPanel.classList.remove('d-none');
+
+    const option = select.options[select.selectedIndex];
+    const balance = parseInt(option.dataset.balance) || 0;
+    const diff = grandTotal - balance;
+
+    document.getElementById('system-balance').textContent = formatRupiah(balance);
+    document.getElementById('physical-balance').textContent = formatRupiah(grandTotal);
+
+    const diffEl = document.getElementById('diff-balance');
+    diffEl.textContent = (diff >= 0 ? '+' : '') + formatRupiah(diff);
+    diffEl.style.color = diff === 0 ? 'var(--text-primary)' : (diff > 0 ? '#10b981' : '#ef4444');
+}
+
+function updateAdjustPanel(grandTotal) {
+    const select = document.getElementById('account-select');
+    if (!select.value || !currentSessionId) {
+        document.getElementById('adjust-panel').classList.add('d-none');
+        return;
+    }
+
+    const option = select.options[select.selectedIndex];
+    const balance = parseInt(option.dataset.balance) || 0;
+    const diff = grandTotal - balance;
+
+    if (diff === 0) {
+        document.getElementById('adjust-panel').classList.add('d-none');
+        return;
+    }
+
+    const panel = document.getElementById('adjust-panel');
+    panel.classList.remove('d-none');
+
+    const absDiff = Math.abs(diff);
+
+    if (diff > 0) {
+        document.getElementById('btn-adjust-income').classList.remove('d-none');
+        document.getElementById('btn-adjust-expense').classList.add('d-none');
+        document.getElementById('adjust-income-text').textContent =
+            'Buat Pendapatan Penyesuaian +Rp ' + absDiff.toLocaleString('id-ID');
+    } else {
+        document.getElementById('btn-adjust-income').classList.add('d-none');
+        document.getElementById('btn-adjust-expense').classList.remove('d-none');
+        document.getElementById('adjust-expense-text').textContent =
+            'Buat Pengeluaran Penyesuaian -Rp ' + absDiff.toLocaleString('id-ID');
+    }
+}
+
+function getGrandTotal() {
+    return parseInt(document.getElementById('grand-total').textContent.replace(/[^\d]/g, '')) || 0;
+}
+
+function createAdjustment(type) {
+    const grandTotal = getGrandTotal();
+    const select = document.getElementById('account-select');
+    const option = select.options[select.selectedIndex];
+    const balance = parseInt(option.dataset.balance) || 0;
+    const diff = Math.abs(grandTotal - balance);
+
+    if (!currentSessionId) {
+        showToast('Simpan sesi terlebih dahulu sebelum membuat penyesuaian');
+        return;
+    }
+
+    if (!confirm('Buat ' + (type === 'income' ? 'pendapatan' : 'pengeluaran') +
+        ' penyesuaian sebesar Rp ' + diff.toLocaleString('id-ID') + '?')) return;
+
+    const accountId = document.getElementById('account-select').value;
+
+    fetch('{{ url("cash-counter/sessions") }}/' + currentSessionId + '/adjust', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ type: type, amount: diff, account_id: accountId })
+    })
+    .then(r => {
+        if (!r.ok) { return r.json().then(e => { throw new Error(e.message || 'Gagal membuat penyesuaian'); }); }
+        return r.json();
+    })
+    .then(res => {
+        showToast(res.message || 'Penyesuaian berhasil dibuat');
+        document.getElementById('adjust-panel').classList.add('d-none');
+    })
+    .catch(e => showToast(e.message));
 }
 
 function updateChart(grandTotal) {
@@ -433,6 +600,8 @@ function resetCalculator() {
     });
     document.getElementById('target-amount').value = '';
     document.getElementById('target-result-panel').classList.add('d-none');
+    document.getElementById('adjust-panel').classList.add('d-none');
+    currentSessionId = null;
     updateTotal();
     showToast('Semua input direset');
 }
@@ -454,9 +623,14 @@ function copySummary() {
     const target = parseInt(targetInput.value) || 0;
     if (target > 0) {
         text += '\nTarget Kas: Rp ' + target.toLocaleString('id-ID');
-        const grandTotal = parseInt(document.getElementById('grand-total').textContent.replace(/[^\d]/g, '')) || 0;
+        const grandTotal = getGrandTotal();
         const diff = grandTotal - target;
         text += '\nSelisih: Rp ' + Math.abs(diff).toLocaleString('id-ID') + (diff >= 0 ? ' (Lebih)' : ' (Kurang)');
+    }
+
+    const select = document.getElementById('account-select');
+    if (select.value) {
+        text += '\nAkun: ' + select.options[select.selectedIndex].text;
     }
 
     navigator.clipboard.writeText(text).then(() => showToast('Ringkasan disalin ke clipboard'));
@@ -477,22 +651,43 @@ function saveSession() {
         const input = document.getElementById('count-' + key);
         denominations[key] = parseInt(input.value) || 0;
     });
-    const totalAmount = parseInt(document.getElementById('grand-total').textContent.replace(/[^\d]/g, '')) || 0;
+    const totalAmount = getGrandTotal();
     const targetAmount = parseInt(document.getElementById('target-amount').value) || null;
+    const accountId = document.getElementById('account-select').value || null;
 
-    fetch('{{ route("cash-counter.sessions.store") }}', {
-        method: 'POST',
+    const body = JSON.stringify({
+        title, denominations, target_amount: targetAmount,
+        total_amount: totalAmount, account_id: accountId
+    });
+
+    const url = currentSessionId
+        ? '{{ url("cash-counter/sessions") }}/' + currentSessionId
+        : '{{ route("cash-counter.sessions.store") }}';
+    const method = currentSessionId ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ title, denominations, target_amount: targetAmount, total_amount: totalAmount })
+        body: body
     })
-    .then(r => r.json())
-    .then(() => { saveModal.hide(); showToast('Sesi disimpan'); loadHistory(); })
-    .catch(() => showToast('Gagal menyimpan sesi'));
+    .then(r => {
+        if (!r.ok) { return r.json().then(e => { throw new Error(e.message || e.exception || 'Gagal menyimpan'); }); }
+        return r.json();
+    })
+    .then(s => {
+        currentSessionId = s.id;
+        savedAccountId = accountId;
+        saveModal.hide();
+        showToast('Sesi disimpan');
+        loadHistory();
+        updateAdjustPanel(getGrandTotal());
+    })
+    .catch(e => showToast(e.message));
 }
 
 function loadHistory() {
     fetch('{{ route("cash-counter.history") }}')
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error('Gagal muat riwayat'); return r.json(); })
     .then(sessions => {
         const container = document.getElementById('history-list-container');
         if (sessions.length === 0) {
@@ -503,7 +698,11 @@ function loadHistory() {
             <div class="d-flex align-items-center justify-content-between py-2" style="border-bottom:1px solid var(--border-subtle);">
                 <div>
                     <div class="fw-semibold" style="font-size:0.85rem;color:var(--text-primary);">${escapeHtml(s.title)}</div>
-                    <div style="font-size:0.7rem;color:var(--text-muted);">${formatRupiah(s.total_amount)} &middot; ${new Date(s.created_at).toLocaleDateString('id-ID')}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);">
+                        ${formatRupiah(s.total_amount)}
+                        ${s.account ? ' &middot; ' + escapeHtml(s.account.name) : ''}
+                        &middot; ${new Date(s.created_at).toLocaleDateString('id-ID')}
+                    </div>
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-sm btn-modern btn-primary" style="font-size:0.65rem;padding:0.2rem 0.5rem;" onclick="loadSession(${s.id})"><i class="fas fa-folder-open"></i></button>
@@ -516,13 +715,20 @@ function loadHistory() {
 
 function loadSession(id) {
     fetch(`{{ url("cash-counter/sessions") }}/${id}`)
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error('Gagal muat sesi'); return r.json(); })
     .then(s => {
         const data = s.denominations || {};
         DENOM_KEYS.forEach(key => {
             document.getElementById('count-' + key).value = data[key] || 0;
         });
         if (s.target_amount) document.getElementById('target-amount').value = s.target_amount;
+
+        if (s.account_id) {
+            document.getElementById('account-select').value = s.account_id;
+            onAccountChange();
+        }
+
+        currentSessionId = s.id;
         updateTotal();
         showToast('Sesi "' + escapeHtml(s.title) + '" dimuat');
     });
@@ -534,14 +740,14 @@ function deleteSession(id) {
         method: 'DELETE',
         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
     })
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error('Gagal hapus sesi'); return r.json(); })
     .then(() => { showToast('Sesi dihapus'); loadHistory(); });
 }
 
 function clearHistory() {
     if (!confirm('Hapus semua sesi?')) return;
     fetch('{{ route("cash-counter.history") }}')
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error('Gagal muat riwayat'); return r.json(); })
     .then(sessions => {
         let done = 0;
         sessions.forEach(s => {

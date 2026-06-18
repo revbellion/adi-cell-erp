@@ -35,6 +35,11 @@ class Product extends Model
         return $query->where('is_active', true);
     }
 
+    public function scopeActiveWithCategory($query)
+    {
+        return $query->active()->with('category');
+    }
+
     public function getStockValueAttribute(): int
     {
         return $this->stock * $this->purchase_price;

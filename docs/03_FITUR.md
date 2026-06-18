@@ -25,7 +25,8 @@ Filter periode (month YYYY-MM, auto-submit on change)
 **Tabel:**
 - **Saldo Akun** — semua akun + saldo terkini
 - **Mutasi Terakhir** — 10 mutasi terbaru
-- **Profit 7 Hari** — daily omset, expense, profit
+- **Profit 7 Hari** — daily omset, expense, profit (line chart)
+- **Trend 6 Bulan** — income vs expense per bulan (line chart)
 - **Piutang Terbaru** — 10 piutang terbaru
 
 **Quick Add Modals:**
@@ -154,7 +155,7 @@ Filter periode (month YYYY-MM, auto-submit on change)
 - Auto **due_date** = date + 3 hari
 - Tombol **Bayar** — record payment (pilih akun, nominal, tanggal)
 - Tombol **WA** — link wa.me reminder (beda pesan untuk overdue vs unpaid)
-- Status badge: Lunas (hijau) / Belum (biru) / Telat (merah)
+- Status badge: Lunas (hijau) / Belum (kuning) / Telat (merah)
 - Pagination 20/halaman
 - Export Excel (respect filter)
 
@@ -200,12 +201,32 @@ Filter periode (month YYYY-MM, auto-submit on change)
 
 ---
 
+## Cash Counter (`/cash-counter`)
+**Middleware:** `permission:cash_counter`
+
+- **Kalkulator Denominasi** — input jumlah uang kertas & logam per pecahan
+- Tabs: Uang Kertas / Uang Logam
+- Shortcuts: +10, +50, +100 per pecahan
+- **Total otomatis**: grand total, subtotal kertas, subtotal logam
+- **Target Kas** — input nominal target, tampilkan status: Pas (hijau), Lebih (kuning), Kurang (merah) + selisih
+- **Tombol Isi Target** — isi target otomatis dari saldo sistem akun terpilih
+- **Akun Kas** — pilih akun, tampilkan perbandingan saldo sistem vs uang fisik + selisih
+- **Distribusi Donut Chart** — visual persentase per pecahan (Chart.js)
+- **Tombol Salin** — copy ringkasan perhitungan ke clipboard
+- **Simpan Sesi** — simpan perhitungan via modal (nama sesi, denominations JSON, total, target, akun)
+- **Riwayat Sesi** — daftar sesi per user, bisa dimuat kembali / dihapus
+- **Hapus Semua** — bersihkan riwayat sesi
+- **Adjust** — jika ada selisih antara uang fisik & saldo sistem, bisa auto-create Income (jika lebih) atau Expense (jika kurang) dengan kategori "Penyesuaian Kas"
+- Fully AJAX-based (CRUD via JSON)
+
+---
+
 ## Manajemen User (`/users`)
 **Middleware:** admin
 
 - CRUD user
-- 14 permission checkboxes
-- Default permission (user baru): POS, Stok Masuk, Opname
+- 15 permission checkboxes
+- Default permission (user baru): POS, Stok Masuk, Opname, Cash Counter
 - Admin (kosongkan semua) = full akses
 - Soft-delete user (bisa hapus, kecuali admin sendiri)
 
@@ -264,7 +285,7 @@ Filter periode (month YYYY-MM, auto-submit on change)
 
 ---
 
-## Route Summary (~60 routes)
+## Route Summary (~67 routes)
 
 ### Auth (guest)
 | Method | URI | Middleware |
@@ -309,8 +330,20 @@ All routes: `permission:accounts`
 | Piutang | `/receivables` | receivables |
 | Tagihan | `/bills` | bills |
 | Ringkasan | `/summary` | summary |
+| Cash Counter | `/cash-counter` | cash_counter |
 
 Semua + export
+
+### Cash Counter Routes
+| Method | URI | Middleware |
+|--------|-----|-----------|
+| GET | `/cash-counter` | permission:cash_counter |
+| GET | `/cash-counter/history` | permission:cash_counter |
+| POST | `/cash-counter/sessions` | permission:cash_counter |
+| GET | `/cash-counter/sessions/{session}` | permission:cash_counter |
+| PUT | `/cash-counter/sessions/{session}` | permission:cash_counter |
+| DELETE | `/cash-counter/sessions/{session}` | permission:cash_counter |
+| POST | `/cash-counter/sessions/{session}/adjust` | permission:cash_counter |
 
 ### Admin Only
 | Modul | Prefix |

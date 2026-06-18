@@ -37,7 +37,7 @@
                 Anda tidak memiliki izin untuk mengakses halaman ini.
             @endif
         </div>
-        <a href="{{ Auth::check() && (Auth::user()->isAdmin() || Auth::user()->hasPermission('dashboard')) ? route('dashboard') : route('stock.sales') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</a>
+        <a href="{{ Auth::check() && (Auth::user()->isAdmin() || Auth::user()->hasPermission(config('permissions.DASHBOARD'))) ? route('dashboard') : route('stock.sales') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</a>
     </div>
 </body>
 </html>

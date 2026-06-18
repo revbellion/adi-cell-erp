@@ -46,51 +46,54 @@ class StockService
         return DB::transaction(function () use ($items, $saleInfo) {
             $receiptId = 'INV-' . now()->format('Ymd') . '-' . strtoupper(substr(uniqid(), -5));
 
-            $total = 0;
-            foreach ($items as $item) {
-                $product = Product::findOrFail($item['product_id']);
+            $products = Product::findMany(array_column($items, 'product_id'))->keyBy('id');
 
-                if ($product->stock < $item['qty']) {
+            $total = 0;
+            $itemNames = [];
+            $transactions = [];
+
+            foreach ($items as $item) {
+                $product = $products->get($item['product_id']);
+
+                if (!$product || $product->stock < $item['qty']) {
+                    $name = $product ? $product->name : 'ID#' . $item['product_id'];
                     throw new \InvalidArgumentException(
-                        'Stok ' . $product->name . ' tidak mencukupi. Tersedia: ' . $product->stock
+                        'Stok ' . $name . ' tidak mencukupi. Tersedia: ' . ($product->stock ?? 0)
                     );
                 }
 
-                $total += $item['qty'] * $item['price'];
+                $subtotal = $item['qty'] * $item['price'];
+                $total += $subtotal;
+                $itemNames[] = $product->name . ' (' . $item['qty'] . ' ' . $product->unit . ')';
+
+                $transactions[] = [
+                    'product' => $product,
+                    'data'    => [
+                        'product_id'  => $product->id,
+                        'type'        => 'out',
+                        'qty'         => $item['qty'],
+                        'price'       => $item['price'],
+                        'account_id'  => $saleInfo['account_id'],
+                        'description' => $item['description'] ?? 'Penjualan ' . $product->name,
+                        'date'        => $saleInfo['date'] . ' ' . now()->format('H:i:s'),
+                        'receipt_id'  => $receiptId,
+                    ],
+                ];
             }
 
             $income = Income::create([
                 'account_id'  => $saleInfo['account_id'],
                 'category'    => 'Penjualan',
                 'amount'      => $total,
-                'description' => 'Penjualan ' . now()->format('d/m/Y H:i'),
+                'description' => 'Penjualan ' . now()->format('d/m/Y H:i') . ' - ' . implode(', ', $itemNames),
                 'date'        => $saleInfo['date'] . ' ' . now()->format('H:i:s'),
             ]);
 
-            $itemNames = [];
-
-            foreach ($items as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $subtotal = $item['qty'] * $item['price'];
-                $itemNames[] = $product->name . ' (' . $item['qty'] . ' ' . $product->unit . ')';
-
-                StockTransaction::create([
-                    'product_id'  => $product->id,
-                    'type'        => 'out',
-                    'qty'         => $item['qty'],
-                    'price'       => $item['price'],
-                    'account_id'  => $saleInfo['account_id'],
-                    'description' => $item['description'] ?? 'Penjualan ' . $product->name,
-                    'date'        => $saleInfo['date'] . ' ' . now()->format('H:i:s'),
-                    'income_id'   => $income->id,
-                    'receipt_id'  => $receiptId,
-                ]);
-
-                $product->decrement('stock', $item['qty']);
+            foreach ($transactions as $trx) {
+                $trx['data']['income_id'] = $income->id;
+                StockTransaction::create($trx['data']);
+                $trx['product']->decrement('stock', $trx['data']['qty']);
             }
-
-            $income->description = 'Penjualan ' . now()->format('d/m/Y H:i') . ' - ' . implode(', ', $itemNames);
-            $income->save();
 
             return $receiptId;
         });
@@ -99,7 +102,7 @@ class StockService
     public function deleteSale(string $receiptId): void
     {
         DB::transaction(function () use ($receiptId) {
-            $transactions = StockTransaction::where('receipt_id', $receiptId)->where('type', 'out')->get();
+            $transactions = StockTransaction::with('product')->where('receipt_id', $receiptId)->where('type', 'out')->get();
 
             if ($transactions->isEmpty()) {
                 return;
@@ -154,11 +157,18 @@ class StockService
     public function getStockInHistory(): array
     {
         $query = StockTransaction::with('product', 'account')->where('type', 'in');
-        $totalQty = (clone $query)->sum('qty');
-        $totalValue = (clone $query)->sum(DB::raw('qty * price'));
+
+        $aggregates = (clone $query)
+            ->selectRaw('COALESCE(SUM(qty), 0) as total_qty, COALESCE(SUM(qty * price), 0) as total_value')
+            ->first();
+
         $history = $query->latest()->paginate(20);
 
-        return compact('history', 'totalQty', 'totalValue');
+        return [
+            'history' => $history,
+            'totalQty' => (int) $aggregates->total_qty,
+            'totalValue' => (int) $aggregates->total_value,
+        ];
     }
 
     public function getSalesHistory(): array
@@ -174,12 +184,15 @@ class StockService
             ->orderByRaw('MAX(created_at) DESC')
             ->paginate(15);
 
-        $receipts->getCollection()->transform(function ($r) {
-            $r->items = StockTransaction::with('product', 'income')
-                ->where('receipt_id', $r->receipt_id)
-                ->where('type', 'out')
-                ->get();
-            $r->income = $r->items->first()->income;
+        $allItems = StockTransaction::with('product', 'income')
+            ->whereIn('receipt_id', $receipts->pluck('receipt_id'))
+            ->where('type', 'out')
+            ->get()
+            ->groupBy('receipt_id');
+
+        $receipts->getCollection()->transform(function ($r) use ($allItems) {
+            $r->items = $allItems->get($r->receipt_id, collect());
+            $r->income = $r->items->first()->income ?? null;
             return $r;
         });
 
@@ -191,13 +204,20 @@ class StockService
         $query = StockTransaction::with('product', 'account')
             ->where('product_id', $productId);
 
-        $totalQtyIn = (clone $query)->where('type', 'in')->sum('qty');
-        $totalQtyOut = (clone $query)->where('type', 'out')->sum('qty');
-        $totalValue = (clone $query)->sum(DB::raw('qty * price'));
+        $stats = (clone $query)
+            ->selectRaw("COALESCE(SUM(CASE WHEN type='in' THEN qty ELSE 0 END), 0) as total_qty_in")
+            ->selectRaw("COALESCE(SUM(CASE WHEN type='out' THEN qty ELSE 0 END), 0) as total_qty_out")
+            ->selectRaw('COALESCE(SUM(qty * price), 0) as total_value')
+            ->first();
 
         $transactions = $query->orderByDesc('date')->orderByDesc('id')->paginate(30);
 
-        return compact('transactions', 'totalQtyIn', 'totalQtyOut', 'totalValue');
+        return [
+            'transactions' => $transactions,
+            'totalQtyIn' => (int) $stats->total_qty_in,
+            'totalQtyOut' => (int) $stats->total_qty_out,
+            'totalValue' => (int) $stats->total_value,
+        ];
     }
 
     public function getReceipt(string $receiptId): ?object
@@ -222,9 +242,9 @@ class StockService
         ];
     }
 
-    public function getReportData()
+    public function getReportData(): array
     {
-        $products = Product::with('category')->active()->get();
+        $products = Product::activeWithCategory()->get();
         $totalStockValue = $products->sum('stock_value');
         $lowStockProducts = $products->filter(function ($p) {
             return $p->is_low_stock;

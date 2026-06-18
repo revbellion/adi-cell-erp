@@ -10,22 +10,28 @@ use Illuminate\Support\Facades\DB;
 
 class BillService
 {
-    public function getActiveBills(): Collection
-    {
-        return RecurringBill::with('account')->where('is_active', true)->orderBy('due_day')->get();
-    }
-
     public function getBillsWithStatus(string $period): Collection
     {
-        $bills = $this->getActiveBills();
+        $bills = RecurringBill::with(['account', 'payments' => function ($q) use ($period) {
+            $q->where('period', $period);
+        }])->where('is_active', true)->orderBy('due_day')->get();
 
-        foreach ($bills as $bill) {
-            $payment = $bill->getPaymentForPeriod($period);
-            $bill->payment = $payment;
-            $bill->is_paid = $payment && $payment->is_paid;
-        }
-
-        return $bills;
+        return $bills->map(function ($bill) use ($period) {
+            $payment = $bill->payments->first();
+            return (object) [
+                'id' => $bill->id,
+                'name' => $bill->name,
+                'category' => $bill->category,
+                'amount' => $bill->amount,
+                'due_day' => $bill->due_day,
+                'due_day_text' => $bill->due_day_text,
+                'account_id' => $bill->account_id,
+                'account' => $bill->account,
+                'is_active' => $bill->is_active,
+                'is_paid' => $payment && $payment->is_paid,
+                'payment' => $payment,
+            ];
+        });
     }
 
     public function getDueBillsCount(string $period): array

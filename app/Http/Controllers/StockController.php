@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\StockTransaction;
 use App\Services\StockService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -43,8 +44,9 @@ class StockController extends Controller
     {
         $products = Product::with('category')->active()->orderBy('name')->get();
         $accounts = Account::active()->where('type', '!=', 'ppob')->get();
+        $categories = ProductCategory::orderBy('name')->get();
         $result = $this->stockService->getSalesHistory();
-        return view('stock.sales', array_merge(compact('products', 'accounts'), [
+        return view('stock.sales', array_merge(compact('products', 'accounts', 'categories'), [
             'history' => $result['receipts'],
             'totalSales' => $result['totalSales'],
         ]));

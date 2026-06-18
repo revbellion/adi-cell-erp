@@ -8,6 +8,8 @@ use App\Models\Account;
 
 class AccountController extends Controller
 {
+    // Controller untuk Akun Keuangan (cash, bank, ewallet, ppob, other)
+    // BUKAN untuk akun user/login — itu di UserController
     public function index()
     {
         $accounts = Account::orderBy('is_active', 'desc')->orderBy('name')->get();

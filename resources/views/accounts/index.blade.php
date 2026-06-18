@@ -1,9 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Akun')
+@section('title', 'Akun Keuangan')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">Kelola Akun</h4>
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <div>
+        <h4 class="fw-bold mb-1">Akun Keuangan</h4>
+        <p class="text-muted mb-0" style="font-size:0.8rem;">Akun untuk mencatat transaksi keuangan (cash, bank, e-wallet, PPOB)</p>
+    </div>
     <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahAkun">
         <i class="fas fa-plus me-1"></i>Tambah Akun
     </button>
@@ -84,7 +87,7 @@
         <form autocomplete="off" method="POST" action="{{ route('accounts.store') }}" class="modal-content">
             @csrf
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">Tambah Akun</h5>
+                <h5 class="modal-title fw-bold">Tambah Akun Keuangan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -125,7 +128,7 @@
             @csrf
             @method('PUT')
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">Edit Akun</h5>
+                <h5 class="modal-title fw-bold">Edit Akun Keuangan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">

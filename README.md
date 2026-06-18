@@ -16,8 +16,9 @@ Built with **Laravel 13**, **MySQL 8**, **Bootstrap 5.3 CDN** (no build step).
 - **Piutang** — Catat piutang pelanggan + bayar + link WA reminder
 - **Tagihan Rutin** — Recurring bills per bulan
 - **Ringkasan** — Laporan bulanan (3/6/12 bulan)
+- **Cash Counter** — Hitung fisik uang kertas/logam, cocokkan saldo sistem, catat selisih
 - **Export Excel** — Semua modul bisa export XLSX
-- **Role-Based Access** — Admin (full) + permission-based kasir (14 permission keys)
+- **Role-Based Access** — Admin (full) + permission-based kasir (15 permission keys)
 - **Backup & Restore** — Download SQL, restore, reset data transaksi
 - **Dark Mode** — Toggle, persist ke localStorage
 - **Error Pages** — 403, 404, 419, 500, 503 (light mode)
@@ -49,11 +50,11 @@ php artisan serve
 
 ## Struktur Route
 
-~60 routes grouped:
+~67 routes grouped:
 - **Guest**: login, logout
 - **Stock**: POS, stok masuk, opname, receipt, report, hapus (admin only)
 - **Master**: products, categories, accounts
-- **Keuangan**: mutations, incomes, expenses, receivables, bills, summary
+- **Keuangan**: mutations, incomes, expenses, receivables, bills, summary, cash counter
 - **Pengaturan**: backups, users (admin only)
 
 ## Dokumentasi

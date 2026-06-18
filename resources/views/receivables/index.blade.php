@@ -46,6 +46,10 @@
                     <a class="nav-link border-0 fw-semibold {{ request('status') == 'paid' ? 'active' : '' }}" 
                        href="{{ route('receivables.index', ['status' => 'paid']) }}">Paid</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link border-0 fw-semibold {{ request('status') == 'overdue' ? 'active' : '' }}" 
+                       href="{{ route('receivables.index', ['status' => 'overdue']) }}">Telat</a>
+                </li>
             </ul>
         </div>
         <div class="table-responsive">

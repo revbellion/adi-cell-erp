@@ -15,6 +15,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\CashCounterController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,10 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard — semua user bisa
     Route::middleware('permission:dashboard')->get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile — semua user bisa (ubah password sendiri)
+    Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Stok — akses berdasar permission
     Route::middleware('permission:stock_in')->group(function () {
@@ -123,6 +128,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/sessions/{session}', [CashCounterController::class, 'show'])->name('sessions.show');
         Route::put('/sessions/{session}', [CashCounterController::class, 'update'])->name('sessions.update');
         Route::delete('/sessions/{session}', [CashCounterController::class, 'destroy'])->name('sessions.destroy');
+        Route::post('/sessions/{session}/adjust', [CashCounterController::class, 'adjust'])->name('sessions.adjust');
     });
 
     // Users management — cuma admin

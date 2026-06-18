@@ -28,7 +28,7 @@ class ReceivableService
             $receivable = Receivable::findOrFail($id);
 
             if ($receivable->status !== 'unpaid') {
-                abort(403, 'Hanya piutang unpaid yang bisa diedit.');
+                throw new \DomainException('Hanya piutang unpaid yang bisa diedit.');
             }
 
             $now = Carbon::now();
@@ -82,7 +82,12 @@ class ReceivableService
         $query = Receivable::query();
 
         if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+            if ($filters['status'] === 'overdue') {
+                $query->where('status', 'unpaid')
+                      ->where('due_date', '<', now()->startOfDay());
+            } else {
+                $query->where('status', $filters['status']);
+            }
         }
 
         if (!empty($filters['date_from'])) {
@@ -102,8 +107,7 @@ class ReceivableService
         }
 
         $totalAmount = (clone $query)->sum('amount');
-        $allIds = (clone $query)->pluck('id');
-        $totalPaid = ReceivablePayment::whereIn('receivable_id', $allIds)->sum('amount');
+        $totalPaid = ReceivablePayment::whereIn('receivable_id', (clone $query)->select('id'))->sum('amount');
         $totalRemaining = $totalAmount - $totalPaid;
 
         $receivables = $query->with('receivablePayments')->latest()->paginate(20);

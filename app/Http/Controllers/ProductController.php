@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Services\StockService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -15,10 +16,10 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::with('category')->latest()->get();
+        $products = Product::with('category')->latest()->paginate(50);
         $categories = ProductCategory::orderBy('name')->get();
-        $totalProducts = $products->count();
-        $totalStockValue = $products->sum(fn($p) => $p->stock * $p->purchase_price);
+        $totalProducts = Product::count();
+        $totalStockValue = Product::sum(DB::raw('stock * purchase_price'));
         return view('products.index', compact('products', 'categories', 'totalProducts', 'totalStockValue'));
     }
 

@@ -54,4 +54,9 @@ class Account extends Model
     {
         return $this->hasMany(ReceivablePayment::class);
     }
+
+    public function cashCounterSessions(): HasMany
+    {
+        return $this->hasMany(CashCounterSession::class);
+    }
 }

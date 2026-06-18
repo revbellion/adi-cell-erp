@@ -41,9 +41,12 @@ class ReceivableController extends Controller
 
     public function update(UpdateReceivableRequest $request, $id)
     {
-        $this->receivableService->update($id, $request->validated());
-
-        return redirect()->back()->with('success', 'Piutang berhasil diubah.');
+        try {
+            $this->receivableService->update($id, $request->validated());
+            return redirect()->back()->with('success', 'Piutang berhasil diubah.');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function pay(StoreReceivablePaymentRequest $request)
@@ -81,7 +84,7 @@ class ReceivableController extends Controller
 
         return array_filter(
             Validator::make($raw, [
-                'status' => 'nullable|in:unpaid,paid',
+                'status' => 'nullable|in:unpaid,paid,overdue',
                 'date_from' => 'nullable|date',
                 'date_to' => 'nullable|date',
                 'search' => 'nullable|string|max:100',

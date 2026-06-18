@@ -26,7 +26,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
-            if ($user->isAdmin() || $user->hasPermission('dashboard')) {
+            if ($user->isAdmin() || $user->hasPermission(config('permissions.DASHBOARD'))) {
                 return redirect()->intended(route('dashboard'));
             }
 

@@ -38,7 +38,7 @@ Mencatat penjualan, stok barang, multi-akun keuangan (bank, ewallet, cash, ppob)
 
 ### Kasir (non-admin)
 - `permissions` kolom = array of strings
-- 14 permission keys:
+- 15 permission keys:
 
 | Key | Modul |
 |-----|-------|
@@ -56,6 +56,7 @@ Mencatat penjualan, stok barang, multi-akun keuangan (bank, ewallet, cash, ppob)
 | `receivables` | Piutang |
 | `bills` | Tagihan |
 | `summary` | Ringkasan |
+| `cash_counter` | Cash Counter |
 
 - Default untuk user baru: POS, Stok Masuk, Stok Opname
 - Middleware: `permission:key` via `CheckRole`, `admin` via `AdminMiddleware`

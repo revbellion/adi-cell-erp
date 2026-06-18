@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\Income;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class SummaryController extends Controller
@@ -12,41 +13,43 @@ class SummaryController extends Controller
     {
         $months = max(1, min(120, (int) $request->get('months', 12)));
 
+        $endDate = Carbon::now()->endOfDay();
+        $startDate = Carbon::now()->subMonths($months - 1)->startOfMonth();
+
+        $allIncomes = Income::whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('YEAR(date) as y, MONTH(date) as m, COALESCE(category, "Tanpa Kategori") as cat, SUM(amount) as total')
+            ->groupBy('y', 'm', 'cat')
+            ->get();
+
+        $allExpenses = Expense::whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('YEAR(date) as y, MONTH(date) as m, COALESCE(category, "Tanpa Kategori") as cat, SUM(amount) as total')
+            ->groupBy('y', 'm', 'cat')
+            ->get();
+
+        $incomeByMonth = $allIncomes->groupBy(fn($i) => sprintf('%04d-%02d', $i->y, $i->m));
+        $expenseByMonth = $allExpenses->groupBy(fn($i) => sprintf('%04d-%02d', $i->y, $i->m));
+
         $results = [];
 
         for ($i = $months - 1; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $month = $date->format('Y-m');
+            $date = Carbon::now()->subMonths($i);
+            $key = $date->format('Y-m');
             $label = $date->locale('id')->isoFormat('MMMM YYYY');
 
-            $income = Income::whereYear('date', $date->year)
-                ->whereMonth('date', $date->month)
-                ->sum('amount');
+            $monthIncomes = $incomeByMonth->get($key, collect());
+            $monthExpenses = $expenseByMonth->get($key, collect());
 
-            $expense = Expense::whereYear('date', $date->year)
-                ->whereMonth('date', $date->month)
-                ->sum('amount');
-
-            $incomeByCategory = Income::whereYear('date', $date->year)
-                ->whereMonth('date', $date->month)
-                ->selectRaw('COALESCE(category, "Tanpa Kategori") as cat, SUM(amount) as total')
-                ->groupBy('cat')
-                ->pluck('total', 'cat');
-
-            $expenseByCategory = Expense::whereYear('date', $date->year)
-                ->whereMonth('date', $date->month)
-                ->selectRaw('COALESCE(category, "Tanpa Kategori") as cat, SUM(amount) as total')
-                ->groupBy('cat')
-                ->pluck('total', 'cat');
+            $incomeTotal = $monthIncomes->sum('total');
+            $expenseTotal = $monthExpenses->sum('total');
 
             $results[] = [
-                'month' => $month,
+                'month' => $key,
                 'label' => $label,
-                'income' => $income,
-                'expense' => $expense,
-                'profit' => $income - $expense,
-                'income_categories' => $incomeByCategory,
-                'expense_categories' => $expenseByCategory,
+                'income' => $incomeTotal,
+                'expense' => $expenseTotal,
+                'profit' => $incomeTotal - $expenseTotal,
+                'income_categories' => $monthIncomes->pluck('total', 'cat'),
+                'expense_categories' => $monthExpenses->pluck('total', 'cat'),
             ];
         }
 

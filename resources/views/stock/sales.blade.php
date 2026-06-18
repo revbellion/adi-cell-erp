@@ -77,7 +77,7 @@
                     <span class="fw-semibold"><i class="fas fa-box me-2" style="color:var(--theme-primary);"></i>Pilih Barang</span>
                     <select id="pos-category-filter" class="form-select form-select-sm" style="width:auto;border-radius:8px;">
                         <option value="">Semua</option>
-                        @foreach(\App\Models\ProductCategory::orderBy('name')->get() as $cat)
+                        @foreach($categories as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                         @endforeach
                     </select>

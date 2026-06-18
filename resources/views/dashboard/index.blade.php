@@ -70,15 +70,15 @@
         </div>
     </div>
     <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $profitBersih >= 0 ? '#10b981' : '#ef4444' }};">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $netProfit >= 0 ? '#10b981' : '#ef4444' }};">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PROFIT BERSIH</p>
-                        <h4 class="fw-bold mb-0">{{ rp($profitBersih) }}</h4>
+                        <h4 class="fw-bold mb-0">{{ rp($netProfit) }}</h4>
                     </div>
-                    <div class="rounded-3 p-2" style="background:#{{ $profitBersih >= 0 ? 'ecfdf5' : 'fef2f2' }};">
-                        <i class="fas {{ $profitBersih >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}" style="color:{{ $profitBersih >= 0 ? '#10b981' : '#ef4444' }};"></i>
+                    <div class="rounded-3 p-2" style="background:#{{ $netProfit >= 0 ? 'ecfdf5' : 'fef2f2' }};">
+                        <i class="fas {{ $netProfit >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}" style="color:{{ $netProfit >= 0 ? '#10b981' : '#ef4444' }};"></i>
                     </div>
                 </div>
             </div>
@@ -185,7 +185,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PEMBELIAN STOK</p>
-                        <h4 class="fw-bold mb-0">{{ rp($stockPurchasePeriod) }}</h4>
+                        <h4 class="fw-bold mb-0">{{ rp($periodPurchase) }}</h4>
                     </div>
                     <div class="rounded-3 p-2" style="background:#fffbeb;">
                         <i class="fas fa-arrow-down" style="color:#f59e0b;"></i>
@@ -195,15 +195,15 @@
         </div>
     </div>
     <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $stockSalePeriod >= $stockPurchasePeriod ? '#10b981' : '#ef4444' }};">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $periodSale >= $periodPurchase ? '#10b981' : '#ef4444' }};">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENJUALAN STOK</p>
-                        <h4 class="fw-bold mb-0">{{ rp($stockSalePeriod) }}</h4>
+                        <h4 class="fw-bold mb-0">{{ rp($periodSale) }}</h4>
                     </div>
-                    <div class="rounded-3 p-2" style="background:#{{ $stockSalePeriod >= $stockPurchasePeriod ? 'ecfdf5' : 'fef2f2' }};">
-                        <i class="fas fa-arrow-up" style="color:{{ $stockSalePeriod >= $stockPurchasePeriod ? '#10b981' : '#ef4444' }};"></i>
+                    <div class="rounded-3 p-2" style="background:#{{ $periodSale >= $periodPurchase ? 'ecfdf5' : 'fef2f2' }};">
+                        <i class="fas fa-arrow-up" style="color:{{ $periodSale >= $periodPurchase ? '#10b981' : '#ef4444' }};"></i>
                     </div>
                 </div>
             </div>
@@ -328,12 +328,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($recentMutasi as $mutasi)
+                        @foreach($recentMutations as $mutation)
                         <tr>
-                            <td class="ps-3">{{ tgl($mutasi->date) }}</td>
-                            <td>{{ $mutasi->fromAccount->name ?? '-' }}</td>
-                            <td>{{ $mutasi->toAccount->name ?? '-' }}</td>
-                            <td class="text-end pe-3 fw-semibold">{{ rp($mutasi->amount) }}</td>
+                            <td class="ps-3">{{ tgl($mutation->date) }}</td>
+                            <td>{{ $mutation->fromAccount->name ?? '-' }}</td>
+                            <td>{{ $mutation->toAccount->name ?? '-' }}</td>
+                            <td class="text-end pe-3 fw-semibold">{{ rp($mutation->amount) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
