@@ -16,6 +16,15 @@
         <button type="button" class="btn btn-modern btn-info" data-bs-toggle="modal" data-bs-target="#modalTambahMutasi">
             <i class="fas fa-plus me-1"></i>Tambah Mutasi
         </button>
+        <button type="button" class="btn btn-modern btn-warning" data-bs-toggle="modal" data-bs-target="#modalTambahPiutang">
+            <i class="fas fa-hand-holding-usd me-1"></i>Piutang
+        </button>
+        <button type="button" class="btn btn-modern btn-secondary" data-bs-toggle="modal" data-bs-target="#modalBayarTagihan">
+            <i class="fas fa-file-invoice me-1"></i>Bayar Tagihan
+        </button>
+        <button type="button" class="btn btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalStokMasuk">
+            <i class="fas fa-box me-1"></i>Stok Masuk
+        </button>
     </div>
     <form autocomplete="off" method="GET" action="{{ route('dashboard') }}">
         <input type="month" name="period" value="{{ $period }}" onchange="this.form.submit()"
@@ -580,6 +589,156 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Tambah Piutang -->
+<div class="modal fade modal-modern" tabindex="-1" id="modalTambahPiutang">
+    <div class="modal-dialog">
+        <form autocomplete="off" method="POST" action="{{ route('receivables.store') }}" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-hand-holding-usd me-2"></i>Tambah Piutang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nama Pelanggan</label>
+                    <input type="text" name="name" class="form-control" required placeholder="Nama pelanggan">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">No. HP</label>
+                    <input type="text" name="phone" class="form-control" placeholder="Opsional, untuk kirim WA">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nominal Piutang</label>
+                    <input type="number" step="1" name="amount" class="form-control" required placeholder="0">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" name="date" value="{{ date('Y-m-d') }}" class="form-control" required>
+                    <small class="text-muted">Jatuh tempo otomatis +3 hari</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-modern btn-warning"><i class="fas fa-save me-1"></i>Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Bayar Tagihan -->
+<div class="modal fade modal-modern" tabindex="-1" id="modalBayarTagihan">
+    <div class="modal-dialog">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formBayarTagihanDash">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice me-2"></i>Bayar Tagihan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="period" value="{{ $period }}">
+                <div class="mb-3">
+                    <label class="form-label">Pilih Tagihan</label>
+                    <select name="recurring_bill_id" id="select-bill-dash" class="form-select" required onchange="onBillSelectDash()">
+                        <option value="">-- Pilih Tagihan --</option>
+                        @foreach($unpaidBills as $bill)
+                        <option value="{{ $bill->id }}"
+                            data-amount="{{ intval($bill->amount) }}"
+                            data-account-id="{{ $bill->account_id }}"
+                            data-action="{{ route('bills.pay', $bill->id) }}">
+                            {{ $bill->name }} ({{ rp($bill->amount) }}) - Jatuh tempo {{ $bill->due_day }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Akun Pembayaran</label>
+                    <select name="account_id" id="akun-bayar-dash" class="form-select" required>
+                        <option value="">Pilih Akun</option>
+                        @foreach($accountList as $account)
+                        <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nominal Bayar</label>
+                    <input type="number" step="1" name="amount" id="nominal-bayar-dash" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-check me-1"></i>Konfirmasi Bayar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Stok Masuk -->
+<div class="modal fade modal-modern" tabindex="-1" id="modalStokMasuk">
+    <div class="modal-dialog">
+        <form autocomplete="off" method="POST" action="{{ route('stock.in.store') }}" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-box me-2"></i>Stok Masuk</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Barang</label>
+                    <select name="product_id" id="stok-product-dash" class="form-select" required onchange="onProductSelectDash()">
+                        <option value="">Pilih barang</option>
+                        @foreach($products as $product)
+                        <option value="{{ $product->id }}"
+                            data-price="{{ $product->purchase_price }}"
+                            data-unit="{{ $product->unit }}">
+                            {{ $product->name }} (stok: {{ $product->stock }})
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Jumlah</label>
+                        <input type="number" step="1" name="qty" id="stok-qty-dash" class="form-control" placeholder="1" min="1" required oninput="hitungTotalDash()">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Satuan</label>
+                        <input type="text" id="stok-unit-dash" class="form-control" readonly style="background:#f1f5f9;">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Harga Beli Satuan</label>
+                    <input type="number" step="1" name="price" id="stok-price-dash" class="form-control" placeholder="0" required oninput="hitungTotalDash()">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total</label>
+                    <input type="text" id="stok-total-dash" class="form-control" readonly style="background:#f1f5f9;font-weight:600;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Akun Pembayaran</label>
+                    <select name="account_id" class="form-select" required>
+                        <option value="">Pilih akun</option>
+                        @foreach($accountList as $account)
+                        <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" name="date" value="{{ date('Y-m-d') }}" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Keterangan</label>
+                    <textarea name="description" class="form-control" rows="2" placeholder="Opsional"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-save me-1"></i>Simpan Stok Masuk</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -693,6 +852,37 @@ document.addEventListener('DOMContentLoaded', function () {
     if (elSaldoAkhir) {
         elSaldoAkhir.addEventListener('input', hitungTransfer);
     }
+
+    // Fungsi untuk modal Bayar Tagihan
+    window.onBillSelectDash = function() {
+        var select = document.getElementById('select-bill-dash');
+        var option = select.options[select.selectedIndex];
+        if (select.value) {
+            var amount = option.getAttribute('data-amount') || 0;
+            var accountId = option.getAttribute('data-account-id') || '';
+            var action = option.getAttribute('data-action') || '';
+            document.getElementById('nominal-bayar-dash').value = amount;
+            document.getElementById('akun-bayar-dash').value = accountId;
+            document.getElementById('formBayarTagihanDash').setAttribute('action', action);
+        }
+    };
+
+    // Fungsi untuk modal Stok Masuk
+    window.onProductSelectDash = function() {
+        var select = document.getElementById('stok-product-dash');
+        var option = select.options[select.selectedIndex];
+        if (select.value) {
+            document.getElementById('stok-price-dash').value = option.getAttribute('data-price') || 0;
+            document.getElementById('stok-unit-dash').value = option.getAttribute('data-unit') || '';
+            hitungTotalDash();
+        }
+    };
+
+    window.hitungTotalDash = function() {
+        var qty = parseInt(document.getElementById('stok-qty-dash').value) || 0;
+        var price = parseInt(document.getElementById('stok-price-dash').value) || 0;
+        document.getElementById('stok-total-dash').value = 'Rp ' + (qty * price).toLocaleString('id-ID');
+    };
 });
 </script>
 @endpush

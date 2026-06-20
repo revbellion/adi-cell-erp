@@ -42,6 +42,14 @@ class DashboardController extends Controller
                 ->pluck('total', 'category');
 
             $data['billSummary'] = $this->billService->getDueBillsCount($period);
+            $data['products'] = \App\Models\Product::activeWithCategory()->get();
+            $data['unpaidBills'] = \App\Models\RecurringBill::with('account')
+                ->where('is_active', true)
+                ->whereDoesntHave('payments', function ($q) use ($period) {
+                    $q->where('period', $period);
+                })
+                ->orderBy('due_day')
+                ->get();
 
             return view('dashboard.index', $data);
         }
