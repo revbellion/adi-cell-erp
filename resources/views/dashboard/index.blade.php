@@ -32,187 +32,228 @@
     </form>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid var(--theme-primary);">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">TOTAL EQUITY</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalEquity) }}</h4>
+{{-- Group: Keuangan --}}
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="rounded-3 p-2" style="background:var(--theme-primary);color:#fff;">
+            <i class="fas fa-chart-pie" style="font-size:0.85rem;"></i>
+        </div>
+        <h6 class="fw-bold mb-0" style="font-size:0.85rem;letter-spacing:0.02em;">KEUANGAN</h6>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid var(--theme-primary);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">TOTAL EQUITY</p>
+                            <h4 class="fw-bold mb-0">{{ rp($totalEquity) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#eff6ff;">
+                            <i class="fas fa-landmark" style="color:var(--theme-primary);"></i>
+                        </div>
                     </div>
-                    <div class="rounded-3 p-2" style="background:#eff6ff;">
-                        <i class="fas fa-landmark" style="color:var(--theme-primary);"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $netProfit >= 0 ? '#10b981' : '#ef4444' }};">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PROFIT BERSIH</p>
+                            <h4 class="fw-bold mb-0">{{ rp($netProfit) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#{{ $netProfit >= 0 ? 'ecfdf5' : 'fef2f2' }};">
+                            <i class="fas {{ $netProfit >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}" style="color:{{ $netProfit >= 0 ? '#10b981' : '#ef4444' }};"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #22c55e;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">OMSET BULAN INI</p>
+                            <h4 class="fw-bold mb-0">{{ rp($totalIncome) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#f0fdf4;">
+                            <i class="fas fa-chart-line" style="color:#22c55e;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #f59e0b;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENGELUARAN BULAN INI</p>
+                            <h4 class="fw-bold mb-0">{{ rp($totalExpense) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#fffbeb;">
+                            <i class="fas fa-receipt" style="color:#f59e0b;"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #10b981;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PIUTANG BELUM DIBAYAR</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalReceivable) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#ecfdf5;">
-                        <i class="fas fa-hand-holding-usd" style="color:#10b981;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #f59e0b;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENGELUARAN BULAN INI</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalExpense) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#fffbeb;">
-                        <i class="fas fa-shopping-cart" style="color:#f59e0b;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $netProfit >= 0 ? '#10b981' : '#ef4444' }};">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PROFIT BERSIH</p>
-                        <h4 class="fw-bold mb-0">{{ rp($netProfit) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#{{ $netProfit >= 0 ? 'ecfdf5' : 'fef2f2' }};">
-                        <i class="fas {{ $netProfit >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' }}" style="color:{{ $netProfit >= 0 ? '#10b981' : '#ef4444' }};"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #2563eb;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">SALDO BCA</p>
-                        <h4 class="fw-bold mb-0">{{ rp($bcaBalance) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#eff6ff;">
-                        <i class="fas fa-university" style="color:#2563eb;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #06b6d4;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">AVG PEMASUKAN</p>
-                        <h4 class="fw-bold mb-0">{{ rp($avgIncome) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#ecfeff;">
-                        <i class="fas fa-chart-line" style="color:#06b6d4;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #06b6d4;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">OMSET BULAN INI</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalIncome) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#ecfeff;">
-                        <i class="fas fa-chart-line" style="color:#06b6d4;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #14b8a6;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">SALDO CASH</p>
-                        <h4 class="fw-bold mb-0">{{ rp($cashBalance) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#f0fdfa;">
-                        <i class="fas fa-money-bill-wave" style="color:#14b8a6;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
+{{-- Group: Kas & Bank --}}
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="rounded-3 p-2" style="background:#14b8a6;color:#fff;">
+            <i class="fas fa-wallet" style="font-size:0.85rem;"></i>
+        </div>
+        <h6 class="fw-bold mb-0" style="font-size:0.85rem;letter-spacing:0.02em;">KAS & BANK</h6>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-4 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #14b8a6;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">SALDO CASH</p>
+                            <h4 class="fw-bold mb-0">{{ rp($cashBalance) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#f0fdfa;">
+                            <i class="fas fa-money-bill-wave" style="color:#14b8a6;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #2563eb;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">SALDO BCA</p>
+                            <h4 class="fw-bold mb-0">{{ rp($bcaBalance) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#eff6ff;">
+                            <i class="fas fa-university" style="color:#2563eb;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #06b6d4;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">AVG PEMASUKAN/HARI</p>
+                            <h4 class="fw-bold mb-0">{{ rp($avgIncome) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#ecfeff;">
+                            <i class="fas fa-calendar-day" style="color:#06b6d4;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Group: Piutang --}}
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="rounded-3 p-2" style="background:#10b981;color:#fff;">
+            <i class="fas fa-hand-holding-usd" style="font-size:0.85rem;"></i>
+        </div>
+        <h6 class="fw-bold mb-0" style="font-size:0.85rem;letter-spacing:0.02em;">PIUTANG</h6>
+    </div>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #10b981;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PIUTANG BELUM DIBAYAR</p>
+                            <h4 class="fw-bold mb-0">{{ rp($totalReceivable) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#ecfdf5;">
+                            <i class="fas fa-hand-holding-usd" style="color:#10b981;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Group: Stok --}}
 @if($totalStockValue > 0 || $lowStockCount > 0)
-<div class="row g-3 mb-4">
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #8b5cf6;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">NILAI STOK</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalStockValue) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#f5f3ff;">
-                        <i class="fas fa-box" style="color:#8b5cf6;"></i>
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="rounded-3 p-2" style="background:#8b5cf6;color:#fff;">
+            <i class="fas fa-box" style="font-size:0.85rem;"></i>
+        </div>
+        <h6 class="fw-bold mb-0" style="font-size:0.85rem;letter-spacing:0.02em;">STOK</h6>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #8b5cf6;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">NILAI STOK</p>
+                            <h4 class="fw-bold mb-0">{{ rp($totalStockValue) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#f5f3ff;">
+                            <i class="fas fa-box" style="color:#8b5cf6;"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BARANG HAMPIR HABIS</p>
-                        <h4 class="fw-bold mb-0 {{ $lowStockCount > 0 ? 'text-danger' : '' }}">{{ $lowStockCount }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:{{ $lowStockCount > 0 ? '#fef2f2' : '#ecfdf5' }};">
-                        <i class="fas {{ $lowStockCount > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle' }}" style="color:{{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid #f59e0b;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PEMBELIAN STOK</p>
-                        <h4 class="fw-bold mb-0">{{ rp($periodPurchase) }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:#fffbeb;">
-                        <i class="fas fa-arrow-down" style="color:#f59e0b;"></i>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BARANG HAMPIR HABIS</p>
+                            <h4 class="fw-bold mb-0 {{ $lowStockCount > 0 ? 'text-danger' : '' }}">{{ $lowStockCount }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:{{ $lowStockCount > 0 ? '#fef2f2' : '#ecfdf5' }};">
+                            <i class="fas {{ $lowStockCount > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle' }}" style="color:{{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $periodSale >= $periodPurchase ? '#10b981' : '#ef4444' }};">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENJUALAN STOK</p>
-                        <h4 class="fw-bold mb-0">{{ rp($periodSale) }}</h4>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #f59e0b;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PEMBELIAN STOK</p>
+                            <h4 class="fw-bold mb-0">{{ rp($periodPurchase) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#fffbeb;">
+                            <i class="fas fa-truck" style="color:#f59e0b;"></i>
+                        </div>
                     </div>
-                    <div class="rounded-3 p-2" style="background:#{{ $periodSale >= $periodPurchase ? 'ecfdf5' : 'fef2f2' }};">
-                        <i class="fas fa-arrow-up" style="color:{{ $periodSale >= $periodPurchase ? '#10b981' : '#ef4444' }};"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="card stat-card shadow-sm" style="border-left: 4px solid #22c55e;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENJUALAN STOK</p>
+                            <h4 class="fw-bold mb-0">{{ rp($periodSale) }}</h4>
+                        </div>
+                        <div class="rounded-3 p-2" style="background:#f0fdf4;">
+                            <i class="fas fa-shopping-cart" style="color:#22c55e;"></i>
+                        </div>
                     </div>
                 </div>
             </div>
