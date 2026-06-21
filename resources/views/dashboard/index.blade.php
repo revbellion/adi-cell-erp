@@ -10,9 +10,6 @@
         <button type="button" class="btn btn-modern btn-danger" data-bs-toggle="modal" data-bs-target="#modalCepatPengeluaran">
             <i class="fas fa-minus me-1"></i>Pengeluaran
         </button>
-        <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalCepatTransfer">
-            <i class="fas fa-arrow-right-arrow-left me-1"></i>Saldo Opname
-        </button>
         <button type="button" class="btn btn-modern btn-info" data-bs-toggle="modal" data-bs-target="#modalTambahMutasi">
             <i class="fas fa-plus me-1"></i>Tambah Mutasi
         </button>
@@ -374,64 +371,6 @@
     </div>
 </div>
 
-<div class="modal fade modal-modern" tabindex="-1" id="modalCepatTransfer">
-    <div class="modal-dialog">
-        <form autocomplete="off" method="POST" action="{{ route('mutations.store') }}" class="modal-content">
-            @csrf
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold"><i class="fas fa-arrow-right-arrow-left me-2"></i>Transfer Cepat</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Dari Akun</label>
-                    <select name="from_account_id" class="form-select" required>
-                        <option value="">Pilih akun</option>
-                        @foreach($accountList as $account)
-                        <option value="{{ $account->id }}">{{ $account->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Ke Akun</label>
-                    @if($cashAccounts->isEmpty())
-                        <div class="alert alert-warning py-2" style="font-size:0.8rem;">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            Tidak ada akun cash aktif. Silakan tambah akun cash di menu Akun.
-                        </div>
-                    @endif
-                    <select name="to_account_id" class="form-select" required>
-                        @foreach($cashAccounts as $account)
-                        <option value="{{ $account->id }}" {{ $cashAccount && $account->id === $cashAccount->id ? 'selected' : '' }}>{{ $account->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Saldo Awal</label>
-                    <input type="number" id="saldoAwal" class="form-control" placeholder="Pilih akun dulu" readonly style="background:#f1f5f9;">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Saldo Akhir</label>
-                    <input type="number" id="saldoAkhir" class="form-control" placeholder="Misal 50000" required>
-                </div>
-                <input type="hidden" name="amount" id="transferAmount">
-                <div class="mb-3 text-end small fw-semibold" id="transferDisplay" style="color:var(--theme-primary);">
-                    Jumlah transfer: Rp 0
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Tanggal</label>
-                    <input type="date" name="date" value="{{ date('Y-m-d') }}" class="form-control" required>
-                </div>
-                <input type="hidden" name="description" value="Transfer cepat">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Transfer</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 {{-- Modal Tambah Mutasi --}}
 <div class="modal fade modal-modern" tabindex="-1" id="modalTambahMutasi">
     <div class="modal-dialog">
@@ -708,40 +647,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 cutout: '65%',
             },
         });
-    }
-
-    var balances = @json($accountBalances);
-    var elFrom = document.querySelector('#modalCepatTransfer select[name="from_account_id"]');
-    var elSaldoAwal = document.getElementById('saldoAwal');
-    var elSaldoAkhir = document.getElementById('saldoAkhir');
-    var elAmount = document.getElementById('transferAmount');
-    var elDisplay = document.getElementById('transferDisplay');
-
-    function hitungTransfer() {
-        var awal = parseInt(elSaldoAwal.value) || 0;
-        var akhir = parseInt(elSaldoAkhir.value) || 0;
-        if (akhir < 0 || akhir > awal) {
-            elAmount.value = '';
-            elDisplay.textContent = 'Saldo akhir tidak valid';
-            return;
-        }
-        var amount = awal - akhir;
-        elAmount.value = amount;
-        elDisplay.textContent = 'Jumlah transfer: Rp ' + amount.toLocaleString('id-ID');
-    }
-
-    if (elFrom) {
-        elFrom.addEventListener('change', function () {
-            var balance = balances[this.value] || 0;
-            elSaldoAwal.value = balance;
-            elSaldoAkhir.value = '';
-            elAmount.value = '';
-            elDisplay.textContent = 'Jumlah transfer: Rp 0';
-        });
-    }
-
-    if (elSaldoAkhir) {
-        elSaldoAkhir.addEventListener('input', hitungTransfer);
     }
 
     // Fungsi untuk modal Bayar Tagihan
