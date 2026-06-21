@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\OpnameSaldo;
-use App\Models\Income;
+use App\Models\Mutation;
 use App\Models\DashboardService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -67,8 +67,8 @@ class OpnameSaldoService
     public function processOpname(array $data, string $date): array
     {
         return DB::transaction(function () use ($data, $date) {
-            $totalDifference = 0;
             $opnameRecords = [];
+            $cashAccountId = $this->getCashAccountId();
 
             foreach ($data['accounts'] as $accountId => $closingBalance) {
                 if ($closingBalance === null || $closingBalance === '') {
@@ -94,31 +94,33 @@ class OpnameSaldoService
                 ]);
 
                 $opnameRecords[] = $opnameRecord;
-                $totalDifference += $difference;
-            }
 
-            // Buat Income untuk semua selisih (positif atau negatif)
-            if ($totalDifference != 0) {
-                $cashAccountId = $this->getCashAccountId();
-                if ($cashAccountId) {
-                    $absDifference = abs($totalDifference);
-                    $description = $totalDifference > 0 
-                        ? 'Omzet opname saldo ' . Carbon::parse($date)->format('d/m/Y')
-                        : 'Selisih opname saldo ' . Carbon::parse($date)->format('d/m/Y');
-
-                    Income::create([
-                        'account_id' => $cashAccountId,
-                        'amount' => $absDifference,
-                        'category' => 'Opname Saldo',
-                        'description' => $description,
-                        'date' => $date . ' ' . Carbon::now()->format('H:i:s'),
-                    ]);
+                // Buat mutasi berdasarkan selisih
+                if ($difference != 0 && $cashAccountId) {
+                    if ($difference > 0) {
+                        // Selisih positif (aktual < sistem): Mutasi dari PPOB/e-wallet ke Cash
+                        Mutation::create([
+                            'from_account_id' => $accountId,
+                            'to_account_id' => $cashAccountId,
+                            'amount' => $difference,
+                            'date' => $date . ' ' . Carbon::now()->format('H:i:s'),
+                            'description' => 'Opname saldo ' . $account->name,
+                        ]);
+                    } else {
+                        // Selisih negatif (aktual > sistem): Mutasi dari Cash ke PPOB/e-wallet
+                        Mutation::create([
+                            'from_account_id' => $cashAccountId,
+                            'to_account_id' => $accountId,
+                            'amount' => abs($difference),
+                            'date' => $date . ' ' . Carbon::now()->format('H:i:s'),
+                            'description' => 'Opname saldo ' . $account->name,
+                        ]);
+                    }
                 }
             }
 
             return [
                 'opname_records' => $opnameRecords,
-                'total_difference' => $totalDifference,
             ];
         });
     }
