@@ -202,6 +202,15 @@ class CashCounterController extends Controller
             );
         }
 
+        // Kurangkan total piutang unpaid dari cash
+        $totalPiutangUnpaid = \App\Models\Receivable::where('status', 'unpaid')->sum('amount');
+        $cashAccountName = config('accounts.cash_name');
+        foreach ($accounts as $account) {
+            if ($account->name === $cashAccountName) {
+                $balances[$account->id] -= $totalPiutangUnpaid;
+            }
+        }
+
         return $balances;
     }
 }
