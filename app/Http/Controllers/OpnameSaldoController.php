@@ -30,12 +30,7 @@ class OpnameSaldoController extends Controller
         try {
             $result = $this->opnameService->processOpname($validated, $validated['date']);
 
-            $message = 'Opname saldo berhasil disimpan.';
-            if ($result['total_difference'] > 0) {
-                $message .= ' Omzet: Rp ' . number_format($result['total_difference'], 0, ',', '.');
-            }
-
-            return redirect()->back()->with('success', $message);
+            return redirect()->back()->with('success', 'Opname saldo berhasil disimpan. Semua selisih sudah dimutasi ke cash.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menyimpan opname: ' . $e->getMessage());
         }
