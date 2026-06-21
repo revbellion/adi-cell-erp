@@ -115,8 +115,28 @@ class PendingTransactionService
             //     throw new \DomainException('Hanya transaksi pending yang bisa dihapus.');
             // }
 
+            // Hapus Expense/Income terkait
+            $this->deleteLinkedTransactions($pending);
+
             return $pending->delete();
         });
+    }
+
+    private function deleteLinkedTransactions(PendingTransaction $pending): void
+    {
+        // Hapus Expense terkait (description berisi deskripsi pending)
+        Expense::where('description', 'like', "%{$pending->description}%")
+            ->where('category', 'like', 'Pending%')
+            ->delete();
+
+        // Hapus Income terkait (description berisi deskripsi pending)
+        Income::where('description', 'like', "%{$pending->description}%")
+            ->where('category', 'like', 'Pending%')
+            ->delete();
+
+        // Hapus Income untuk Transfer
+        Income::where('description', 'like', "Transfer dari {$pending->description}%")
+            ->delete();
     }
 
     public function getAll(array $filters = []): array
