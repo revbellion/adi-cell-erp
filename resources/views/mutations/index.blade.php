@@ -111,7 +111,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Dari Akun</label>
-                    <select name="from_account_id" class="form-select" required>
+                    <select name="from_account_id" id="add-mutation-from" class="form-select" required>
                         <option value="">Pilih Akun</option>
                         @foreach($accounts as $account)
                         <option value="{{ $account->id }}">{{ $account->name }}</option>
@@ -120,7 +120,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Ke Akun</label>
-                    <select name="to_account_id" class="form-select" required>
+                    <select name="to_account_id" id="add-mutation-to" class="form-select" required>
                         <option value="">Pilih Akun</option>
                         @foreach($accounts as $account)
                         <option value="{{ $account->id }}">{{ $account->name }}</option>
@@ -196,15 +196,72 @@
 
 @push('scripts')
 <script>
+// Fungsi untuk dropdown exclusion
+function setupDropdownExclusion(fromId, toId) {
+    var fromSelect = document.getElementById(fromId);
+    var toSelect = document.getElementById(toId);
+    
+    if (fromSelect) {
+        fromSelect.addEventListener('change', function() {
+            var selected = this.value;
+            toSelect.querySelectorAll('option').forEach(function(opt) {
+                if (opt.value === selected || opt.value === '') {
+                    opt.style.display = 'none';
+                } else {
+                    opt.style.display = '';
+                }
+            });
+            if (toSelect.value === selected) {
+                toSelect.value = '';
+            }
+        });
+    }
+    
+    if (toSelect) {
+        toSelect.addEventListener('change', function() {
+            var selected = this.value;
+            fromSelect.querySelectorAll('option').forEach(function(opt) {
+                if (opt.value === selected || opt.value === '') {
+                    opt.style.display = 'none';
+                } else {
+                    opt.style.display = '';
+                }
+            });
+            if (fromSelect.value === selected) {
+                fromSelect.value = '';
+            }
+        });
+    }
+}
+
+// Setup untuk modalTambahMutasi
+setupDropdownExclusion('add-mutation-from', 'add-mutation-to');
+
+// Setup untuk modalEditMutasi
+setupDropdownExclusion('edit-mutation-from', 'edit-mutation-to');
+
+// Reset dropdown saat modal edit dibuka
 $('#modalEditMutasi').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     var id = button.data('id');
+    var fromId = button.data('from_account_id');
+    var toId = button.data('to_account_id');
+    
+    // Reset semua opsi visible dulu
+    $('#edit-mutation-from option, #edit-mutation-to option').each(function() {
+        $(this).show();
+    });
+    
+    // Set nilai
     $('#edit-mutation-date').val(button.data('date'));
-    $('#edit-mutation-from').val(button.data('from_account_id'));
-    $('#edit-mutation-to').val(button.data('to_account_id'));
+    $('#edit-mutation-from').val(fromId);
+    $('#edit-mutation-to').val(toId);
     $('#edit-mutation-amount').val(button.data('amount'));
     $('#edit-mutation-description').val(button.data('description'));
     $('#formEditMutasi').attr('action', '{{ url("mutations") }}/' + id);
+    
+    // Trigger exclusion
+    $('#edit-mutation-from').trigger('change');
 });
 </script>
 @endpush
