@@ -1,6 +1,30 @@
 @extends('layouts.app')
 @section('title', 'Transaksi Pending')
 
+@push('styles')
+<style>
+.btn-tindakan {
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+.btn-tindakan:hover {
+    transform: translateY(-1px);
+}
+.btn-tindakan.active {
+    transform: translateY(0);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+.btn-tindakan.active.btn-success {
+    background: #059669 !important;
+    border-color: #059e0b !important;
+}
+.btn-tindakan.active.btn-danger {
+    background: #dc2626 !important;
+    border-color: #ef4444 !important;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="fas fa-clock me-2" style="color:#f59e0b;"></i>Transaksi Pending</h4>
@@ -189,14 +213,17 @@
                     <p class="text-muted" style="font-size:0.85rem;">Nominal: <span id="complete-amount" class="fw-bold"></span></p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Tindakan</label>
+                    <label class="form-label">Tindakan <span class="text-danger">*</span></label>
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-modern btn-success flex-fill" onclick="setType('masuk')">
+                        <button type="button" class="btn btn-modern btn-success flex-fill btn-tindakan" id="btn-masuk" onclick="setType('masuk')">
                             <i class="fas fa-arrow-down me-1"></i>Uang Masuk
                         </button>
-                        <button type="button" class="btn btn-modern btn-danger flex-fill" onclick="setType('keluar')">
+                        <button type="button" class="btn btn-modern btn-danger flex-fill btn-tindakan" id="btn-keluar" onclick="setType('keluar')">
                             <i class="fas fa-arrow-up me-1"></i>Cash Keluar
                         </button>
+                    </div>
+                    <div id="tindakan-info" class="mt-2 text-center" style="font-size:0.8rem; color: var(--text-muted);">
+                        <i class="fas fa-info-circle me-1"></i>Pilih salah satu tindakan di atas
                     </div>
                 </div>
                 <div class="mb-3">
@@ -236,20 +263,33 @@ $('#modalComplete').on('show.bs.modal', function (event) {
     $('#completed-type').val('');
 
     // Reset button states
-    $('#modalComplete .btn-success').removeClass('active');
-    $('#modalComplete .btn-danger').removeClass('active');
+    $('#btn-masuk').removeClass('active');
+    $('#btn-keluar').removeClass('active');
+    $('#tindakan-info').html('<i class="fas fa-info-circle me-1"></i>Pilih salah satu tindakan di atas').css('color', 'var(--text-muted)');
 });
 
 function setType(type) {
     $('#completed-type').val(type);
     if (type === 'masuk') {
-        $('#modalComplete .btn-success').addClass('active');
-        $('#modalComplete .btn-danger').removeClass('active');
+        $('#btn-masuk').addClass('active');
+        $('#btn-keluar').removeClass('active');
+        $('#tindakan-info').html('<i class="fas fa-check-circle me-1"></i>Uang akan masuk ke akun tujuan').css('color', '#10b981');
     } else {
-        $('#modalComplete .btn-danger').addClass('active');
-        $('#modalComplete .btn-success').removeClass('active');
+        $('#btn-keluar').addClass('active');
+        $('#btn-masuk').removeClass('active');
+        $('#tindakan-info').html('<i class="fas fa-check-circle me-1"></i>Cash akan keluar dari kasir').css('color', '#ef4444');
     }
 }
+
+// Validasi sebelum submit
+$('#formComplete').on('submit', function(e) {
+    if (!$('#completed-type').val()) {
+        e.preventDefault();
+        $('#tindakan-info').html('<i class="fas fa-exclamation-circle me-1"></i><b style="color:#ef4444;">Pilih tindakan terlebih dahulu!</b>');
+        return false;
+    }
+    return true;
+});
 </script>
 @endpush
 @endsection
