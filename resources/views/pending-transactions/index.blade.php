@@ -38,20 +38,6 @@
     </div>
 </div>
 
-@if(session('success'))
-<div class="alert alert-success alert-dismissible fade show alert-modern py-2 px-3 mb-4" role="alert">
-    <i class="fas fa-check-circle me-1"></i> {{ session('success') }}
-    <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
-</div>
-@endif
-
-@if(session('error'))
-<div class="alert alert-danger alert-dismissible fade show alert-modern py-2 px-3 mb-4" role="alert">
-    <i class="fas fa-exclamation-circle me-1"></i> {{ session('error') }}
-    <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
-</div>
-@endif
-
 <form autocomplete="off" method="GET" action="{{ route('pending.index') }}" class="row g-2 mb-4 filter-form">
     <div class="col-auto">
         <select name="status" class="form-select form-select-sm" style="width:auto;">

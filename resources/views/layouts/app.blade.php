@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     @stack('styles')
 </head>
@@ -240,26 +241,52 @@
     </div>
 
     <div class="page-content">
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show alert-modern py-2 px-3 mb-4" role="alert">
-                <i class="fas fa-check-circle me-1"></i> {{ session('success') }}
-                <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show alert-modern py-2 px-3 mb-4" role="alert">
-                <i class="fas fa-exclamation-circle me-1"></i> {{ $errors->first() }}
-                <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
         @yield('content')
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script src="{{ asset('js/app.js') }}"></script>
+<script>
+const notyf = new Notyf({
+    duration: 3000,
+    position: { x: 'right', y: 'top' },
+    dismissible: true,
+    ripple: true,
+    types: [
+        {
+            type: 'success',
+            background: '#10b981',
+            icon: { className: 'fas fa-check-circle', tagName: 'i' }
+        },
+        {
+            type: 'error',
+            background: '#ef4444',
+            icon: { className: 'fas fa-times-circle', tagName: 'i' }
+        },
+        {
+            type: 'warning',
+            background: '#f59e0b',
+            icon: { className: 'fas fa-exclamation-triangle', tagName: 'i' }
+        },
+        {
+            type: 'info',
+            background: '#3b82f6',
+            icon: { className: 'fas fa-info-circle', tagName: 'i' }
+        }
+    ]
+});
+
+@if(session('success'))
+    notyf.success('{{ session('success') }}');
+@endif
+
+@if(session('error'))
+    notyf.error('{{ session('error') }}');
+@endif
+</script>
 @stack('scripts')
 </body>
 </html>
