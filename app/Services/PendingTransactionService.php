@@ -19,10 +19,25 @@ class PendingTransactionService
             : $now->format('Y-m-d H:i:s');
 
         return DB::transaction(function () use ($data, $pendingDate) {
+            // Hitung MDR untuk EDC
+            $mdrRate = 0;
+            $mdrAmount = 0;
+            $netAmount = $data['amount'];
+
+            if ($data['type'] === 'edc') {
+                $mdrRate = ($data['bank_type'] ?? 'non_bca') === 'bca' ? 0.15 : 1.00;
+                $mdrAmount = (int) ($data['amount'] * $mdrRate / 100);
+                $netAmount = $data['amount'] - $mdrAmount;
+            }
+
             $pending = PendingTransaction::create([
                 'type' => $data['type'],
+                'bank_type' => $data['bank_type'] ?? null,
                 'description' => $data['description'],
                 'amount' => $data['amount'],
+                'mdr_rate' => $mdrRate,
+                'mdr_amount' => $mdrAmount,
+                'net_amount' => $netAmount,
                 'status' => 'pending',
                 'pending_date' => $pendingDate,
             ]);
@@ -80,12 +95,12 @@ class PendingTransactionService
                 'completed_account_id' => $data['completed_account_id'] ?? null,
             ]);
 
-            // Flow berdasarkan tipe
+            // Flow berdasarkan tipe (gunakan net_amount)
             if ($pending->type === 'transfer') {
                 // Transfer selesai: Cash berkurang (Expense)
                 Expense::create([
                     'account_id' => $data['completed_account_id'],
-                    'amount' => $pending->amount,
+                    'amount' => $pending->net_amount,
                     'category' => 'Cash Keluar',
                     'description' => "Cash keluar untuk {$pending->description}",
                     'date' => $completedDate,
@@ -94,7 +109,7 @@ class PendingTransactionService
                 // EDC/QRIS selesai: BCA bertambah (Income)
                 Income::create([
                     'account_id' => $data['completed_account_id'],
-                    'amount' => $pending->amount,
+                    'amount' => $pending->net_amount,
                     'category' => 'Pending ' . strtoupper($pending->type),
                     'description' => "BCA terima dari {$pending->description}",
                     'date' => $completedDate,
@@ -158,8 +173,8 @@ class PendingTransactionService
             });
         }
 
-        $totalPending = (clone $query)->pending()->sum('amount');
-        $totalCompleted = (clone $query)->completed()->sum('amount');
+        $totalPending = (clone $query)->pending()->sum('net_amount');
+        $totalCompleted = (clone $query)->completed()->sum('net_amount');
 
         $pendings = $query->latest('pending_date')->paginate(20);
 

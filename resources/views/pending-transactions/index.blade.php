@@ -174,7 +174,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Tipe</label>
-                    <select name="type" class="form-select" required>
+                    <select name="type" id="pending-type" class="form-select" required onchange="toggleBankField()">
                         <option value="">Pilih Tipe</option>
                         <option value="edc">EDC</option>
                         <option value="qris">QRIS</option>
@@ -182,13 +182,37 @@
                         <option value="other">Lainnya</option>
                     </select>
                 </div>
+                <div class="mb-3" id="bank-type-field" style="display:none;">
+                    <label class="form-label">Jenis Bank</label>
+                    <select name="bank_type" id="bank-type" class="form-select" onchange="hitungMDR()">
+                        <option value="bca">BCA (MDR 0,15%)</option>
+                        <option value="non_bca">Non-BCA (MDR 1%)</option>
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label class="form-label">Deskripsi</label>
                     <input type="text" name="description" class="form-control" required placeholder="Contoh: Customer A - EDC">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Nominal</label>
-                    <input type="number" step="1" name="amount" class="form-control" required placeholder="0">
+                    <label class="form-label">Total Transaksi</label>
+                    <input type="number" step="1" name="amount" id="pending-amount" class="form-control" required placeholder="0" oninput="hitungMDR()">
+                </div>
+                <div id="mdr-info" class="mb-3 p-3 rounded" style="background:var(--border-subtle); display:none;">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="font-size:0.85rem;">Total Transaksi:</span>
+                        <span class="fw-semibold" id="mdr-total">Rp 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="font-size:0.85rem;">MDR (<span id="mdr-rate-display">0,15%</span>):</span>
+                        <span class="fw-semibold text-danger" id="mdr-amount">- Rp 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between" style="border-top:1px solid var(--border-subtle); padding-top:8px;">
+                        <span style="font-size:0.85rem; font-weight:600;">Bersih Diterima:</span>
+                        <span class="fw-bold" style="color:#10b981; font-size:1.1rem;" id="mdr-net">Rp 0</span>
+                    </div>
+                    <input type="hidden" name="mdr_rate" id="mdr-rate-input">
+                    <input type="hidden" name="mdr_amount" id="mdr-amount-input">
+                    <input type="hidden" name="net_amount" id="mdr-net-input">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Tanggal</label>
@@ -277,6 +301,43 @@ $('#modalComplete').on('show.bs.modal', function (event) {
     }
     select.trigger('change');
 });
+
+// Fungsi toggle bank type field untuk EDC
+function toggleBankField() {
+    var type = document.getElementById('pending-type').value;
+    var bankField = document.getElementById('bank-type-field');
+    var mdrInfo = document.getElementById('mdr-info');
+    
+    if (type === 'edc') {
+        bankField.style.display = 'block';
+        mdrInfo.style.display = 'block';
+        hitungMDR();
+    } else {
+        bankField.style.display = 'none';
+        mdrInfo.style.display = 'none';
+    }
+}
+
+// Fungsi hitung MDR
+function hitungMDR() {
+    var type = document.getElementById('pending-type').value;
+    if (type !== 'edc') return;
+    
+    var bankType = document.getElementById('bank-type').value;
+    var amount = parseInt(document.getElementById('pending-amount').value) || 0;
+    var mdrRate = bankType === 'bca' ? 0.15 : 1.00;
+    var mdrAmount = Math.round(amount * mdrRate / 100);
+    var netAmount = amount - mdrAmount;
+    
+    document.getElementById('mdr-total').textContent = 'Rp ' + amount.toLocaleString('id-ID');
+    document.getElementById('mdr-rate-display').textContent = mdrRate + '%';
+    document.getElementById('mdr-amount').textContent = '- Rp ' + mdrAmount.toLocaleString('id-ID');
+    document.getElementById('mdr-net').textContent = 'Rp ' + netAmount.toLocaleString('id-ID');
+    
+    document.getElementById('mdr-rate-input').value = mdrRate;
+    document.getElementById('mdr-amount-input').value = mdrAmount;
+    document.getElementById('mdr-net-input').value = netAmount;
+}
 </script>
 @endpush
 @endsection

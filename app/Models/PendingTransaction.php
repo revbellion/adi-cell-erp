@@ -9,8 +9,12 @@ class PendingTransaction extends Model
 {
     protected $fillable = [
         'type',
+        'bank_type',
         'description',
         'amount',
+        'mdr_rate',
+        'mdr_amount',
+        'net_amount',
         'status',
         'pending_date',
         'completed_date',
@@ -24,6 +28,9 @@ class PendingTransaction extends Model
             'pending_date' => 'datetime',
             'completed_date' => 'datetime',
             'amount' => 'integer',
+            'mdr_rate' => 'decimal:2',
+            'mdr_amount' => 'integer',
+            'net_amount' => 'integer',
         ];
     }
 
