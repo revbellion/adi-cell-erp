@@ -257,7 +257,17 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $totalOmset = 0;
+                            $totalExpense = 0;
+                            $totalProfit = 0;
+                        @endphp
                         @foreach($dailyProfits as $day)
+                            @php
+                                $totalOmset += $day['income'];
+                                $totalExpense += $day['expense'];
+                                $totalProfit += $day['profit'];
+                            @endphp
                         <tr>
                             <td class="ps-3">{{ \Carbon\Carbon::parse($day['date'])->isoFormat('D MMM') }}</td>
                             <td class="text-end fw-semibold">{{ rp($day['income']) }}</td>
@@ -267,6 +277,14 @@
                             </td>
                         </tr>
                         @endforeach
+                        <tr style="background:var(--border-subtle); font-weight:700;">
+                            <td class="ps-3">Total</td>
+                            <td class="text-end">{{ rp($totalOmset) }}</td>
+                            <td class="text-end">{{ rp($totalExpense) }}</td>
+                            <td class="text-end pe-3" style="color:{{ $totalProfit >= 0 ? '#10b981' : '#ef4444' }};">
+                                {{ $totalProfit >= 0 ? '+' : '' }}{{ rp($totalProfit) }}
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
                 </div>
