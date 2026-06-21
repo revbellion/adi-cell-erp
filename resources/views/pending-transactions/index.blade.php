@@ -87,6 +87,10 @@
                                 data-type="{{ $pending->type }}">
                                 <i class="fas fa-check me-1"></i>Selesai
                             </button>
+                            @endif
+                            <span class="text-success small me-2">
+                                @if($pending->completed_date) <i class="fas fa-check-circle"></i> {{ tgl($pending->completed_date) }} @endif
+                            </span>
                             <form autocomplete="off" action="{{ route('pending.destroy', $pending->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
@@ -94,11 +98,6 @@
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
-                            @else
-                            <span class="text-success small">
-                                <i class="fas fa-check-circle"></i> {{ $pending->completed_date ? tgl($pending->completed_date) : '' }}
-                            </span>
-                            @endif
                         </td>
                     </tr>
                     @empty
