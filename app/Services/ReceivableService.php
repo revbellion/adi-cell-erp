@@ -21,16 +21,6 @@ class ReceivableService
 
         return DB::transaction(function () use ($data) {
             $receivable = Receivable::create($data);
-
-            Expense::create([
-                'account_id' => $this->resolveCashAccountId(),
-                'amount' => $receivable->amount,
-                'category' => 'Piutang',
-                'description' => "Piutang a/n {$receivable->name}",
-                'date' => $receivable->date,
-                'receivable_id' => $receivable->id,
-            ]);
-
             return $receivable;
         });
     }
@@ -54,15 +44,6 @@ class ReceivableService
             $data['due_date'] = $parsedDate->copy()->addDays(3);
 
             $receivable->update($data);
-
-            if ($expense = $receivable->expense) {
-                $expense->update([
-                    'account_id' => $this->resolveCashAccountId(),
-                    'amount' => $receivable->amount,
-                    'description' => "Piutang a/n {$receivable->name}",
-                    'date' => $receivable->date,
-                ]);
-            }
 
             return $receivable;
         });
@@ -106,7 +87,6 @@ class ReceivableService
         return DB::transaction(function () use ($id) {
             $receivable = Receivable::findOrFail($id);
             $receivable->receivablePayments()->delete();
-            $receivable->expense()->delete();
             return $receivable->delete();
         });
     }

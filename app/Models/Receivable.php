@@ -37,11 +37,6 @@ class Receivable extends Model
         return $this->belongsTo(Account::class);
     }
 
-    public function expense(): HasOne
-    {
-        return $this->hasOne(Expense::class);
-    }
-
     public function scopeUnpaid($query)
     {
         return $query->where('status', 'unpaid');
