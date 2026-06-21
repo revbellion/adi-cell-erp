@@ -167,7 +167,7 @@
                 <span class="nav-label">Akun</span>
                 <i class="fas fa-chevron-down caret {{ request()->routeIs('accounts.*') || request()->routeIs('opening-balances.*') ? 'open' : '' }}"></i>
             </a>
-            <div class="collapse submenu {{ request()->routeIs('accounts.*') || request()->routeIs('opening-balances.*') ? 'show' : '' }}" id="collapseAkun">
+            <div class="collapse submenu {{ request()->routeIs('accounts.*') || request()->routeIs('opening-balances.*') || request()->routeIs('opname-saldo.*') ? 'show' : '' }}" id="collapseAkun">
                 <a class="nav-link sub-link {{ request()->routeIs('accounts.*') ? 'active' : '' }}" href="{{ route('accounts.index') }}">
                     <i class="fas fa-wallet"></i>
                     <span class="nav-label">Akun Keuangan</span>
@@ -175,6 +175,10 @@
                 <a class="nav-link sub-link {{ request()->routeIs('opening-balances.*') ? 'active' : '' }}" href="{{ route('opening-balances.index') }}">
                     <i class="fas fa-coins"></i>
                     <span class="nav-label">Modal Awal</span>
+                </a>
+                <a class="nav-link sub-link {{ request()->routeIs('opname-saldo.*') ? 'active' : '' }}" href="{{ route('opname-saldo.index') }}">
+                    <i class="fas fa-calculator"></i>
+                    <span class="nav-label">Opname Saldo</span>
                 </a>
             </div>
         </div>

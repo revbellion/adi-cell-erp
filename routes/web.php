@@ -115,6 +115,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('pending/{id}', [\App\Http\Controllers\PendingTransactionController::class, 'destroy'])->name('pending.destroy');
         Route::get('pending/export', [\App\Http\Controllers\PendingTransactionController::class, 'export'])->name('pending.export');
     });
+    Route::middleware('permission:accounts')->group(function () {
+        Route::get('opname-saldo', [\App\Http\Controllers\OpnameSaldoController::class, 'index'])->name('opname-saldo.index');
+        Route::post('opname-saldo', [\App\Http\Controllers\OpnameSaldoController::class, 'store'])->name('opname-saldo.store');
+    });
     Route::middleware('permission:summary')->group(function () {
         Route::get('summary', [SummaryController::class, 'index'])->name('summary.index');
     });
