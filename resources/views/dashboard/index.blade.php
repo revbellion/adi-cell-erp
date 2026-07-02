@@ -127,13 +127,20 @@
     <div class="col-lg-3 col-sm-6">
         <div class="card stat-card shadow-sm" style="border-left: 4px solid #8b5cf6;">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">DALAM PERJALANAN</p>
-                        <h4 class="fw-bold mb-0">{{ rp($transitBalance) }}</h4>
-                    </div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <p class="text-muted small fw-semibold mb-0" style="font-size:0.75rem;letter-spacing:0.03em;">IN PROCESS</p>
                     <div class="rounded-3 p-2" style="background:#f5f3ff;">
-                        <i class="fas fa-shipping-fast" style="color:#8b5cf6;"></i>
+                        <i class="fas fa-clock" style="color:#8b5cf6;"></i>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size:0.7rem;">BCA</p>
+                        <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ rp($bcaInProcess) }}</h6>
+                    </div>
+                    <div class="text-end">
+                        <p class="text-muted mb-1" style="font-size:0.7rem;">Cash</p>
+                        <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ rp($cashInProcess) }}</h6>
                     </div>
                 </div>
             </div>

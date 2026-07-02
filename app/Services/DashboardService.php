@@ -48,7 +48,7 @@ class DashboardService
 
         $accounts = $this->loadBalances($period);
         [$totalReceivable, $totalEquity] = $this->getReceivableAndEquity($accounts);
-        [$cashBalance, $bcaBalance, $transitBalance] = $this->getCashBcaTransitSummary($accounts);
+        [$cashBalance, $bcaBalance, $bcaInProcess, $cashInProcess] = $this->getCashBcaTransitSummary($accounts);
 
         // Profit = Laba Rugi standar (cocok sama Laporan Laba Rugi)
         $totalIncome = Income::whereBetween('date', [$dateStart, $dateEnd])
@@ -85,7 +85,8 @@ class DashboardService
             'totalExpense' => $totalExpense,
             'netProfit' => $netProfit,
             'bcaBalance' => $bcaBalance,
-            'transitBalance' => $transitBalance,
+            'bcaInProcess' => $bcaInProcess,
+            'cashInProcess' => $cashInProcess,
             'totalIncome' => $totalIncome,
             'cashBalance' => $cashBalance,
             'products' => $products,
@@ -127,9 +128,18 @@ class DashboardService
     {
         $cashBalance = (int) (($accounts->firstWhere('name', config('accounts.cash_name'))?->balance) ?? 0);
         $bcaBalance = (int) (($accounts->firstWhere('name', config('accounts.bca_name'))?->balance) ?? 0);
-        $transitBalance = (int) (($accounts->firstWhere('name', config('accounts.in_transit_name'))?->balance) ?? 0);
 
-        return [$cashBalance, $bcaBalance, $transitBalance];
+        // BCA In Process = transfer pending (uang di transit, belum diambil cash)
+        $bcaInProcess = \App\Models\PendingTransaction::where('status', 'pending')
+            ->where('type', 'transfer')
+            ->sum('amount') ?? 0;
+
+        // Cash In Process = EDC pending (cash sudah keluar, belum masuk bank)
+        $cashInProcess = \App\Models\PendingTransaction::where('status', 'pending')
+            ->where('type', 'edc')
+            ->sum('amount') ?? 0;
+
+        return [$cashBalance, $bcaBalance, $bcaInProcess, $cashInProcess];
     }
 
     private function getDailyProfits(): array
