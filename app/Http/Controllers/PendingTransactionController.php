@@ -24,9 +24,10 @@ class PendingTransactionController extends Controller
 
         return view('pending-transactions.index', [
             'pendings' => $result['pendings'],
-            'accounts' => Account::active()->get(),
+            'accounts' => Account::active()->visible()->get(),
             'totalPending' => $result['totalPending'],
             'totalCompleted' => $result['totalCompleted'],
+            'totalCancelled' => $result['totalCancelled'],
         ]);
     }
 
@@ -66,6 +67,16 @@ class PendingTransactionController extends Controller
         }
     }
 
+    public function cancel($id)
+    {
+        try {
+            $this->pendingService->cancel($id);
+            return redirect()->back()->with('success', 'Transaksi pending berhasil dibatalkan.');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
     public function bulkDelete(Request $request)
     {
         $request->validate(['ids' => 'required|array']);
@@ -95,8 +106,8 @@ class PendingTransactionController extends Controller
 
         return array_filter(
             Validator::make($raw, [
-                'status' => 'nullable|in:pending,completed',
-                'type' => 'nullable|in:edc,qris,transfer,other',
+                'status' => 'nullable|in:pending,completed,cancelled',
+                'type' => 'nullable|in:edc,transfer',
                 'search' => 'nullable|string|max:100',
             ])->valid(),
             fn($v) => $v !== null

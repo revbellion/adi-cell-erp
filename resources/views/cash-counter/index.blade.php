@@ -85,12 +85,16 @@
             </div>
 
             <div id="adjust-panel" class="cc-adjust-panel d-none">
-                <div class="cc-adjust-label">Penyesuaian Kas</div>
+                <div class="cc-adjust-label">Penyesuaian Kas <span id="adjust-count-badge" class="badge bg-secondary ms-1" style="font-size:0.7rem;"></span></div>
+                <div id="adjust-max-msg" class="text-center text-muted d-none" style="font-size:0.8rem;padding:4px 0;">Maksimal 2x penyesuaian tercapai</div>
                 <button id="btn-adjust-income" class="cc-btn cc-btn-success w-100 d-none" onclick="createAdjustment('income')">
                     <i class="fas fa-plus"></i> <span id="adjust-income-text">Pendapatan Penyesuaian</span>
                 </button>
                 <button id="btn-adjust-expense" class="cc-btn cc-btn-danger w-100 d-none" onclick="createAdjustment('expense')">
                     <i class="fas fa-minus"></i> <span id="adjust-expense-text">Pengeluaran Penyesuaian</span>
+                </button>
+                <button id="btn-delete-adjustment" class="cc-btn w-100 d-none mt-1" style="background:#64748b;color:#fff;" onclick="deleteAdjustment()">
+                    <i class="fas fa-undo"></i> Hapus Penyesuaian
                 </button>
             </div>
         </div>
@@ -659,6 +663,7 @@ let chartInstance = null;
 const DENOM_KEYS = denoms.map(d => d.key);
 let currentSessionId = null;
 let savedAccountId = null;
+let adjustmentCount = 0;
 
 function getDenomValue(key) {
     const d = denoms.find(x => x.key === key);
@@ -805,8 +810,22 @@ function updateAccountBalanceInfo(grandTotal) {
 
 function updateAdjustPanel(grandTotal) {
     const select = document.getElementById('account-select');
+    const badge = document.getElementById('adjust-count-badge');
+    const btnDelete = document.getElementById('btn-delete-adjustment');
+
     if (!select.value || !currentSessionId) {
         document.getElementById('adjust-panel').classList.add('d-none');
+        return;
+    }
+
+    btnDelete.classList.toggle('d-none', adjustmentCount === 0);
+
+    if (adjustmentCount >= 2) {
+        badge.textContent = '2/2';
+        document.getElementById('adjust-panel').classList.remove('d-none');
+        document.getElementById('adjust-max-msg').classList.remove('d-none');
+        document.getElementById('btn-adjust-income').classList.add('d-none');
+        document.getElementById('btn-adjust-expense').classList.add('d-none');
         return;
     }
 
@@ -820,6 +839,8 @@ function updateAdjustPanel(grandTotal) {
     }
 
     document.getElementById('adjust-panel').classList.remove('d-none');
+    document.getElementById('adjust-max-msg').classList.add('d-none');
+    badge.textContent = adjustmentCount + '/2';
     const absDiff = Math.abs(diff);
 
     if (diff > 0) {
@@ -868,7 +889,8 @@ function createAdjustment(type) {
         .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.message); }))
         .then(res => {
             showToast(res.message);
-            document.getElementById('adjust-panel').classList.add('d-none');
+            adjustmentCount = res.adjustment_count || adjustmentCount + 1;
+            updateAdjustPanel(getGrandTotal());
             btnIncome.disabled = false;
             btnExpense.disabled = false;
         })
@@ -876,6 +898,36 @@ function createAdjustment(type) {
             showToast(e.message);
             btnIncome.disabled = false;
             btnExpense.disabled = false;
+        });
+    });
+}
+
+function deleteAdjustment() {
+    if (!currentSessionId) {
+        showToast('Simpan sesi terlebih dahulu');
+        return;
+    }
+
+    confirmAction('Hapus semua penyesuaian untuk sesi ini?').then(ok => {
+        if (!ok) return;
+
+        const btn = document.getElementById('btn-delete-adjustment');
+        btn.disabled = true;
+
+        fetch('{{ url("cash-counter/sessions") }}/' + currentSessionId + '/adjust', {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.message); }))
+        .then(res => {
+            showToast(res.message);
+            adjustmentCount = 0;
+            updateAdjustPanel(getGrandTotal());
+            btn.disabled = false;
+        })
+        .catch(e => {
+            showToast(e.message);
+            btn.disabled = false;
         });
     });
 }
@@ -918,6 +970,7 @@ function resetCalculator() {
         document.getElementById('target-result-panel').classList.add('d-none');
         document.getElementById('adjust-panel').classList.add('d-none');
         currentSessionId = null;
+        adjustmentCount = 0;
         updateTotal();
         showToast('Semua input direset');
     });
@@ -976,7 +1029,7 @@ function saveSession() {
 
     fetch(url, { method, headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body })
     .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.message || 'Gagal'); }))
-    .then(s => { currentSessionId = s.id; saveModal.hide(); showToast('Sesi disimpan'); loadHistory(); updateAdjustPanel(getGrandTotal()); })
+    .then(s => { currentSessionId = s.id; adjustmentCount = 0; saveModal.hide(); showToast('Sesi disimpan'); loadHistory(); updateAdjustPanel(getGrandTotal()); })
     .catch(e => showToast(e.message));
 }
 
@@ -1013,6 +1066,7 @@ function loadSession(id) {
         if (s.target_amount) document.getElementById('target-amount').value = s.target_amount;
         if (s.account_id) { document.getElementById('account-select').value = s.account_id; onAccountChange(); }
         currentSessionId = s.id;
+        adjustmentCount = s.adjustment_count || 0;
         updateTotal();
         showToast('Sesi "' + escapeHtml(s.title) + '" dimuat');
     });

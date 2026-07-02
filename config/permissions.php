@@ -1,5 +1,6 @@
 <?php
 
+// Key constants — backward compat for views (config('permissions.DASHBOARD'))
 return [
     'DASHBOARD' => 'dashboard',
     'MUTATIONS' => 'mutations',
@@ -22,4 +23,31 @@ return [
     'RETURNS' => 'returns',
     'PRINT_ORDERS' => 'print_orders',
     'REPAIR_SERVICES' => 'repair_services',
+    'PENDING' => 'pending',
+
+    // Full list with labels — for controllers/views that need display
+    'LIST' => [
+        ['key' => 'dashboard', 'label' => 'Dashboard'],
+        ['key' => 'pos', 'label' => 'POS Penjualan'],
+        ['key' => 'stock_in', 'label' => 'Stok Masuk'],
+        ['key' => 'stock_opname', 'label' => 'Stok Opname'],
+        ['key' => 'products', 'label' => 'Data Barang'],
+        ['key' => 'categories', 'label' => 'Kategori Barang'],
+        ['key' => 'stock_report', 'label' => 'Laporan Stok'],
+        ['key' => 'sales_report', 'label' => 'Laporan Penjualan'],
+        ['key' => 'accounts', 'label' => 'Akun & Modal Awal'],
+        ['key' => 'mutations', 'label' => 'Mutasi'],
+        ['key' => 'incomes', 'label' => 'Pendapatan'],
+        ['key' => 'expenses', 'label' => 'Pengeluaran'],
+        ['key' => 'receivables', 'label' => 'Piutang'],
+        ['key' => 'pending', 'label' => 'Transaksi Pending'],
+        ['key' => 'bills', 'label' => 'Tagihan'],
+        ['key' => 'summary', 'label' => 'Ringkasan'],
+        ['key' => 'cash_counter', 'label' => 'Cash Counter'],
+        ['key' => 'customers', 'label' => 'Pelanggan'],
+        ['key' => 'returns', 'label' => 'Retur Barang'],
+        ['key' => 'print_orders', 'label' => 'Jasa Cetak'],
+        ['key' => 'repair_services', 'label' => 'Jasa Servis'],
+        ['key' => 'reports', 'label' => 'Laporan Keuangan (Laba Rugi & Neraca)'],
+    ],
 ];

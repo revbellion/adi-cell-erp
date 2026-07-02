@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:stock_opname')->group(function () {
         Route::get('stock/opname', [StockController::class, 'opname'])->name('stock.opname');
         Route::post('stock/opname', [StockController::class, 'storeOpname'])->name('stock.opname.store');
+        Route::get('stock/opname/pdf', [StockController::class, 'opnamePdf'])->name('stock.opname.pdf');
     });
     // Receipt — akses untuk user dengan permission POS atau Stock In
     Route::middleware('permission:pos,stock_in')->group(function () {
@@ -104,6 +105,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('permission:mutations')->group(function () {
         Route::resource('mutations', MutationController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('mutations/bulk-delete', fn() => redirect()->route('mutations.index'))->name('mutations.bulk-delete.get');
         Route::post('mutations/bulk-delete', [MutationController::class, 'bulkDelete'])->name('mutations.bulk-delete');
         Route::get('mutations/export', [MutationController::class, 'export'])->name('mutations.export');
     });
@@ -129,10 +131,11 @@ Route::middleware('auth')->group(function () {
         Route::post('receivables/{id}/void', [ReceivableController::class, 'void'])->name('receivables.void');
         Route::get('receivables/export', [ReceivableController::class, 'export'])->name('receivables.export');
     });
-    Route::middleware('permission:receivables')->group(function () {
+    Route::middleware('permission:pending')->group(function () {
         Route::get('pending', [\App\Http\Controllers\PendingTransactionController::class, 'index'])->name('pending.index');
         Route::post('pending', [\App\Http\Controllers\PendingTransactionController::class, 'store'])->name('pending.store');
         Route::post('pending/{id}/complete', [\App\Http\Controllers\PendingTransactionController::class, 'complete'])->name('pending.complete');
+        Route::post('pending/{id}/cancel', [\App\Http\Controllers\PendingTransactionController::class, 'cancel'])->name('pending.cancel');
         Route::delete('pending/{id}', [\App\Http\Controllers\PendingTransactionController::class, 'destroy'])->name('pending.destroy');
         Route::post('pending/bulk-delete', [\App\Http\Controllers\PendingTransactionController::class, 'bulkDelete'])->name('pending.bulk-delete');
         Route::get('pending/export', [\App\Http\Controllers\PendingTransactionController::class, 'export'])->name('pending.export');
@@ -164,6 +167,11 @@ Route::middleware('auth')->group(function () {
         Route::post('backups/restore', [BackupController::class, 'restore'])->name('backups.restore');
         Route::post('backups/reset', [BackupController::class, 'resetData'])->name('backups.reset');
     });
+
+    // SOP Tutup Buku
+    Route::get('sop', function () {
+        return view('sop.index');
+    })->name('sop.index');
 
     // Customer management
     Route::middleware('permission:customers')->group(function () {
@@ -204,6 +212,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/sessions/{session}', [CashCounterController::class, 'update'])->name('sessions.update');
         Route::delete('/sessions/{session}', [CashCounterController::class, 'destroy'])->name('sessions.destroy');
         Route::post('/sessions/{session}/adjust', [CashCounterController::class, 'adjust'])->name('sessions.adjust');
+        Route::delete('/sessions/{session}/adjust', [CashCounterController::class, 'destroyAdjustment'])->name('sessions.adjust.destroy');
     });
 
     // Users management — cuma admin
@@ -211,6 +220,7 @@ Route::middleware('auth')->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::get('users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
         Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');

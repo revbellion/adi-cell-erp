@@ -18,7 +18,7 @@
 <div class="sidebar" id="sidebar">
     <div class="sidebar-brand">
         <img src="{{ asset('logo.png') }}" alt="Logo" style="width:45px;height:45px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));">
-        <span>ADI CELL | POS</span>
+        <span>ADI CELL POS</span>
     </div>
     <div class="sidebar-nav">
         @if(Auth::user()->hasPermission(config('permissions.DASHBOARD')))
@@ -140,7 +140,7 @@
                     @endif
                 </a>
                 @endif
-                @if(Auth::user()->hasPermission(config('permissions.RECEIVABLES')))
+                @if(Auth::user()->hasPermission(config('permissions.PENDING')))
                 <a class="nav-link sub-link {{ request()->routeIs('pending.*') ? 'active' : '' }}" href="{{ route('pending.index') }}">
                     <i class="fas fa-clock"></i>
                     <span class="nav-label">Transaksi Pending</span>
@@ -290,6 +290,10 @@
                     <i class="fas fa-database"></i>
                     <span class="nav-label">Backup DB</span>
                 </a>
+                <a class="nav-link sub-link {{ request()->routeIs('sop.*') ? 'active' : '' }}" href="{{ route('sop.index') }}">
+                    <i class="fas fa-book"></i>
+                    <span class="nav-label">SOP Tutup Buku</span>
+                </a>
             </div>
         </div>
         @endif
@@ -303,7 +307,7 @@
                 <button type="submit" class="btn-logout"><i class="fas fa-sign-out-alt me-1"></i>Keluar</button>
             </form>
         </div>
-        <span>ADI CELL &copy; {{ date('Y') }}</span>
+        <span>ADI CELL POS &copy; {{ date('Y') }}</span>
     </div>
 </div>
 
@@ -315,7 +319,7 @@
             <button class="btn btn-sm d-lg-none border-0" onclick="toggleSidebar()" style="font-size:1.2rem;">
                 <i class="fas fa-bars"></i>
             </button>
-            <span class="topbar-brand">@yield('title', 'ADI CELL | Cash Tracker')</span>
+            <span class="topbar-brand">@yield('title', 'ADI CELL POS')</span>
         </div>
     </div>
 
@@ -425,6 +429,11 @@ document.querySelectorAll('th.sortable').forEach(function(th) {
 
         rows.forEach(function(row) { tbody.appendChild(row); });
     });
+});
+// ponytail: disable submit button on any form submit, prevents double-click
+document.addEventListener('submit', function(e) {
+    const btn = e.submitter || e.target.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
 });
 </script>
 @stack('scripts')

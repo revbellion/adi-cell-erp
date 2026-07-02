@@ -51,22 +51,26 @@ class PendingTransaction extends Model
         return $query->where('status', 'completed');
     }
 
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', 'cancelled');
+    }
+
     public function getTypeLabelAttribute(): string
     {
         return match($this->type) {
             'edc' => 'EDC',
-            'qris' => 'QRIS',
             'transfer' => 'Transfer',
-            'other' => 'Lainnya',
             default => $this->type,
         };
     }
 
     public function getStatusBadgeAttribute(): string
     {
-        if ($this->status === 'completed') {
-            return '<span class="badge bg-success">Selesai</span>';
-        }
-        return '<span class="badge bg-warning text-dark">Pending</span>';
+        return match($this->status) {
+            'completed' => '<span class="badge bg-success">Selesai</span>',
+            'cancelled' => '<span class="badge bg-secondary">Batal</span>',
+            default => '<span class="badge bg-warning text-dark">Pending</span>',
+        };
     }
 }

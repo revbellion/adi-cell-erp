@@ -27,7 +27,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-clock me-2" style="color:#f59e0b;"></i>Transaksi Pending</h4>
+    <h4 class="fw-bold mb-0">Transaksi Pending</h4>
     <div class="d-flex gap-2">
         <a href="{{ route('pending.export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn btn-modern btn-success">
             <i class="fas fa-file-excel me-1"></i>Export
@@ -44,6 +44,7 @@
             <option value="">Semua Status</option>
             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
+            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Batal</option>
         </select>
     </div>
     <div class="col-auto">
@@ -142,6 +143,14 @@
                             <span class="text-success small me-2">
                                 @if($pending->completed_date) <i class="fas fa-check-circle"></i> {{ tgl($pending->completed_date) }} @endif
                             </span>
+                            @if($pending->status === 'pending')
+                            <form autocomplete="off" action="{{ route('pending.cancel', $pending->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-modern btn-secondary btn-sm" onclick="event.preventDefault(); confirmAction('Batalkan transaksi pending ini?').then(ok => ok && this.form.submit());">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                            @endif
                             <form autocomplete="off" action="{{ route('pending.destroy', $pending->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
@@ -172,6 +181,10 @@
             <div>
                 <span style="font-size:0.75rem;color:var(--text-muted);">Total Selesai</span>
                 <span class="fw-bold ms-2" style="font-size:0.95rem;color:#10b981;">{{ rp($totalCompleted) }}</span>
+            </div>
+            <div>
+                <span style="font-size:0.75rem;color:var(--text-muted);">Total Batal</span>
+                <span class="fw-bold ms-2" style="font-size:0.95rem;color:#64748b;">{{ rp($totalCancelled) }}</span>
             </div>
         </div>
     </div>

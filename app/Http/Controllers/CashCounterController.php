@@ -47,6 +47,22 @@ class CashCounterController extends Controller
             abort(403);
         }
         $session->load('account');
+
+        $patternOld = 'Penyesuaian kas #' . $session->id . ':%';
+        $patternNew = 'Penyesuaian kas #' . $session->id . ' %';
+        $adjustmentCount = Income::where('category', 'OMSET')
+                ->where(function ($q) use ($patternOld, $patternNew) {
+                    $q->where('description', 'like', $patternOld)
+                      ->orWhere('description', 'like', $patternNew);
+                })->count()
+            + Expense::where('category', 'OMSET')
+                ->where(function ($q) use ($patternOld, $patternNew) {
+                    $q->where('description', 'like', $patternOld)
+                      ->orWhere('description', 'like', $patternNew);
+                })->count();
+
+        $session->adjustment_count = $adjustmentCount;
+
         return response()->json($session);
     }
 
@@ -124,17 +140,53 @@ class CashCounterController extends Controller
         }
 
         // Hapus adjustment Income/Expense terkait session ini
-        $pattern = 'Penyesuaian kas #' . $session->id . ':';
+        $patternOld = 'Penyesuaian kas #' . $session->id . ':%';
+        $patternNew = 'Penyesuaian kas #' . $session->id . ' %';
         Income::where('category', 'OMSET')
-            ->where('description', 'like', $pattern . '%')
+            ->where(function ($q) use ($patternOld, $patternNew) {
+                $q->where('description', 'like', $patternOld)
+                  ->orWhere('description', 'like', $patternNew);
+            })
             ->delete();
         Expense::where('category', 'OMSET')
-            ->where('description', 'like', $pattern . '%')
+            ->where(function ($q) use ($patternOld, $patternNew) {
+                $q->where('description', 'like', $patternOld)
+                  ->orWhere('description', 'like', $patternNew);
+            })
             ->delete();
 
         $session->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    public function destroyAdjustment(CashCounterSession $session): JsonResponse
+    {
+        if ((int) $session->user_id !== (int) auth()->id()) {
+            abort(403);
+        }
+
+        $patternOld = 'Penyesuaian kas #' . $session->id . ':%';
+        $patternNew = 'Penyesuaian kas #' . $session->id . ' %';
+
+        Income::where('category', 'OMSET')
+            ->where(function ($q) use ($patternOld, $patternNew) {
+                $q->where('description', 'like', $patternOld)
+                  ->orWhere('description', 'like', $patternNew);
+            })
+            ->delete();
+        Expense::where('category', 'OMSET')
+            ->where(function ($q) use ($patternOld, $patternNew) {
+                $q->where('description', 'like', $patternOld)
+                  ->orWhere('description', 'like', $patternNew);
+            })
+            ->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Penyesuaian dihapus',
+            'adjustment_count' => 0,
+        ]);
     }
 
     public function adjust(Request $request, CashCounterSession $session): JsonResponse
@@ -165,31 +217,50 @@ class CashCounterController extends Controller
             return response()->json(['message' => 'Pilih akun terlebih dahulu'], 422);
         }
 
+        $basePatternOld = 'Penyesuaian kas #' . $session->id . ':%';
+        $basePatternNew = 'Penyesuaian kas #' . $session->id . ' %';
+        $existingCount = Income::where('category', 'OMSET')
+                ->where(function ($q) use ($basePatternOld, $basePatternNew) {
+                    $q->where('description', 'like', $basePatternOld)
+                      ->orWhere('description', 'like', $basePatternNew);
+                })->count()
+            + Expense::where('category', 'OMSET')
+                ->where(function ($q) use ($basePatternOld, $basePatternNew) {
+                    $q->where('description', 'like', $basePatternOld)
+                      ->orWhere('description', 'like', $basePatternNew);
+                })->count();
+
+        if ($existingCount >= 2) {
+            return response()->json(['message' => 'Maksimal 2x penyesuaian per sesi'], 422);
+        }
+
+        $seq = $existingCount + 1;
+
         try {
-            DB::transaction(function () use ($data, $session, $accountId) {
+            DB::transaction(function () use ($data, $session, $accountId, $seq) {
                 $label = $data['type'] === 'income' ? 'lebih' : 'kurang';
-                $description = 'Penyesuaian kas #' . $session->id . ': ' . $session->title . ' (' . $label . ' Rp ' . number_format($data['amount'], 0, ',', '.') . ')';
+                $description = 'Penyesuaian kas #' . $session->id . ' (' . $seq . '/2): ' . $session->title . ' (' . $label . ' Rp ' . number_format($data['amount'], 0, ',', '.') . ')';
+
+                $record = [
+                    'account_id' => $accountId,
+                    'date' => now(),
+                    'amount' => $data['amount'],
+                    'description' => $description,
+                    'category' => 'OMSET',
+                ];
 
                 if ($data['type'] === 'income') {
-                    Income::create([
-                        'account_id' => $accountId,
-                        'date' => now(),
-                        'amount' => $data['amount'],
-                        'description' => $description,
-                        'category' => 'OMSET',
-                    ]);
+                    Income::create($record);
                 } else {
-                    Expense::create([
-                        'account_id' => $accountId,
-                        'date' => now(),
-                        'amount' => $data['amount'],
-                        'description' => $description,
-                        'category' => 'OMSET',
-                    ]);
+                    Expense::create($record);
                 }
             });
 
-            return response()->json(['ok' => true, 'message' => 'Penyesuaian berhasil dibuat']);
+            return response()->json([
+                'ok' => true,
+                'message' => 'Penyesuaian ke-' . $seq . ' berhasil dibuat',
+                'adjustment_count' => $seq,
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal membuat penyesuaian: ' . $e->getMessage()], 500);
         }

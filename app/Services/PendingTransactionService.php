@@ -142,10 +142,30 @@ class PendingTransactionService
         });
     }
 
+    public function cancel(int $id): PendingTransaction
+    {
+        return DB::transaction(function () use ($id) {
+            $pending = PendingTransaction::lockForUpdate()->findOrFail($id);
+
+            if ($pending->status !== 'pending') {
+                throw new \DomainException('Hanya transaksi pending yang bisa dibatalkan.');
+            }
+
+            $this->deleteLinkedTransactions($pending);
+
+            $pending->update([
+                'status' => 'cancelled',
+                'completed_date' => now(),
+            ]);
+
+            return $pending;
+        });
+    }
+
     public function delete(int $id): bool
     {
         return DB::transaction(function () use ($id) {
-            $pending = PendingTransaction::findOrFail($id);
+            $pending = PendingTransaction::lockForUpdate()->findOrFail($id);
 
             // Hanya transaksi pending yang bisa dihapus
             if ($pending->status !== 'pending') {
@@ -193,9 +213,10 @@ class PendingTransactionService
 
         $totalPending = (clone $query)->pending()->sum('net_amount');
         $totalCompleted = (clone $query)->completed()->sum('net_amount');
+        $totalCancelled = (clone $query)->cancelled()->sum('net_amount');
 
         $pendings = $query->latest('pending_date')->paginate(20);
 
-        return compact('pendings', 'totalPending', 'totalCompleted');
+        return compact('pendings', 'totalPending', 'totalCompleted', 'totalCancelled');
     }
 }
