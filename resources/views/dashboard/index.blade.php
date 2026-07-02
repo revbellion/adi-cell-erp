@@ -137,7 +137,7 @@
                         <p class="text-muted mb-1" style="font-size:0.7rem;">BCA</p>
                         <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ rp($bcaInProcess) }}</h6>
                     </div>
-                    <div class="text-end">
+                    <div>
                         <p class="text-muted mb-1" style="font-size:0.7rem;">Cash</p>
                         <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ rp($cashInProcess) }}</h6>
                     </div>
