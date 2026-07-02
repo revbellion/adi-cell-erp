@@ -81,8 +81,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BIAYA OPERASIONAL BULAN INI</p>
-                        <h4 class="fw-bold mb-1">{{ rp($totalExpense) }}</h4>
-                        <p class="text-muted mb-0" style="font-size:0.65rem;">Listrik, Gaji, Amal, Internet</p>
+                        <h4 class="fw-bold mb-0">{{ rp($totalExpense) }}</h4>
                     </div>
                     <div class="rounded-3 p-2" style="background:#fffbeb;">
                         <i class="fas fa-receipt" style="color:#f59e0b;"></i>
@@ -156,21 +155,6 @@
                     </div>
                     <div class="rounded-3 p-2" style="background:#ecfdf5;">
                         <i class="fas fa-hand-holding-usd" style="color:#10b981;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card stat-card shadow-sm" style="border-left: 4px solid {{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BARANG HAMPIR HABIS</p>
-                        <h4 class="fw-bold mb-0 {{ $lowStockCount > 0 ? 'text-danger' : '' }}">{{ $lowStockCount }}</h4>
-                    </div>
-                    <div class="rounded-3 p-2" style="background:{{ $lowStockCount > 0 ? '#fef2f2' : '#ecfdf5' }};">
-                        <i class="fas {{ $lowStockCount > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle' }}" style="color:{{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};"></i>
                     </div>
                 </div>
             </div>
