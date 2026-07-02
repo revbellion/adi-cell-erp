@@ -29,7 +29,7 @@ class ReturnController extends Controller
 
         return view('returns.index', array_merge($data, [
             'filters' => $filters,
-            'accounts' => Account::active()->get(),
+            'accounts' => Account::active()->visible()->get(),
             'products' => Product::active()->orderBy('name')->get(),
         ]));
     }

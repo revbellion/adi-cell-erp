@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-clipboard-list me-2" style="color:var(--theme-primary);"></i>Stok Opname</h4>
+    <h4 class="fw-bold mb-0">Stok Opname</h4>
     <span class="text-muted small">Setel stok fisik sesuai hitungan</span>
 </div>
 
@@ -70,9 +70,14 @@
             @if($products->isNotEmpty())
             <div class="mt-3 d-flex justify-content-between align-items-center">
                 <span class="small text-muted" id="opname-row-count">{{ $products->count() }} barang ditampilkan</span>
-                <button type="submit" class="btn btn-modern btn-primary">
-                    <i class="fas fa-save me-1"></i>Simpan Stok Opname
-                </button>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('stock.opname.pdf') }}" target="_blank" class="btn btn-modern btn-outline-secondary">
+                        <i class="fas fa-file-pdf me-1"></i>Export PDF
+                    </a>
+                    <button type="submit" class="btn btn-modern btn-primary">
+                        <i class="fas fa-save me-1"></i>Simpan Stok Opname
+                    </button>
+                </div>
             </div>
             @endif
         </form>

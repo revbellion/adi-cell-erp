@@ -14,7 +14,7 @@
 
     <div class="row g-3 mb-4">
         {{-- Left Panel: Product Selection --}}
-        <div class="col-lg-5">
+        <div class="col-lg-7">
             <div class="card card-modern shadow-sm">
                 <div class="card-header">
                     <span class="fw-semibold"><i class="fas fa-plus-circle me-2 text-success"></i>Tambah ke Keranjang</span>
@@ -69,7 +69,7 @@
         </div>
 
         {{-- Right Panel: Cart --}}
-        <div class="col-lg-7">
+        <div class="col-lg-5">
             <div class="card card-modern shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span class="fw-semibold"><i class="fas fa-shopping-cart me-2"></i>Keranjang Stok Masuk</span>
@@ -279,9 +279,9 @@
 /* Product Grid */
 .in-product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px;
-    max-height: 420px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 6px;
+    max-height: 440px;
     overflow-y: auto;
     padding: 4px 0;
 }
@@ -325,8 +325,8 @@
 .in-cart-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 12px 16px;
+    gap: 4px;
+    padding: 8px 12px;
     border-bottom: 1px solid var(--border-subtle);
     position: relative;
 }
@@ -340,7 +340,7 @@
 }
 .in-cart-item-name {
     font-weight: 600;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -352,8 +352,8 @@
     border: none;
     color: #ef4444;
     cursor: pointer;
-    font-size: 0.85rem;
-    padding: 2px 6px;
+    font-size: 0.8rem;
+    padding: 2px 4px;
     border-radius: 4px;
     flex-shrink: 0;
 }
@@ -363,12 +363,12 @@
 .in-cart-item-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 .in-cart-qty-btn {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border: 1px solid var(--border-subtle);
     border-radius: 6px;
     background: var(--bg-card);
@@ -377,7 +377,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-primary);
     transition: all 0.15s;
     flex-shrink: 0;
@@ -387,17 +387,17 @@
     color: #10b981;
 }
 .in-cart-qty-val {
-    min-width: 36px;
+    min-width: 28px;
     text-align: center;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 .in-cart-price-input {
-    width: 110px;
+    width: 90px;
     border: 1px solid var(--border-subtle);
     border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 0.82rem;
+    padding: 3px 6px;
+    font-size: 0.78rem;
     text-align: right;
 }
 .in-cart-price-input:focus {
@@ -406,9 +406,41 @@
 }
 .in-cart-subtotal {
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #10b981;
-    min-width: 100px;
+    min-width: 80px;
+    text-align: right;
+}
+.in-cart-separator {
+    width: 1px;
+    height: 18px;
+    background: var(--border-subtle);
+    flex-shrink: 0;
+}
+.in-cart-discount-label {
+    font-size: 0.7rem;
+    color: #ca8a04;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.in-cart-discount-input {
+    width: 60px;
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    padding: 2px 5px;
+    font-size: 0.75rem;
+    text-align: right;
+    color: #ca8a04;
+}
+.in-cart-discount-input:focus {
+    outline: none;
+    border-color: #ca8a04;
+}
+.in-cart-net-value {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #10b981;
+    min-width: 70px;
     text-align: right;
 }
 .in-cart-expand-btn {
@@ -545,7 +577,8 @@
                 qty: 1,
                 description: '',
                 expired_at: '',
-                category: category
+                category: category,
+                discount: 0
             };
             hideCard(id);
         }
@@ -589,6 +622,14 @@
     window.inUpdatePrice = function(id, val) {
         if (!cart[id]) return;
         cart[id].price = parseInt(val) || 0;
+        updateTotals();
+        renderHiddenInputs();
+    };
+
+    // --- Update Discount ---
+    window.inUpdateDiscount = function(id, val) {
+        if (!cart[id]) return;
+        cart[id].discount = parseInt(val) || 0;
         updateTotals();
         renderHiddenInputs();
     };
@@ -648,6 +689,7 @@
             html += '<button type="button" class="in-cart-item-remove" onclick="inRemoveItem(' + id + ')" title="Hapus"><i class="fas fa-times"></i></button>';
             html += '</div>';
             // Controls row
+            var netTotal = subtotal - item.discount;
             html += '<div class="in-cart-item-controls">';
             html += '<input type="number" class="in-cart-price-input" value="' + item.price + '" onchange="inUpdatePrice(' + id + ', this.value)" onfocus="this.select()" title="Harga beli satuan">';
             html += '<span class="in-cart-unit">' + escHtml(item.unit) + '</span>';
@@ -655,6 +697,10 @@
             html += '<span class="in-cart-qty-val">' + item.qty + '</span>';
             html += '<button type="button" class="in-cart-qty-btn" onclick="inUpdateQty(' + id + ', 1)">+</button>';
             html += '<span class="in-cart-subtotal">' + formatRupiah(subtotal) + '</span>';
+            html += '<span class="in-cart-separator"></span>';
+            html += '<span class="in-cart-discount-label">Diskon</span>';
+            html += '<input type="number" class="in-cart-discount-input" value="' + item.discount + '" min="0" onchange="inUpdateDiscount(' + id + ', this.value)" title="Diskon">';
+            html += '<span class="in-cart-net-value">' + formatRupiah(netTotal) + '</span>';
             // Expand button for extra fields
             if (item.category.toLowerCase().includes('perdana') || item.description) {
                 html += '<button type="button" class="in-cart-expand-btn" onclick="inToggleExtra(' + id + ')" title="Keterangan & Expired"><i class="fas fa-ellipsis-v"></i></button>';
@@ -683,7 +729,7 @@
         var totalValue = 0;
         Object.keys(cart).forEach(function(id) {
             totalQty += cart[id].qty;
-            totalValue += cart[id].qty * cart[id].price;
+            totalValue += (cart[id].qty * cart[id].price) - (cart[id].discount || 0);
         });
         elTotalQty.textContent = totalQty;
         elTotalValue.textContent = formatRupiah(totalValue);
@@ -697,6 +743,9 @@
             html += '<input type="hidden" name="items[' + id + '][product_id]" value="' + id + '">';
             html += '<input type="hidden" name="items[' + id + '][qty]" value="' + item.qty + '">';
             html += '<input type="hidden" name="items[' + id + '][price]" value="' + item.price + '">';
+            if (item.discount > 0) {
+                html += '<input type="hidden" name="items[' + id + '][discount]" value="' + item.discount + '">';
+            }
             if (item.description) {
                 html += '<input type="hidden" name="items[' + id + '][description]" value="' + escAttr(item.description) + '">';
             }
@@ -796,7 +845,8 @@
                 qty: 1,
                 description: '',
                 expired_at: '',
-                category: data.category
+                category: data.category,
+                discount: 0
             };
             hideCard(data.id);
             renderCart();

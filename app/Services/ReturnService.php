@@ -154,7 +154,7 @@ class ReturnService
 
             // Cari inbound batch tertua yang masih memiliki remaining_qty
             $inboundBatches = StockTransaction::where('product_id', $product->id)
-                ->where('type', 'in')
+                ->whereIn('type', ['in', 'opname'])
                 ->where('remaining_qty', '>', 0)
                 ->orderBy('date')
                 ->orderBy('id')

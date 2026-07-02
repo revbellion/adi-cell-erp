@@ -5,10 +5,18 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0 fw-bold">Kelola User</h5>
-    <a href="{{ route('users.create') }}" class="btn btn-primary btn-modern btn-sm">
-        <i class="fas fa-plus me-1"></i> Tambah User
-    </a>
+    <h4 class="fw-bold mb-0">Kelola User</h4>
+    <div class="d-flex gap-2">
+        <form method="GET" action="{{ route('users.index') }}" autocomplete="off" class="d-flex gap-2">
+            <input type="text" name="search" class="form-control form-control-sm" style="width:200px;" placeholder="Cari nama atau username..." value="{{ request('search') }}">
+            @if(request('search'))
+                <a href="{{ route('users.index') }}" class="btn btn-sm btn-modern btn-secondary"><i class="fas fa-times"></i></a>
+            @endif
+        </form>
+        <a href="{{ route('users.create') }}" class="btn btn-primary btn-modern btn-sm">
+            <i class="fas fa-plus me-1"></i> Tambah User
+        </a>
+    </div>
 </div>
 
 <div class="bulk-action-bar mb-3 d-none" id="bulkActionBar">
@@ -46,7 +54,9 @@
                 @forelse($users as $user)
                     <tr>
                         <td class="ps-3"><input type="checkbox" class="form-check-input bulk-select-item" value="{{ $user->id }}"></td>
-                        <td class="fw-semibold">{{ $user->username }}</td>
+                        <td class="fw-semibold">
+                            <a href="{{ route('users.show', $user) }}" class="text-decoration-none">{{ $user->username }}</a>
+                        </td>
                         <td>{{ $user->name }}</td>
                         <td>
                             @if($user->isAdmin())
@@ -60,7 +70,10 @@
                                 <span class="text-muted" style="font-size:0.8rem;">Semua modul</span>
                             @else
                                 @php
-                                    $labels = ['dashboard'=>'Dashboard','pos'=>'POS','stock_in'=>'Stok Masuk','stock_opname'=>'Opname','products'=>'Barang','categories'=>'Kategori','stock_report'=>'Laporan','accounts'=>'Akun','mutations'=>'Mutasi','incomes'=>'Pemasukan','expenses'=>'Pengeluaran','receivables'=>'Piutang','bills'=>'Tagihan','summary'=>'Ringkasan','cash_counter'=>'Cash Counter'];
+                                    $labels = [];
+                                    foreach ($permissionKeys as $p) {
+                                        $labels[$p['key']] = $p['label'];
+                                    }
                                 @endphp
                                 @foreach($user->permissions ?? [] as $p)
                                     <span class="badge bg-info" style="font-size:0.65rem;margin:1px;">{{ $labels[$p] ?? $p }}</span>
@@ -68,6 +81,9 @@
                             @endif
                         </td>
                         <td class="text-end">
+                            <a href="{{ route('users.show', $user) }}" class="btn btn-sm btn-modern btn-info" title="Detail">
+                                <i class="fas fa-eye"></i>
+                            </a>
                             <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-modern btn-primary">
                                 <i class="fas fa-edit"></i>
                             </a>
@@ -88,9 +104,11 @@
     </div>
     <div class="d-flex justify-content-between align-items-center px-3 py-2 summary-bar" style="border-top:2px solid var(--border-subtle);">
         <div>
-            <span style="font-size:0.8rem;color:var(--text-muted);">Total {{ $totalUsers }} user</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Menampilkan {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }} dari {{ $users->total() }} user</span>
         </div>
-        <div></div>
+        <div>
+            {{ $users->links('pagination::bootstrap-5') }}
+        </div>
     </div>
 </div>
 @endsection

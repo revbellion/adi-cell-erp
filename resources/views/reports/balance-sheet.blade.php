@@ -177,6 +177,12 @@
                         <td class="ps-4">Laba Periode Berjalan</td>
                         <td class="pe-3 text-end fw-semibold" style="color:{{ $currentProfit >= 0 ? '#10b981' : '#ef4444' }};">{{ rp($currentProfit) }}</td>
                     </tr>
+                    @if($totalPrive > 0)
+                    <tr>
+                        <td class="ps-4">Prive (pengambilan profit)</td>
+                        <td class="pe-3 text-end fw-semibold text-danger">({{ rp($totalPrive) }})</td>
+                    </tr>
+                    @endif
                     <tr style="border-top:2px solid var(--border-subtle);">
                         <td class="ps-3 fw-bold">TOTAL EKUITAS</td>
                         <td class="pe-3 text-end fw-bold" style="font-size:1rem;color:#10b981;">{{ rp($totalEquity) }}</td>

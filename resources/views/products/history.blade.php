@@ -4,9 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="fw-bold mb-0">
-            <i class="fas fa-history me-2" style="color:var(--theme-primary);"></i>Riwayat Barang
-        </h4>
+            <h4 class="fw-bold mb-0">Riwayat Barang</h4>
         <div class="mt-1">
             <span class="fw-semibold" style="font-size:1.1rem;">{{ $product->name }}</span>
             <span class="badge bg-secondary ms-2">{{ $product->category->name ?? '-' }}</span>

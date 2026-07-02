@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,8 +23,18 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        // Account lockout — per username
+        $limiter = app(RateLimiter::class);
+        $key = 'login:' . $request->username;
+
+        if ($limiter->tooManyAttempts($key, 5)) {
+            $seconds = $limiter->availableIn($key);
+            return back()->withErrors(['Terlalu banyak percobaan. Coba lagi ' . $seconds . ' detik.']);
+        }
+
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+            $limiter->clear($key);
 
             $user = Auth::user();
             if ($user->isAdmin() || $user->hasPermission(config('permissions.DASHBOARD'))) {
@@ -33,6 +44,7 @@ class LoginController extends Controller
             return redirect()->intended(route('stock.sales'));
         }
 
+        $limiter->hit($key, 60);
         return back()->withErrors(['Username atau password salah.']);
     }
 

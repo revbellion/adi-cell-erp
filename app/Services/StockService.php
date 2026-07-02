@@ -15,7 +15,8 @@ class StockService
     {
         return DB::transaction(function () use ($data) {
             $product = Product::findOrFail($data['product_id']);
-            $total = $data['qty'] * $data['price'];
+            $discount = $data['discount'] ?? 0;
+            $total = ($data['qty'] * $data['price']) - $discount;
 
             $transaction = StockTransaction::create([
                 'product_id'    => $data['product_id'],
@@ -66,7 +67,9 @@ class StockService
                     );
                 }
 
-                $total = $item['qty'] * $item['price'];
+                $subtotal = $item['qty'] * $item['price'];
+                $discount = $item['discount'] ?? 0;
+                $total = $subtotal - $discount;
 
                 $transaction = StockTransaction::create([
                     'product_id'    => $product->id,
@@ -82,10 +85,16 @@ class StockService
 
                 $product->increment('stock', $item['qty']);
 
+                $desc = 'Pembelian ' . $product->name . ' (' . $item['qty'] . ' ' . $product->unit . ')';
+                if ($discount > 0) {
+                    $desc .= ' — diskon Rp ' . number_format($discount, 0, ',', '.');
+                }
+
                 Expense::create([
                     'account_id'          => $info['account_id'],
                     'category'            => 'Stok Masuk',
                     'amount'              => $total,
+                    'description'         => $desc,
                     'description'         => 'Pembelian ' . $product->name . ' (' . $item['qty'] . ' ' . $product->unit . ')',
                     'date'                => $date,
                     'stock_transaction_id'=> $transaction->id,

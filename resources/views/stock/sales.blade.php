@@ -20,7 +20,7 @@
                     <select id="pos-account-select" class="pos-select" required>
                         <option value="">Akun</option>
                         @foreach($accounts as $account)
-                        <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        <option value="{{ $account->id }}" {{ $account->name === 'Cash' ? 'selected' : '' }}>{{ $account->name }}</option>
                         @endforeach
                     </select>
                     <input type="date" id="pos-date-input" value="{{ date('Y-m-d') }}" class="pos-input-date">

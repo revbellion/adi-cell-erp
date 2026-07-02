@@ -29,7 +29,7 @@ class BackupController extends Controller
         $userOption = !empty($password) ? '--password=' . escapeshellarg($password) : '--skip-password';
 
         $command = sprintf(
-            '%s %s --host=%s --port=%s --user=%s --no-warnings %s > %s 2>&1',
+            '%s %s --host=%s --port=%s --user=%s %s > %s 2>&1',
             escapeshellarg($mysqlDir . '\mysqldump.exe'),
             $userOption,
             escapeshellarg($host),

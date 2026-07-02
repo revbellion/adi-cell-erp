@@ -80,8 +80,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENGELUARAN BULAN INI</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalExpense) }}</h4>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BIAYA OPERASIONAL BULAN INI</p>
+                        <h4 class="fw-bold mb-1">{{ rp($totalExpense) }}</h4>
+                        <p class="text-muted mb-0" style="font-size:0.65rem;">Listrik, Gaji, Amal, Internet</p>
                     </div>
                     <div class="rounded-3 p-2" style="background:#fffbeb;">
                         <i class="fas fa-receipt" style="color:#f59e0b;"></i>
@@ -118,6 +119,21 @@
                     </div>
                     <div class="rounded-3 p-2" style="background:#eff6ff;">
                         <i class="fas fa-university" style="color:#2563eb;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card stat-card shadow-sm" style="border-left: 4px solid #8b5cf6;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">DALAM PERJALANAN</p>
+                        <h4 class="fw-bold mb-0">{{ rp($transitBalance) }}</h4>
+                    </div>
+                    <div class="rounded-3 p-2" style="background:#f5f3ff;">
+                        <i class="fas fa-shipping-fast" style="color:#8b5cf6;"></i>
                     </div>
                 </div>
             </div>
@@ -587,7 +603,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Barang</label>
-                    <select name="product_id" id="stok-product-dash" class="form-select" required onchange="onProductSelectDash()">
+                    <select name="items[0][product_id]" id="stok-product-dash" class="form-select" required onchange="onProductSelectDash()">
                         <option value="">Pilih barang</option>
                         @foreach($products as $product)
                         <option value="{{ $product->id }}"
@@ -601,7 +617,7 @@
                 <div class="row g-2 mb-3">
                     <div class="col-6">
                         <label class="form-label">Jumlah</label>
-                        <input type="number" step="1" name="qty" id="stok-qty-dash" class="form-control" placeholder="1" min="1" required oninput="hitungTotalDash()">
+                        <input type="number" step="1" name="items[0][qty]" id="stok-qty-dash" class="form-control" placeholder="1" min="1" required oninput="hitungTotalDash()">
                     </div>
                     <div class="col-6">
                         <label class="form-label">Satuan</label>
@@ -610,7 +626,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Harga Beli Satuan</label>
-                    <input type="number" step="1" name="price" id="stok-price-dash" class="form-control" placeholder="0" required oninput="hitungTotalDash()">
+                    <input type="number" step="1" name="items[0][price]" id="stok-price-dash" class="form-control" placeholder="0" required oninput="hitungTotalDash()">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Total</label>
@@ -618,7 +634,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Akun Pembayaran</label>
-                    <select name="account_id" class="form-select" required>
+                    <select name="account_id" id="stok-account-dash" class="form-select" required>
                         <option value="">Pilih akun</option>
                         @foreach($accountList as $account)
                         <option value="{{ $account->id }}">{{ $account->name }}</option>
@@ -627,11 +643,11 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Tanggal</label>
-                    <input type="date" name="date" value="{{ date('Y-m-d') }}" class="form-control" required>
+                    <input type="date" name="date" id="stok-date-dash" value="{{ date('Y-m-d') }}" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Keterangan</label>
-                    <textarea name="description" class="form-control" rows="2" placeholder="Opsional"></textarea>
+                    <textarea name="items[0][description]" id="stok-desc-dash" class="form-control" rows="2" placeholder="Opsional"></textarea>
                 </div>
             </div>
             <div class="modal-footer">

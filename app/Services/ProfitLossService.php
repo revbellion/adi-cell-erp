@@ -10,34 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class ProfitLossService
 {
-    /**
-     * Kategori income yang merupakan pendapatan operasional (bukan sistem).
-     */
-    private array $systemIncomeCategories = [
-        'Transfer Masuk',
-        'Piutang',
-        'Pending EDC',
-    ];
-
-    /**
-     * Kategori expense yang merupakan biaya operasional (bukan sistem/stok).
-     */
-    private array $systemExpenseCategories = [
-        'Stok Masuk',
-        'Piutang',
-        'Cash Keluar',
-    ];
-
     public function getData(string $period): array
     {
         $dateStart = sprintf('%04d-%02d-01', ...array_map('intval', explode('-', $period)));
         $dateEnd = Carbon::parse($dateStart)->endOfMonth();
 
-        // === PENDAPATAN (Revenue) ===
+        // === PENDAPATAN (Revenue) — exclude pure cash movements ===
         $revenueQuery = Income::whereBetween('date', [$dateStart, $dateEnd])
             ->whereNotNull('category')
-            ->whereNotIn('category', $this->systemIncomeCategories)
-            ->where('category', 'not like', 'Pending %')
+            ->whereNotIn('category', $this->nonPnlIncomeCategories())
             ->select('category', DB::raw('SUM(amount) as total'))
             ->groupBy('category')
             ->orderBy('total', 'desc');
@@ -45,11 +26,10 @@ class ProfitLossService
         $revenueByCategory = $revenueQuery->get();
         $totalRevenue = $revenueByCategory->sum('total');
 
-        // === PENDAPATAN LAIN (Other Income - system generated yang tetap jadi income) ===
+        // === PENDAPATAN LAIN (Other Income) ===
         $otherIncomeQuery = Income::whereBetween('date', [$dateStart, $dateEnd])
             ->where(function ($q) {
-                $q->whereIn('category', $this->systemIncomeCategories)
-                  ->orWhere('category', 'like', 'Pending %');
+                $q->whereIn('category', $this->nonPnlIncomeCategories());
             })
             ->select('category', DB::raw('SUM(amount) as total'))
             ->groupBy('category')
@@ -78,20 +58,29 @@ class ProfitLossService
             ->select('product_category_id', DB::raw('SUM(hpp_amount) as total_hpp'), DB::raw('SUM(selling_amount) as total_selling'), DB::raw('SUM(profit_amount) as total_profit'), DB::raw('SUM(qty) as total_qty'))
             ->groupBy('product_category_id')
             ->with('category')
-            ->orderBy('total_hpp', 'desc')
             ->get();
 
-        // === BIAYA OPERASIONAL ===
-        $expenseQuery = Expense::whereBetween('date', [$dateStart, $dateEnd])
+        // === BIAYA (Expenses) — exclude pure cash movements ===
+        $expensesQuery = Expense::whereBetween('date', [$dateStart, $dateEnd])
             ->whereNotNull('category')
-            ->whereNotIn('category', $this->systemExpenseCategories)
-            ->where('category', 'not like', 'Pending %')
+            ->whereNotIn('category', $this->nonPnlExpenseCategories())
             ->select('category', DB::raw('SUM(amount) as total'))
             ->groupBy('category')
             ->orderBy('total', 'desc');
 
-        $expensesByCategory = $expenseQuery->get();
+        $expensesByCategory = $expensesQuery->get();
         $totalExpenses = $expensesByCategory->sum('total');
+
+        // === DIVISI JASA ===
+        $cetakRevenue = Income::whereBetween('date', [$dateStart, $dateEnd])
+            ->where('category', 'Jasa Cetak')->sum('amount');
+        $cetakExpense = Expense::whereBetween('date', [$dateStart, $dateEnd])
+            ->where('category', 'Jasa Cetak')->sum('amount');
+
+        $servisRevenue = Income::whereBetween('date', [$dateStart, $dateEnd])
+            ->where('category', 'Jasa Servis')->sum('amount');
+        $servisExpense = Expense::whereBetween('date', [$dateStart, $dateEnd])
+            ->where('category', 'Jasa Servis')->sum('amount');
 
         // === Hitung Laba/Rugi ===
         $labaKotor = $totalRevenue - $totalHpp;
@@ -110,16 +99,40 @@ class ProfitLossService
             'total_qty' => (int) ($hppData->total_qty ?? 0),
         ];
 
-        return [
-            'period' => $period,
-            'dateStart' => $dateStart,
-            'dateEnd' => $dateEnd,
-            'revenueByCategory' => $revenueByCategory,
-            'otherIncomeByCategory' => $otherIncomeByCategory,
-            'hppByCategory' => $hppByCategory,
-            'expensesByCategory' => $expensesByCategory,
-            'summary' => $summary,
-        ];
+        return compact(
+            'revenueByCategory', 'totalRevenue',
+            'otherIncomeByCategory', 'totalOtherIncome',
+            'hppByCategory', 'totalHpp', 'totalSelling', 'totalProfitHpp',
+            'expensesByCategory', 'totalExpenses',
+            'summary',
+            'dateStart', 'dateEnd',
+            'cetakRevenue', 'cetakExpense',
+            'servisRevenue', 'servisExpense',
+        );
+    }
+
+    /**
+     * Kategori income yang tidak masuk pendapatan operasional (cash movement murni).
+     */
+    private function nonPnlIncomeCategories(): array
+    {
+        return collect(config('categories.income.system'))
+            ->where('pnl', false)
+            ->pluck('key')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Kategori expense yang tidak masuk biaya operasional (cash movement murni).
+     */
+    private function nonPnlExpenseCategories(): array
+    {
+        $system = collect(config('categories.expense.system'))
+            ->where('pnl', false)->pluck('key');
+        $user = collect(config('categories.expense.user'))
+            ->where('pnl', false)->pluck('key');
+        return $system->merge($user)->values()->all();
     }
 
     /**

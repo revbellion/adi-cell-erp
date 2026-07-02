@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Expense extends Model
 {
@@ -38,6 +39,11 @@ class Expense extends Model
     public function receivable(): BelongsTo
     {
         return $this->belongsTo(Receivable::class);
+    }
+
+    public function billPayment(): HasOne
+    {
+        return $this->hasOne(BillPayment::class);
     }
 
 }

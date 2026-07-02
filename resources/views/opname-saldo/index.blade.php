@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-calculator me-2" style="color:#8b5cf6;"></i>Opname Saldo PPOB & E-Wallet</h4>
+    <h4 class="fw-bold mb-0">Opname Saldo PPOB & E-Wallet</h4>
     <div class="d-flex gap-2">
         <form autocomplete="off" method="GET" action="{{ route('opname-saldo.index') }}" class="d-flex gap-2">
             <input type="date" name="date" value="{{ $date }}" class="form-control form-control-sm" style="width:auto;" onchange="this.form.submit()">

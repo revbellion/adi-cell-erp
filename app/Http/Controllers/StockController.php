@@ -19,7 +19,7 @@ class StockController extends Controller
     public function stockIn(Request $request)
     {
         $products = Product::with('category')->active()->orderBy('name')->get();
-        $accounts = Account::active()->get();
+        $accounts = Account::active()->visible()->get();
         $categories = ProductCategory::orderBy('name')->get();
         $filters = $request->only(['date_from', 'date_to']);
         $result = $this->stockService->getStockInHistory($filters);
@@ -34,6 +34,7 @@ class StockController extends Controller
             'items.*.qty'            => 'required|integer|min:1',
             'items.*.price'          => 'required|integer|min:0',
             'items.*.description'    => 'nullable|string|max:255',
+            'items.*.discount'       => 'nullable|integer|min:0',
             'items.*.expired_at'     => 'nullable|date',
             'account_id'             => 'required|exists:accounts,id',
             'date'                   => 'required|date',
@@ -84,7 +85,7 @@ class StockController extends Controller
     public function sales()
     {
         $products = Product::with('category')->active()->orderBy('name')->get();
-        $accounts = Account::active()->where('type', '!=', 'ppob')->get();
+        $accounts = Account::active()->visible()->where('type', '!=', 'ppob')->get();
         $categories = ProductCategory::orderBy('name')->get();
         $result = $this->stockService->getSalesHistory();
         return view('stock.sales', array_merge(compact('products', 'accounts', 'categories'), [

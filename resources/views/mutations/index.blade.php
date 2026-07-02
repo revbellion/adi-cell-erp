@@ -35,7 +35,6 @@
         <span class="fw-bold" style="font-size:0.85rem;color:var(--theme-primary);" id="bulkTotal"></span>
         <form autocomplete="off" id="bulkDeleteForm" method="POST" action="{{ route('mutations.bulk-delete') }}" style="display:inline;">
             @csrf
-            @method('DELETE')
             <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="event.preventDefault(); confirmDelete('Hapus data yang dipilih?').then(ok => ok && this.closest('form').submit());">
                 <i class="fas fa-trash me-1"></i>Hapus
             </button>

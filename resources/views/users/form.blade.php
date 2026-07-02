@@ -8,7 +8,7 @@
 @extends('layouts.app')
 
 @section('content')
-<h5 class="fw-bold mb-3">{{ $title }}</h5>
+<h4 class="fw-bold mb-0">{{ $title }}</h4>
 
 <div class="card card-modern">
     <div class="card-body">

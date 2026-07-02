@@ -11,7 +11,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-chart-line me-2" style="color:#3b82f6;"></i>Laporan Penjualan</h4>
+    <h4 class="fw-bold mb-0">Laporan Penjualan</h4>
     <a href="{{ route('sales-report.export', request()->query()) }}" class="btn btn-modern btn-success btn-sm">
         <i class="fas fa-file-excel me-1"></i>Export Excel
     </a>

@@ -25,7 +25,8 @@ class IncomeController extends Controller
         return view('incomes.index', [
             'incomes' => $result['incomes'],
             'categories' => $this->incomeService->getCategories(),
-            'accounts' => Account::active()->get(),
+            'userCategories' => config('categories.income.user'),
+            'accounts' => Account::active()->visible()->get(),
             'totalAmount' => $result['totalAmount'],
             'typeFilter' => $filters['type'] ?? null,
         ]);

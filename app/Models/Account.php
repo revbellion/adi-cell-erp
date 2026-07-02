@@ -30,6 +30,11 @@ class Account extends Model
         return $query->where('type', $type);
     }
 
+    public function scopeVisible($query)
+    {
+        return $query->where('name', '!=', config('accounts.in_transit_name'));
+    }
+
     public function openingBalances(): HasMany
     {
         return $this->hasMany(OpeningBalance::class);

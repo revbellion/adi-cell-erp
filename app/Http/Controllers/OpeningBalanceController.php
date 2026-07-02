@@ -13,7 +13,7 @@ class OpeningBalanceController extends Controller
     {
         $period = $request->get('period', now()->format('Y-m'));
 
-        $accounts = Account::active()->get();
+        $accounts = Account::active()->visible()->get();
         $openingBalances = OpeningBalance::where('period', $period)
             ->get()
             ->keyBy('account_id');

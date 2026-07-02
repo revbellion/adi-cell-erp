@@ -7,77 +7,53 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $users = User::orderBy('created_at', 'desc')->get();
-        $permissionKeys = [
-            ['key' => 'dashboard', 'label' => 'Dashboard'],
-            ['key' => 'pos', 'label' => 'POS Penjualan'],
-            ['key' => 'stock_in', 'label' => 'Stok Masuk'],
-            ['key' => 'stock_opname', 'label' => 'Stok Opname'],
-            ['key' => 'products', 'label' => 'Data Barang'],
-            ['key' => 'categories', 'label' => 'Kategori Barang'],
-            ['key' => 'stock_report', 'label' => 'Laporan Stok'],
-            ['key' => 'sales_report', 'label' => 'Laporan Penjualan'],
-            ['key' => 'accounts', 'label' => 'Akun & Modal Awal'],
-            ['key' => 'mutations', 'label' => 'Mutasi'],
-            ['key' => 'incomes', 'label' => 'Pendapatan'],
-            ['key' => 'expenses', 'label' => 'Pengeluaran'],
-            ['key' => 'receivables', 'label' => 'Piutang'],
-            ['key' => 'bills', 'label' => 'Tagihan'],
-            ['key' => 'summary', 'label' => 'Ringkasan'],
-            ['key' => 'cash_counter', 'label' => 'Cash Counter'],
-            ['key' => 'customers', 'label' => 'Pelanggan'],
-            ['key' => 'returns', 'label' => 'Retur Barang'],
-            ['key' => 'print_orders', 'label' => 'Jasa Cetak'],
-            ['key' => 'repair_services', 'label' => 'Jasa Servis'],
-            ['key' => 'reports', 'label' => 'Laporan Keuangan (Laba Rugi & Neraca)'],
-        ];
-        $totalUsers = $users->count();
+        $permissionKeys = config('permissions.LIST');
+
+        $query = User::orderBy('created_at', 'desc');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->paginate(20);
+        $totalUsers = User::count();
+
         return view('users.index', compact('users', 'permissionKeys', 'totalUsers'));
+    }
+
+    public function show(User $user): View
+    {
+        $permissionKeys = config('permissions.LIST');
+        return view('users.show', compact('user', 'permissionKeys'));
     }
 
     public function create(): View
     {
-        $permissionKeys = [
-            ['key' => 'dashboard', 'label' => 'Dashboard'],
-            ['key' => 'pos', 'label' => 'POS Penjualan'],
-            ['key' => 'stock_in', 'label' => 'Stok Masuk'],
-            ['key' => 'stock_opname', 'label' => 'Stok Opname'],
-            ['key' => 'products', 'label' => 'Data Barang'],
-            ['key' => 'categories', 'label' => 'Kategori Barang'],
-            ['key' => 'stock_report', 'label' => 'Laporan Stok'],
-            ['key' => 'sales_report', 'label' => 'Laporan Penjualan'],
-            ['key' => 'accounts', 'label' => 'Akun & Modal Awal'],
-            ['key' => 'mutations', 'label' => 'Mutasi'],
-            ['key' => 'incomes', 'label' => 'Pendapatan'],
-            ['key' => 'expenses', 'label' => 'Pengeluaran'],
-            ['key' => 'receivables', 'label' => 'Piutang'],
-            ['key' => 'bills', 'label' => 'Tagihan'],
-            ['key' => 'summary', 'label' => 'Ringkasan'],
-            ['key' => 'cash_counter', 'label' => 'Cash Counter'],
-            ['key' => 'customers', 'label' => 'Pelanggan'],
-            ['key' => 'returns', 'label' => 'Retur Barang'],
-            ['key' => 'print_orders', 'label' => 'Jasa Cetak'],
-            ['key' => 'repair_services', 'label' => 'Jasa Servis'],
-            ['key' => 'reports', 'label' => 'Laporan Keuangan (Laba Rugi & Neraca)'],
-        ];
+        $permissionKeys = config('permissions.LIST');
         return view('users.form', compact('permissionKeys'));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $permissionKeys = array_column(config('permissions.LIST'), 'key');
+
+        $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:50|unique:users,username',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
             'is_admin' => 'nullable|boolean',
             'permissions' => 'nullable|array',
-            'permissions.*' => 'string|in:dashboard,pos,stock_in,stock_opname,print_orders,repair_services,products,categories,stock_report,sales_report,accounts,mutations,incomes,expenses,receivables,bills,summary,cash_counter,customers,returns,reports',
+            'permissions.*' => 'string|in:' . implode(',', $permissionKeys),
         ]);
 
         User::create([
@@ -86,6 +62,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'is_admin' => $request->boolean('is_admin'),
             'permissions' => $request->boolean('is_admin') ? null : $request->permissions,
+            'created_by' => Auth::id(),
         ]);
 
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
@@ -93,41 +70,21 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
-        $permissionKeys = [
-            ['key' => 'dashboard', 'label' => 'Dashboard'],
-            ['key' => 'pos', 'label' => 'POS Penjualan'],
-            ['key' => 'stock_in', 'label' => 'Stok Masuk'],
-            ['key' => 'stock_opname', 'label' => 'Stok Opname'],
-            ['key' => 'products', 'label' => 'Data Barang'],
-            ['key' => 'categories', 'label' => 'Kategori Barang'],
-            ['key' => 'stock_report', 'label' => 'Laporan Stok'],
-            ['key' => 'sales_report', 'label' => 'Laporan Penjualan'],
-            ['key' => 'accounts', 'label' => 'Akun & Modal Awal'],
-            ['key' => 'mutations', 'label' => 'Mutasi'],
-            ['key' => 'incomes', 'label' => 'Pendapatan'],
-            ['key' => 'expenses', 'label' => 'Pengeluaran'],
-            ['key' => 'receivables', 'label' => 'Piutang'],
-            ['key' => 'bills', 'label' => 'Tagihan'],
-            ['key' => 'summary', 'label' => 'Ringkasan'],
-            ['key' => 'cash_counter', 'label' => 'Cash Counter'],
-            ['key' => 'customers', 'label' => 'Pelanggan'],
-            ['key' => 'returns', 'label' => 'Retur Barang'],
-            ['key' => 'print_orders', 'label' => 'Jasa Cetak'],
-            ['key' => 'repair_services', 'label' => 'Jasa Servis'],
-            ['key' => 'reports', 'label' => 'Laporan Keuangan (Laba Rugi & Neraca)'],
-        ];
+        $permissionKeys = config('permissions.LIST');
         return view('users.form', compact('user', 'permissionKeys'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $validated = $request->validate([
+        $permissionKeys = array_column(config('permissions.LIST'), 'key');
+
+        $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:50|unique:users,username,' . $user->id,
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8',
             'is_admin' => 'nullable|boolean',
             'permissions' => 'nullable|array',
-            'permissions.*' => 'string|in:dashboard,pos,stock_in,stock_opname,print_orders,repair_services,products,categories,stock_report,sales_report,accounts,mutations,incomes,expenses,receivables,bills,summary,cash_counter,customers,returns,reports',
+            'permissions.*' => 'string|in:' . implode(',', $permissionKeys),
         ]);
 
         $data = [
@@ -146,25 +103,6 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
     }
 
-    public function bulkDelete(Request $request): RedirectResponse
-    {
-        $request->validate(['ids' => 'required|array']);
-        $deleted = 0;
-        foreach ($request->ids as $id) {
-            try {
-                $user = User::findOrFail($id);
-                if ($user->isAdmin() || $user->id === Auth::id()) {
-                    continue;
-                }
-                $user->delete();
-                $deleted++;
-            } catch (\Exception $e) {
-                // skip
-            }
-        }
-        return redirect()->route('users.index')->with('success', "{$deleted} user berhasil dihapus.");
-    }
-
     public function destroy(User $user): RedirectResponse
     {
         if ($user->isAdmin()) {
@@ -177,5 +115,22 @@ class UserController extends Controller
 
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+    }
+
+    public function bulkDelete(Request $request): RedirectResponse
+    {
+        $request->validate(['ids' => 'required|array']);
+        $deleted = 0;
+
+        foreach ($request->ids as $id) {
+            $user = User::find($id);
+            if (!$user || $user->isAdmin() || $user->id === Auth::id()) {
+                continue;
+            }
+            $user->delete();
+            $deleted++;
+        }
+
+        return redirect()->route('users.index')->with('success', "{$deleted} user berhasil dihapus.");
     }
 }

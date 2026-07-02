@@ -28,7 +28,7 @@ class ReceivableController extends Controller
 
         return view('receivables.index', [
             'receivables' => $result['receivables'],
-            'accounts' => Account::active()->get(),
+            'accounts' => Account::active()->visible()->get(),
             'customers' => Customer::active()->orderBy('name')->get(),
             'totalAmount' => $result['totalAmount'],
             'totalRemaining' => $result['totalRemaining'],

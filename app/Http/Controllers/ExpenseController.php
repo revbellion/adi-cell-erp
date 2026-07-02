@@ -25,8 +25,9 @@ class ExpenseController extends Controller
 
         return view('expenses.index', [
             'expenses' => $result['expenses'],
-            'accounts' => Account::active()->get(),
+            'accounts' => Account::active()->visible()->get(),
             'categories' => $this->expenseService->getCategories(),
+            'userCategories' => config('categories.expense.user'),
             'totalAmount' => $result['totalAmount'],
             'typeFilter' => $filters['type'] ?? null,
         ]);
@@ -107,7 +108,7 @@ class ExpenseController extends Controller
                 'date_to' => 'nullable|date',
                 'category' => 'nullable|string|max:100',
                 'search' => 'nullable|string|max:100',
-                'type' => 'nullable|in:real,cash_movement',
+                'type' => 'nullable|in:real,cash_movement,operational',
             ])->valid(),
             fn($v) => $v !== null
         );

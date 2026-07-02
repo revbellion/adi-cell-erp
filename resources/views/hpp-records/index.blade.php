@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-chart-pie me-2" style="color:#8b5cf6;"></i>Laporan Divisi</h4>
+    <h4 class="fw-bold mb-0">Laporan Divisi</h4>
 </div>
 
 {{-- Filter --}}

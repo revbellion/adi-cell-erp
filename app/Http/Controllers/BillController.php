@@ -22,7 +22,7 @@ class BillController extends Controller
         return view('bills.index', [
             'bills' => $this->billService->getBillsWithStatus($period),
             'period' => $period,
-            'accounts' => Account::active()->get(),
+            'accounts' => Account::active()->visible()->get(),
             'categories' => $this->billService->getPaymentCategories(),
         ]);
     }

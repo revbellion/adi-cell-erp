@@ -11,6 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class PendingTransactionService
 {
+    private function getTransitAccount(): Account
+    {
+        $transit = Account::where('name', config('accounts.in_transit_name'))->first();
+        if (!$transit) {
+            throw new \DomainException('Akun "Dalam Perjalanan" tidak ditemukan.');
+        }
+        return $transit;
+    }
+
     public function create(array $data): PendingTransaction
     {
         $now = Carbon::now();
@@ -19,24 +28,33 @@ class PendingTransactionService
             : $now->format('Y-m-d H:i:s');
 
         return DB::transaction(function () use ($data, $pendingDate) {
+            $mdrRate = 0;
+            $mdrAmount = 0;
+            $netAmount = $data['amount'];
+
+            if ($data['type'] === 'edc') {
+                $mdrRate = ($data['bank_type'] ?? 'non_bca') === 'bca' ? 0.15 : 1.00;
+                $mdrAmount = (int) ($data['amount'] * $mdrRate / 100);
+                $netAmount = $data['amount'] - $mdrAmount;
+            }
+
             $pending = PendingTransaction::create([
                 'type' => $data['type'],
                 'bank_type' => $data['bank_type'] ?? null,
                 'description' => $data['description'],
                 'amount' => $data['amount'],
-                'mdr_rate' => 0,
-                'mdr_amount' => 0,
-                'net_amount' => $data['amount'],
+                'mdr_rate' => $mdrRate,
+                'mdr_amount' => $mdrAmount,
+                'net_amount' => $netAmount,
                 'status' => 'pending',
                 'pending_date' => $pendingDate,
             ]);
 
-            // Flow berdasarkan tipe
             if ($data['type'] === 'transfer') {
-                // Transfer: BCA langsung bertambah (Income)
+                // Transfer: Uang sudah masuk BCA, tapi cash belum keluar
                 $bca = Account::where('name', config('accounts.bca_name'))->first();
-                if (! $bca) {
-                    throw new \DomainException('Akun BCA tidak ditemukan. Silakan buat akun BCA terlebih dahulu.');
+                if (!$bca) {
+                    throw new \DomainException('Akun BCA tidak ditemukan.');
                 }
                 $income = Income::create([
                     'account_id' => $bca->id,
@@ -47,16 +65,13 @@ class PendingTransactionService
                 ]);
                 $pending->update(['income_id' => $income->id]);
             } else {
-                // EDC: Cash langsung berkurang (Expense)
-                $cash = Account::where('name', config('accounts.cash_name'))->first();
-                if (! $cash) {
-                    throw new \DomainException('Akun Cash tidak ditemukan. Silakan buat akun Cash terlebih dahulu.');
-                }
+                // EDC: Cash sudah keluar, tapi bank belum terima
+                $transit = $this->getTransitAccount();
                 $expense = Expense::create([
-                    'account_id' => $cash->id,
+                    'account_id' => $transit->id,
                     'amount' => $pending->amount,
-                    'category' => 'Pending ' . strtoupper($pending->type),
-                    'description' => "Cash keluar untuk {$pending->description}",
+                    'category' => 'Pending EDC',
+                    'description' => "EDC pending: {$pending->description}",
                     'date' => $pendingDate,
                 ]);
                 $pending->update(['expense_id' => $expense->id]);
@@ -75,7 +90,6 @@ class PendingTransactionService
                 throw new \DomainException('Transaksi ini sudah selesai.');
             }
 
-            // Validasi tipe akun
             $account = Account::findOrFail($data['completed_account_id']);
             if ($pending->type === 'transfer' && $account->type !== 'cash') {
                 throw new \DomainException('Transfer harus diselesaikan ke akun Cash.');
@@ -89,9 +103,7 @@ class PendingTransactionService
                 ? Carbon::parse($data['completed_date'])->format('Y-m-d') . ' ' . $now->format('H:i:s')
                 : $now->format('Y-m-d H:i:s');
 
-            // Flow berdasarkan tipe (gunakan net_amount)
             if ($pending->type === 'transfer') {
-                // Transfer selesai: Cash berkurang (Expense)
                 $expense = Expense::create([
                     'account_id' => $data['completed_account_id'],
                     'amount' => $pending->net_amount,
@@ -103,28 +115,24 @@ class PendingTransactionService
                     'status' => 'completed',
                     'completed_date' => $completedDate,
                     'completed_type' => $data['completed_type'],
-                    'completed_account_id' => $data['completed_account_id'] ?? null,
+                    'completed_account_id' => $data['completed_account_id'],
                     'expense_id' => $expense->id,
                 ]);
             } else {
-                // EDC selesai: BCA bertambah (Income) — full amount
                 $income = Income::create([
                     'account_id' => $data['completed_account_id'],
                     'amount' => $pending->net_amount,
-                    'category' => 'Pending ' . strtoupper($pending->type),
-                    'description' => "BCA terima dari {$pending->description}",
+                    'category' => 'Pending EDC',
+                    'description' => "EDC settlement: {$pending->description}",
                     'date' => $completedDate,
                 ]);
 
-                // Catat MDR sebagai expense terpisah
-                $mdrRate = ($pending->bank_type ?? 'non_bca') === 'bca' ? 0.15 : 1.00;
-                $mdrAmount = (int) ($pending->amount * $mdrRate / 100);
-                if ($mdrAmount > 0) {
+                if ($pending->mdr_amount > 0) {
                     Expense::create([
                         'account_id' => $data['completed_account_id'],
-                        'amount' => $mdrAmount,
+                        'amount' => $pending->mdr_amount,
                         'category' => 'Biaya MDR',
-                        'description' => "Biaya MDR {$pending->type} (" . ($pending->bank_type ?? 'umum') . ") untuk {$pending->description}",
+                        'description' => "Biaya MDR EDC (" . ($pending->bank_type ?? 'umum') . ") untuk {$pending->description}",
                         'date' => $completedDate,
                     ]);
                 }
@@ -133,7 +141,7 @@ class PendingTransactionService
                     'status' => 'completed',
                     'completed_date' => $completedDate,
                     'completed_type' => $data['completed_type'],
-                    'completed_account_id' => $data['completed_account_id'] ?? null,
+                    'completed_account_id' => $data['completed_account_id'],
                     'income_id' => $income->id,
                 ]);
             }
@@ -167,12 +175,10 @@ class PendingTransactionService
         return DB::transaction(function () use ($id) {
             $pending = PendingTransaction::lockForUpdate()->findOrFail($id);
 
-            // Hanya transaksi pending yang bisa dihapus
             if ($pending->status !== 'pending') {
                 throw new \DomainException('Hanya transaksi pending yang bisa dihapus.');
             }
 
-            // Hapus Expense/Income terkait
             $this->deleteLinkedTransactions($pending);
 
             return $pending->delete();
@@ -181,12 +187,10 @@ class PendingTransactionService
 
     private function deleteLinkedTransactions(PendingTransaction $pending): void
     {
-        // Hapus Income terkait (exact match by ID)
         if ($pending->income_id) {
             Income::where('id', $pending->income_id)->delete();
         }
 
-        // Hapus Expense terkait (exact match by ID)
         if ($pending->expense_id) {
             Expense::where('id', $pending->expense_id)->delete();
         }

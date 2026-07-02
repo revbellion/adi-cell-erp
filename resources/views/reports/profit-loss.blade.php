@@ -146,6 +146,47 @@
     </div>
 </div>
 
+{{-- ═══ DIVISI JASA ═══ --}}
+@php
+    $cetakProfit = $cetakRevenue - $cetakExpense;
+    $servisProfit = $servisRevenue - $servisExpense;
+@endphp
+<div class="card card-modern shadow-sm mb-4">
+    <div class="card-header bg-transparent py-2">
+        <span class="fw-semibold" style="font-size:0.85rem;">DIVISI JASA</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="width:40%;"></th>
+                        <th class="text-end fw-semibold" style="font-size:0.8rem;">Jasa Cetak</th>
+                        <th class="pe-3 text-end fw-semibold" style="font-size:0.8rem;">Jasa Servis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ps-3">Pendapatan</td>
+                        <td class="text-end fw-semibold" style="color:var(--theme-primary);">{{ rp($cetakRevenue) }}</td>
+                        <td class="pe-3 text-end fw-semibold" style="color:var(--theme-primary);">{{ rp($servisRevenue) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="ps-3">Biaya</td>
+                        <td class="text-end text-danger">{{ $cetakExpense > 0 ? '(' . rp($cetakExpense) . ')' : rp(0) }}</td>
+                        <td class="pe-3 text-end text-danger">{{ $servisExpense > 0 ? '(' . rp($servisExpense) . ')' : rp(0) }}</td>
+                    </tr>
+                    <tr style="border-top:2px solid var(--border-subtle);background:rgba(var(--theme-primary-rgb),0.04);">
+                        <td class="ps-3 fw-bold">Laba / (Rugi)</td>
+                        <td class="text-end fw-bold" style="color:{{ $cetakProfit >= 0 ? '#10b981' : '#ef4444' }};">{{ rp($cetakProfit) }}</td>
+                        <td class="pe-3 text-end fw-bold" style="color:{{ $servisProfit >= 0 ? '#10b981' : '#ef4444' }};">{{ rp($servisProfit) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 {{-- Info Tambahan --}}
 <div class="row g-3">
     <div class="col-md-4">

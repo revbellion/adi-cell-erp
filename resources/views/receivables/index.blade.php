@@ -82,6 +82,7 @@
                         <th class="ps-3" style="width:40px;"><input type="checkbox" class="form-check-input bulk-select-all" id="check-all" onclick="toggleAll(this)"></th>
                         <th class="sortable" data-sort="date">Tanggal</th>
                         <th class="sortable" data-sort="string">Nama</th>
+                        <th class="sortable" data-sort="string">No. HP</th>
                         <th class="sortable" data-sort="number">Total</th>
                         <th class="sortable" data-sort="date">Jatuh Tempo</th>
                         <th class="sortable" data-sort="number">Sisa</th>
@@ -99,6 +100,7 @@
                         </td>
                         <td>{{ tgl($receivable->date) }}</td>
                         <td class="fw-semibold">{{ $receivable->name }}</td>
+                        <td>{{ $receivable->phone ?? '-' }}</td>
                         <td class="fw-semibold">{{ rp($receivable->amount) }}</td>
                         <td>{{ tgl($receivable->due_date) }}</td>
                         <td class="fw-semibold">{{ rp($receivable->remaining) }}</td>
@@ -147,7 +149,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">Belum ada data piutang</td>
+                        <td colspan="9" class="text-center text-muted py-4">Belum ada data piutang</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -190,7 +192,7 @@
                     <select name="customer_id" class="form-select" id="tambah-customer-select">
                         <option value="">Tanpa Pelanggan / Ketik Manual</option>
                         @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}" data-name="{{ $customer->name }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
+                        <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -235,7 +237,7 @@
                     <select name="customer_id" class="form-select" id="edit-customer-select">
                         <option value="">Tanpa Pelanggan</option>
                         @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                        <option value="{{ $customer->id }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -449,7 +451,7 @@ function updateBatch() {
 
     checked.forEach(function(cb) {
         var remaining = parseInt(cb.dataset.remaining) || 0;
-        var name = cb.closest('tr').querySelector('td:nth-child(3)').textContent.trim();
+        var name = cb.closest('tr').querySelector('td:nth-child(4)').textContent.trim();
         total += remaining;
         ids.push(cb.value);
         listHtml += '<div class="d-flex justify-content-between"><span>' + name + '</span><span class="fw-semibold">' + formatRupiah(remaining) + '</span></div>';
@@ -480,9 +482,11 @@ document.getElementById('tambah-customer-select')?.addEventListener('change', fu
     if (selected.value) {
         document.getElementById('tambah-name').value = selected.dataset.name;
         document.getElementById('tambah-name').readOnly = true;
+        document.querySelector('[name="phone"]').value = selected.dataset.phone || '';
     } else {
         document.getElementById('tambah-name').value = '';
         document.getElementById('tambah-name').readOnly = false;
+        document.querySelector('[name="phone"]').value = '';
     }
 });
 </script>

@@ -3,10 +3,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0">
-        <i class="fas fa-store me-2" style="color:var(--theme-primary);"></i>
-        Selamat datang, {{ Auth::user()->name }}
-    </h5>
+    <h4 class="fw-bold mb-0">Selamat datang, {{ Auth::user()->name }}</h4>
     <span class="text-muted small">{{ \Carbon\Carbon::now()->isoFormat('dddd, D MMMM Y') }}</span>
 </div>
 

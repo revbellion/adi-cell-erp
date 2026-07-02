@@ -103,8 +103,20 @@ class BillService
 
     public function updateBill(RecurringBill $bill, array $data): RecurringBill
     {
-        $bill->update($data);
-        return $bill;
+        return DB::transaction(function () use ($bill, $data) {
+            $oldAccountId = $bill->account_id;
+            $bill->update($data);
+
+            if (array_key_exists('account_id', $data) && $data['account_id'] != $oldAccountId) {
+                $expenseIds = $bill->payments()->pluck('expense_id')->filter();
+                if ($expenseIds->isNotEmpty()) {
+                    Expense::whereIn('id', $expenseIds)
+                        ->update(['account_id' => $data['account_id']]);
+                }
+            }
+
+            return $bill;
+        });
     }
 
     public function deleteBill(RecurringBill $bill): void

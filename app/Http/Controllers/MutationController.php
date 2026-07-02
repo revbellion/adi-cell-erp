@@ -23,7 +23,7 @@ class MutationController extends Controller
         $filters = $this->parseFilters($request);
         $result = $this->mutationService->getAll($filters);
 
-        $accounts = Account::active()->get();
+        $accounts = Account::active()->visible()->get();
         $period = now()->format('Y-m');
         $accountBalances = app(DashboardService::class)->calculateAccountBalances($accounts, $period);
 

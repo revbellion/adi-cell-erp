@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreExpenseRequest extends FormRequest
 {
@@ -13,31 +14,17 @@ class StoreExpenseRequest extends FormRequest
 
     public function rules(): array
     {
+        $allowedCategories = array_merge(
+            array_column(config('categories.expense.user'), 'key'),
+            array_column(config('categories.expense.system'), 'key')
+        );
+
         return [
-            'date' => [
-                'required',
-                'date',
-                'before_or_equal:today',
-            ],
-            'account_id' => [
-                'required',
-                'exists:accounts,id',
-            ],
-            'category' => [
-                'required',
-                'string',
-                'max:100',
-            ],
-            'amount' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-            'description' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+            'date' => ['required', 'date', 'before_or_equal:today'],
+            'account_id' => ['required', 'exists:accounts,id'],
+            'category' => ['required', 'string', 'max:100', Rule::in($allowedCategories)],
+            'amount' => ['required', 'integer', 'min:1'],
+            'description' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -51,6 +38,7 @@ class StoreExpenseRequest extends FormRequest
             'max' => ':attribute maksimal :max karakter.',
             'date' => ':attribute harus berupa tanggal yang valid.',
             'before_or_equal' => ':attribute tidak boleh melebihi hari ini.',
+            'in' => ':attribute tidak valid. Pilih dari daftar kategori yang tersedia.',
         ];
     }
 

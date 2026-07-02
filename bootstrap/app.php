@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeadersMiddleware::class,
+        ]);
+
         $middleware->redirectUsersTo(function () {
             $user = Auth::user();
             if ($user && ($user->isAdmin() || $user->hasPermission('dashboard'))) {
@@ -26,6 +31,11 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return route('stock.sales');
         });
+
+        // Force HTTPS di production
+        if (env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -48,15 +48,11 @@ class DashboardService
 
         $accounts = $this->loadBalances($period);
         [$totalReceivable, $totalEquity] = $this->getReceivableAndEquity($accounts);
-        [$cashBalance, $bcaBalance] = $this->getCashBcaSummary($accounts);
+        [$cashBalance, $bcaBalance, $transitBalance] = $this->getCashBcaTransitSummary($accounts);
 
         // Profit = Laba Rugi standar (cocok sama Laporan Laba Rugi)
-        $systemIncome = ['Piutang', 'Transfer Masuk', 'Pending EDC'];
-        $systemExpense = ['Stok Masuk', 'Piutang', 'Cash Keluar'];
-
         $totalIncome = Income::whereBetween('date', [$dateStart, $dateEnd])
-            ->whereNotIn('category', $systemIncome)
-            ->where('category', 'not like', 'Pending %')
+            ->whereNotIn('category', $this->nonPnlIncomeCategories())
             ->sum('amount') ?? 0;
 
         $totalRevenue = $totalIncome;
@@ -65,14 +61,20 @@ class DashboardService
             ->sum('hpp_amount') ?? 0;
 
         $totalOpExpense = Expense::whereBetween('date', [$dateStart, $dateEnd])
-            ->whereNotIn('category', $systemExpense)
-            ->where('category', 'not like', 'Pending %')
+            ->whereNotIn('category', $this->nonPnlExpenseCategories())
             ->sum('amount') ?? 0;
 
         $netProfit = $totalIncome - $totalHpp - $totalOpExpense;
 
-        // Pakai filtered expense buat card "Pengeluaran Bulan Ini"
-        $totalExpense = $totalOpExpense;
+        // Card "Biaya Operasional" = Listrik, Gaji, Amal, Internet
+        $totalExpense = Expense::whereBetween('date', [$dateStart, $dateEnd])
+            ->where(function ($q) {
+                $q->where('category', 'like', '%listrik%')
+                  ->orWhere('category', 'like', '%gaji%')
+                  ->orWhere('category', 'like', '%amal%')
+                  ->orWhere('category', 'like', '%internet%');
+            })
+            ->sum('amount') ?? 0;
 
         $products = Product::activeWithCategory()->get();
 
@@ -83,6 +85,7 @@ class DashboardService
             'totalExpense' => $totalExpense,
             'netProfit' => $netProfit,
             'bcaBalance' => $bcaBalance,
+            'transitBalance' => $transitBalance,
             'totalIncome' => $totalIncome,
             'cashBalance' => $cashBalance,
             'products' => $products,
@@ -120,12 +123,13 @@ class DashboardService
         return [$totalReceivable, $totalEquity];
     }
 
-    private function getCashBcaSummary($accounts): array
+    private function getCashBcaTransitSummary($accounts): array
     {
         $cashBalance = (int) (($accounts->firstWhere('name', config('accounts.cash_name'))?->balance) ?? 0);
         $bcaBalance = (int) (($accounts->firstWhere('name', config('accounts.bca_name'))?->balance) ?? 0);
+        $transitBalance = (int) (($accounts->firstWhere('name', config('accounts.in_transit_name'))?->balance) ?? 0);
 
-        return [$cashBalance, $bcaBalance];
+        return [$cashBalance, $bcaBalance, $transitBalance];
     }
 
     private function getDailyProfits(): array
@@ -133,19 +137,14 @@ class DashboardService
         $today = Carbon::now()->endOfDay();
         $sevenDaysAgo = Carbon::now()->subDays(6)->startOfDay();
 
-        $systemIncome = ['Piutang', 'Transfer Masuk', 'Pending EDC'];
-        $systemExpense = ['Stok Masuk', 'Piutang', 'Cash Keluar'];
-
         // Pendapatan asli (sama kayak rumus profit utama)
         $dailyIncomes = Income::whereBetween('date', [$sevenDaysAgo, $today])
-            ->whereNotIn('category', $systemIncome)
-            ->where('category', 'not like', 'Pending %')
+            ->whereNotIn('category', $this->nonPnlIncomeCategories())
             ->selectRaw('DATE(date) as d, SUM(amount) as total')->groupBy('d')->pluck('total', 'd');
 
         // Biaya asli (sama kayak rumus profit utama)
         $dailyExpenses = Expense::whereBetween('date', [$sevenDaysAgo, $today])
-            ->whereNotIn('category', $systemExpense)
-            ->where('category', 'not like', 'Pending %')
+            ->whereNotIn('category', $this->nonPnlExpenseCategories())
             ->selectRaw('DATE(date) as d, SUM(amount) as total')->groupBy('d')->pluck('total', 'd');
 
         $dailyGrossProfit = HppRecord::whereBetween('date', [$sevenDaysAgo, $today])
@@ -255,5 +254,29 @@ class DashboardService
             ->where('expired_at', '<=', $warningDate)
             ->with('product.category')
             ->get();
+    }
+
+    /**
+     * Kategori income yang tidak masuk pendapatan operasional (cash movement murni).
+     */
+    private function nonPnlIncomeCategories(): array
+    {
+        return collect(config('categories.income.system'))
+            ->where('pnl', false)
+            ->pluck('key')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Kategori expense yang tidak masuk biaya operasional (cash movement murni).
+     */
+    private function nonPnlExpenseCategories(): array
+    {
+        $system = collect(config('categories.expense.system'))
+            ->where('pnl', false)->pluck('key');
+        $user = collect(config('categories.expense.user'))
+            ->where('pnl', false)->pluck('key');
+        return $system->merge($user)->values()->all();
     }
 }

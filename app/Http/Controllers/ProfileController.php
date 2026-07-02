@@ -12,23 +12,12 @@ class ProfileController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $permissionLabels = [
-            'dashboard' => 'Dashboard',
-            'pos' => 'POS Penjualan',
-            'stock_in' => 'Stok Masuk',
-            'stock_opname' => 'Stok Opname',
-            'products' => 'Data Barang',
-            'categories' => 'Kategori Barang',
-            'stock_report' => 'Laporan Stok',
-            'accounts' => 'Akun & Modal Awal',
-            'mutations' => 'Mutasi',
-            'incomes' => 'Pendapatan',
-            'expenses' => 'Pengeluaran',
-            'receivables' => 'Piutang',
-            'bills' => 'Tagihan',
-            'summary' => 'Ringkasan',
-            'cash_counter' => 'Cash Counter',
-        ];
+
+        // Build label lookup from config
+        $permissionLabels = [];
+        foreach (config('permissions.LIST') as $perm) {
+            $permissionLabels[$perm['key']] = $perm['label'];
+        }
 
         return view('profile.index', compact('user', 'permissionLabels'));
     }
@@ -37,7 +26,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         $user = auth()->user();

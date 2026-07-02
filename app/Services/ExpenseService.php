@@ -2,16 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\BillPayment;
 use App\Models\Expense;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ExpenseService
 {
-    private array $cashMovementCategories = [
-        'Stok Masuk', 'Piutang', 'Cash Keluar', 'Biaya MDR',
-    ];
-
     public function create(array $data): Expense
     {
         $data['date'] = Carbon::parse($data['date'])->format('Y-m-d') . ' ' . now()->format('H:i:s');
@@ -29,8 +26,7 @@ class ExpenseService
             $expense = Expense::findOrFail($id);
 
             // Blokir edit expense sistem
-            $systemCategories = ['Piutang', 'Cash Keluar', 'Stok Opname Minus', 'Penyesuaian Kas', 'Biaya MDR'];
-            if (in_array($expense->category, $systemCategories)) {
+            if (in_array($expense->category, $this->systemCategories())) {
                 throw new \DomainException('Pengeluaran sistem tidak bisa diedit.');
             }
 
@@ -39,9 +35,9 @@ class ExpenseService
                 throw new \DomainException('Pengeluaran stok masuk tidak bisa diedit.');
             }
 
-            // Blokir edit expense dari pending transaction
-            if ($expense->category && str_starts_with($expense->category, 'Pending ')) {
-                throw new \DomainException('Pengeluaran pending transaction tidak bisa diedit.');
+            // Blokir edit expense dari tagihan bulanan
+            if (BillPayment::where('expense_id', $expense->id)->exists()) {
+                throw new \DomainException('Pengeluaran dari tagihan bulanan tidak bisa diedit. Ubah dari modul Tagihan Bulanan.');
             }
 
             $expense->update($data);
@@ -55,8 +51,7 @@ class ExpenseService
             $expense = Expense::findOrFail($id);
 
             // Blokir hapus expense sistem
-            $systemCategories = ['Piutang', 'Cash Keluar', 'Stok Opname Minus', 'Penyesuaian Kas', 'Biaya MDR'];
-            if (in_array($expense->category, $systemCategories)) {
+            if (in_array($expense->category, $this->systemCategories())) {
                 throw new \DomainException('Pengeluaran sistem tidak bisa dihapus.');
             }
 
@@ -65,13 +60,10 @@ class ExpenseService
                 throw new \DomainException('Pengeluaran stok masuk tidak bisa dihapus langsung.');
             }
 
-            // Blokir hapus expense dari pending transaction
-            if ($expense->category && str_starts_with($expense->category, 'Pending ')) {
-                throw new \DomainException('Pengeluaran pending transaction tidak bisa dihapus langsung.');
+            // Blokir hapus expense dari tagihan bulanan
+            if (BillPayment::where('expense_id', $expense->id)->exists()) {
+                throw new \DomainException('Pengeluaran dari tagihan bulanan tidak bisa dihapus. Hapus dari modul Tagihan Bulanan.');
             }
-
-            // Hapus bill_payment terkait jika ada
-            \App\Models\BillPayment::where('expense_id', $expense->id)->delete();
 
             $expense->delete();
             return true;
@@ -80,7 +72,7 @@ class ExpenseService
 
     public function getAll(array $filters = []): array
     {
-        $query = Expense::with('account');
+        $query = Expense::with(['account', 'billPayment']);
 
         if (!empty($filters['date_from'])) {
             $query->whereDate('date', '>=', $filters['date_from']);
@@ -95,14 +87,9 @@ class ExpenseService
         }
 
         if (!empty($filters['type'])) {
-            if ($filters['type'] === 'real') {
-                $query->whereNotIn('category', $this->cashMovementCategories)
-                      ->where('category', 'not like', 'Pending %');
-            } elseif ($filters['type'] === 'cash_movement') {
-                $query->where(function ($q) {
-                    $q->whereIn('category', $this->cashMovementCategories)
-                      ->orWhere('category', 'like', 'Pending %');
-                });
+            $movementCats = $this->cashMovementCategories();
+            if ($filters['type'] === 'cash_movement') {
+                $query->whereIn('category', $movementCats);
             }
         }
 
@@ -123,5 +110,28 @@ class ExpenseService
     public function getCategories(): \Illuminate\Support\Collection
     {
         return Expense::select('category')->distinct()->pluck('category');
+    }
+
+    /**
+     * Kategori yang tergolong cash movement (mutasi) untuk filter tab.
+     */
+    private function cashMovementCategories(): array
+    {
+        $system = collect(config('categories.expense.system'))
+            ->where('filter', 'cash_movement')->pluck('key');
+        $user = collect(config('categories.expense.user'))
+            ->where('filter', 'cash_movement')->pluck('key');
+        return $system->merge($user)->values()->all();
+    }
+
+    /**
+     * Kategori sistem yang tidak bisa diedit/dihapus user.
+     */
+    private function systemCategories(): array
+    {
+        return collect(config('categories.expense.system'))
+            ->pluck('key')
+            ->values()
+            ->all();
     }
 }

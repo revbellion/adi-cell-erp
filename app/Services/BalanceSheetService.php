@@ -78,13 +78,17 @@ class BalanceSheetService
 
         $totalModalAwal = $openingBalances->sum();
 
-        // 2. Laba ditahan (profit from start of year until before this month)
+        // 2. Prive (pengambilan profit owner)
+        $totalPrive = Expense::where('date', '<=', $targetDate)
+            ->where('category', 'Prive')->sum('amount');
+
+        // 3. Laba ditahan (profit from start of year until before this month)
         $retainedEarnings = $this->calculateRetainedEarnings($targetDate);
 
-        // 3. Laba periode berjalan
+        // 4. Laba periode berjalan
         $currentProfit = $this->calculatePeriodProfit($monthStart, $targetDate);
 
-        $totalEquity = $totalModalAwal + $retainedEarnings + $currentProfit;
+        $totalEquity = $totalModalAwal + $retainedEarnings + $currentProfit - $totalPrive;
 
         return [
             'date' => $targetDate->format('Y-m-d'),
@@ -101,6 +105,7 @@ class BalanceSheetService
             'totalCurrentAssets' => $totalCurrentAssets,
             'totalLiabilities' => $totalLiabilities,
             'totalModalAwal' => $totalModalAwal,
+            'totalPrive' => $totalPrive,
             'retainedEarnings' => $retainedEarnings,
             'currentProfit' => $currentProfit,
             'totalEquity' => $totalEquity,
@@ -178,25 +183,42 @@ class BalanceSheetService
 
     private function calculateProfitBetween(Carbon $start, Carbon $end): int
     {
-        // System categories yang bukan pendapatan operasional
-        $systemIncomeCategories = ['Transfer Masuk', 'Piutang', 'Pending EDC'];
-        $systemExpenseCategories = ['Stok Masuk', 'Piutang', 'Cash Keluar'];
-        $pendingPrefix = 'Pending %';
-
         $totalIncome = Income::whereBetween('date', [$start, $end])
-            ->whereNotIn('category', $systemIncomeCategories)
-            ->where('category', 'not like', $pendingPrefix)
+            ->whereNotIn('category', $this->nonPnlIncomeCategories())
             ->sum('amount') ?? 0;
 
         $totalExpense = Expense::whereBetween('date', [$start, $end])
-            ->whereNotIn('category', $systemExpenseCategories)
-            ->where('category', 'not like', $pendingPrefix)
+            ->whereNotIn('category', $this->nonPnlExpenseCategories())
             ->sum('amount') ?? 0;
 
         $totalHpp = HppRecord::whereBetween('date', [$start, $end])
             ->sum('hpp_amount') ?? 0;
 
         return $totalIncome - $totalHpp - $totalExpense;
+    }
+
+    /**
+     * Kategori income yang tidak masuk pendapatan operasional.
+     */
+    private function nonPnlIncomeCategories(): array
+    {
+        return collect(config('categories.income.system'))
+            ->where('pnl', false)
+            ->pluck('key')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Kategori expense yang tidak masuk biaya operasional.
+     */
+    private function nonPnlExpenseCategories(): array
+    {
+        $system = collect(config('categories.expense.system'))
+            ->where('pnl', false)->pluck('key');
+        $user = collect(config('categories.expense.user'))
+            ->where('pnl', false)->pluck('key');
+        return $system->merge($user)->values()->all();
     }
 
     public function getAvailableDates(): array

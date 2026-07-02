@@ -13,8 +13,8 @@ class OpnameSaldoService
     public function getAccountBalances(string $date): array
     {
         $period = Carbon::parse($date)->format('Y-m');
-        $dateStart = Carbon::parse($date)->startOfMonth()->format('Y-m-d');
-        $dateEnd = Carbon::parse($date)->endOfMonth()->format('Y-m-d');
+        $dateStart = Carbon::parse($date)->startOfMonth();
+        $dateEnd = Carbon::parse($date)->endOfMonth();
 
         // Ambil semua akun PPOB dan e-wallet
         $accounts = Account::active()->whereIn('type', ['ppob', 'ewallet'])->get();
@@ -32,7 +32,7 @@ class OpnameSaldoService
         return $balances;
     }
 
-    private function calculateBalance(Account $account, string $period, string $dateStart, string $dateEnd): int
+    private function calculateBalance(Account $account, string $period, $dateStart, $dateEnd): int
     {
         $openingBalance = \App\Models\OpeningBalance::where('period', $period)
             ->where('account_id', $account->id)
@@ -78,8 +78,8 @@ class OpnameSaldoService
 
                 $account = Account::findOrFail($accountId);
                 $period = Carbon::parse($date)->format('Y-m');
-                $dateStart = Carbon::parse($date)->startOfMonth()->format('Y-m-d');
-                $dateEnd = Carbon::parse($date)->endOfMonth()->format('Y-m-d');
+                $dateStart = Carbon::parse($date)->startOfMonth();
+                $dateEnd = Carbon::parse($date)->endOfMonth();
 
                 // Cek apakah sudah ada opname untuk akun & tanggal ini
                 $existing = OpnameSaldo::where('account_id', $accountId)

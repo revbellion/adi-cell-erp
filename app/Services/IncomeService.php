@@ -8,14 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class IncomeService
 {
-    private array $cashMovementCategories = [
-        'Piutang', 'Transfer Masuk', 'Pending EDC',
-    ];
-
-    private array $systemCategories = [
-        'Piutang', 'Penjualan', 'Transfer Masuk', 'Stok Opname Plus', 'Penyesuaian Kas', 'Pending EDC', 'Jasa Cetak', 'Jasa Servis',
-    ];
-
     public function create(array $data): Income
     {
         return DB::transaction(function () use ($data) {
@@ -28,7 +20,7 @@ class IncomeService
         return DB::transaction(function () use ($id, $data) {
             $income = Income::findOrFail($id);
 
-            if (in_array($income->category, $this->systemCategories)) {
+            if (in_array($income->category, $this->systemCategories())) {
                 throw new \DomainException('Pendapatan sistem tidak bisa diedit.');
             }
 
@@ -42,7 +34,7 @@ class IncomeService
         return DB::transaction(function () use ($id) {
             $income = Income::findOrFail($id);
 
-            if (in_array($income->category, $this->systemCategories)) {
+            if (in_array($income->category, $this->systemCategories())) {
                 throw new \DomainException('Pendapatan sistem tidak bisa dihapus.');
             }
 
@@ -72,14 +64,11 @@ class IncomeService
         }
 
         if (!empty($filters['type'])) {
+            $movementCats = $this->cashMovementCategories();
             if ($filters['type'] === 'real') {
-                $query->whereNotIn('category', $this->cashMovementCategories)
-                      ->where('category', 'not like', 'Pending %');
+                $query->whereNotIn('category', $movementCats);
             } elseif ($filters['type'] === 'cash_movement') {
-                $query->where(function ($q) {
-                    $q->whereIn('category', $this->cashMovementCategories)
-                      ->orWhere('category', 'like', 'Pending %');
-                });
+                $query->whereIn('category', $movementCats);
             }
         }
 
@@ -100,5 +89,28 @@ class IncomeService
     public function getCategories(): \Illuminate\Support\Collection
     {
         return Income::select('category')->distinct()->pluck('category');
+    }
+
+    /**
+     * Kategori income yang tergolong cash movement (mutasi) untuk filter tab.
+     */
+    private function cashMovementCategories(): array
+    {
+        return collect(config('categories.income.system'))
+            ->where('filter', 'cash_movement')
+            ->pluck('key')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Kategori sistem yang tidak bisa diedit/dihapus user.
+     */
+    private function systemCategories(): array
+    {
+        return collect(config('categories.income.system'))
+            ->pluck('key')
+            ->values()
+            ->all();
     }
 }
