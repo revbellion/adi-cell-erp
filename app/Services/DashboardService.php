@@ -129,20 +129,6 @@ class DashboardService
         $bcaBalance = (int) (($accounts->firstWhere('name', config('accounts.bca_name'))?->balance) ?? 0);
         $transitBalance = (int) (($accounts->firstWhere('name', config('accounts.in_transit_name'))?->balance) ?? 0);
 
-        // Hitung pending amounts untuk dashboard cards
-        $edcPending = \App\Models\PendingTransaction::where('status', 'pending')
-            ->where('type', 'edc')
-            ->sum('amount') ?? 0;
-        
-        $transferPending = \App\Models\PendingTransaction::where('status', 'pending')
-            ->where('type', 'transfer')
-            ->sum('amount') ?? 0;
-
-        // SALDO CASH = Cash balance - EDC pending (cash dalam perjalanan)
-        // SALDO BCA = BCA balance - Transfer pending (BCA dalam perjalanan)
-        $cashBalance = $cashBalance - $edcPending;
-        $bcaBalance = $bcaBalance - $transferPending;
-
         return [$cashBalance, $bcaBalance, $transitBalance];
     }
 
