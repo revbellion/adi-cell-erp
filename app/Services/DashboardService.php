@@ -129,14 +129,14 @@ class DashboardService
         $cashBalance = (int) (($accounts->firstWhere('name', config('accounts.cash_name'))?->balance) ?? 0);
         $bcaBalance = (int) (($accounts->firstWhere('name', config('accounts.bca_name'))?->balance) ?? 0);
 
-        // BCA In Process = transfer pending (uang di transit, belum diambil cash)
+        // BCA In Process = EDC pending (cash sudah keluar, bank belum settle)
         $bcaInProcess = \App\Models\PendingTransaction::where('status', 'pending')
-            ->where('type', 'transfer')
+            ->where('type', 'edc')
             ->sum('amount') ?? 0;
 
-        // Cash In Process = EDC pending (cash sudah keluar, belum masuk bank)
+        // Cash In Process = transfer pending (BCA sudah terima, cash belum diserahkan)
         $cashInProcess = \App\Models\PendingTransaction::where('status', 'pending')
-            ->where('type', 'edc')
+            ->where('type', 'transfer')
             ->sum('amount') ?? 0;
 
         return [$cashBalance, $bcaBalance, $bcaInProcess, $cashInProcess];
