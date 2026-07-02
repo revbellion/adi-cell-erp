@@ -40,14 +40,6 @@
     </div>
 </form>
 
-{{-- Tipe filter tabs --}}
-<ul class="nav nav-tabs border-0 mb-4">
-    <li class="nav-item">
-        <a class="nav-link border-0 fw-semibold {{ !$typeFilter ? 'active' : '' }}"
-           href="{{ route('incomes.index', request()->except('type')) }}">Semua</a>
-    </li>
-</ul>
-
 <div class="bulk-action-bar mb-3 d-none" id="bulkActionBar">
     <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background:rgba(var(--theme-primary-rgb),0.08);border:1px solid rgba(var(--theme-primary-rgb),0.2);">
         <span class="fw-semibold" style="font-size:0.85rem;"><span id="bulkCount">0</span> dipilih</span>
