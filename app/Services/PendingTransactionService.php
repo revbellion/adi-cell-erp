@@ -51,13 +51,10 @@ class PendingTransactionService
             ]);
 
             if ($data['type'] === 'transfer') {
-                // Transfer: Uang sudah masuk BCA, tapi cash belum keluar
-                $bca = Account::where('name', config('accounts.bca_name'))->first();
-                if (!$bca) {
-                    throw new \DomainException('Akun BCA tidak ditemukan.');
-                }
+                // Transfer: Uang masuk ke Dalam Perjalanan dulu, baru ke Cash saat complete
+                $transit = $this->getTransitAccount();
                 $income = Income::create([
-                    'account_id' => $bca->id,
+                    'account_id' => $transit->id,
                     'amount' => $pending->amount,
                     'category' => 'Transfer Masuk',
                     'description' => "Transfer dari {$pending->description}",
