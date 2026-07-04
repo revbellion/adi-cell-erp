@@ -68,7 +68,7 @@ class CashCounterService
 
         return DB::transaction(function () use ($session, $data) {
             $session->incomes()->whereIn('category', ['OMSET'])->delete();
-            $session->expenses()->whereIn('category', ['Kekurangan Kas'])->delete();
+            $session->expenses()->whereIn('category', ['OMSET'])->delete();
 
             $session->update([
                 'account_id' => $data['account_id'] ?? null,
@@ -178,7 +178,7 @@ class CashCounterService
         } else {
             Expense::create(array_merge($data, [
                 'amount' => abs($diff),
-                'category' => 'Kekurangan Kas',
+                'category' => 'OMSET',
             ]));
         }
     }

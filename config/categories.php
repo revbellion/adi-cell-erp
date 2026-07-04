@@ -34,7 +34,6 @@ return [
             ['key' => 'Pending EDC',       'pnl' => false, 'filter' => 'cash_movement'],
             ['key' => 'OMSET',             'pnl' => false, 'filter' => 'cash_movement'],
             ['key' => 'Retur Penjualan',   'pnl' => false, 'filter' => 'cash_movement'],
-            ['key' => 'Kekurangan Kas',    'pnl' => true,  'filter' => 'cash_movement'],
         ],
     ],
 
