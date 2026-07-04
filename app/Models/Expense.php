@@ -16,6 +16,7 @@ class Expense extends Model
         'description',
         'stock_transaction_id',
         'receivable_id',
+        'cash_counter_session_id',
     ];
 
     protected function casts(): array
@@ -46,4 +47,8 @@ class Expense extends Model
         return $this->hasOne(BillPayment::class);
     }
 
+    public function cashCounterSession(): BelongsTo
+    {
+        return $this->belongsTo(CashCounterSession::class);
+    }
 }

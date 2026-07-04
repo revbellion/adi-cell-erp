@@ -213,8 +213,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/sessions/{session}', [CashCounterController::class, 'show'])->name('sessions.show');
         Route::put('/sessions/{session}', [CashCounterController::class, 'update'])->name('sessions.update');
         Route::delete('/sessions/{session}', [CashCounterController::class, 'destroy'])->name('sessions.destroy');
-        Route::post('/sessions/{session}/adjust', [CashCounterController::class, 'adjust'])->name('sessions.adjust');
-        Route::delete('/sessions/{session}/adjust', [CashCounterController::class, 'destroyAdjustment'])->name('sessions.adjust.destroy');
+        Route::get('/period-transactions', [CashCounterController::class, 'periodTransactions'])->name('period-transactions');
     });
 
     // Users management — cuma admin

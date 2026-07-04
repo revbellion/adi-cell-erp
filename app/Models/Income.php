@@ -16,6 +16,7 @@ class Income extends Model
         'category',
         'stock_transaction_id',
         'receivable_id',
+        'cash_counter_session_id',
     ];
 
     protected function casts(): array
@@ -39,5 +40,10 @@ class Income extends Model
     public function receivable(): BelongsTo
     {
         return $this->belongsTo(Receivable::class);
+    }
+
+    public function cashCounterSession(): BelongsTo
+    {
+        return $this->belongsTo(CashCounterSession::class);
     }
 }
