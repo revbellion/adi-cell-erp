@@ -51,29 +51,29 @@
 
 <div class="card card-modern shadow-sm">
     <div class="card-body p-0">
-        <div class="px-3 pt-3 nav-tabs-wrapper">
-            <ul class="nav nav-tabs border-0">
-                <li class="nav-item">
-                    <a class="nav-link border-0 fw-semibold {{ request('status') == '' ? 'active' : '' }}" 
-                       href="{{ route('receivables.index') }}">Semua</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link border-0 fw-semibold {{ request('status') == 'unpaid' ? 'active' : '' }}" 
-                       href="{{ route('receivables.index', ['status' => 'unpaid']) }}">Belum Lunas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link border-0 fw-semibold {{ request('status') == 'paid' ? 'active' : '' }}" 
-                       href="{{ route('receivables.index', ['status' => 'paid']) }}">Lunas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link border-0 fw-semibold {{ request('status') == 'overdue' ? 'active' : '' }}" 
-                       href="{{ route('receivables.index', ['status' => 'overdue']) }}">Telat</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link border-0 fw-semibold {{ request('status') == 'voided' ? 'active' : '' }}" 
-                       href="{{ route('receivables.index', ['status' => 'voided']) }}">Batal</a>
-                </li>
-            </ul>
+        <div class="px-3 pt-3 filter-pills-wrapper">
+            <div class="filter-pills">
+                <a class="filter-pill {{ request('status') == '' ? 'active' : '' }} pill-all" 
+                   href="{{ route('receivables.index') }}">
+                    <i class="fas fa-list-ul"></i> Semua
+                </a>
+                <a class="filter-pill {{ request('status') == 'unpaid' ? 'active' : '' }} pill-unpaid" 
+                   href="{{ route('receivables.index', ['status' => 'unpaid']) }}">
+                    <i class="fas fa-clock"></i> Belum Lunas
+                </a>
+                <a class="filter-pill {{ request('status') == 'paid' ? 'active' : '' }} pill-paid" 
+                   href="{{ route('receivables.index', ['status' => 'paid']) }}">
+                    <i class="fas fa-check-circle"></i> Lunas
+                </a>
+                <a class="filter-pill {{ request('status') == 'overdue' ? 'active' : '' }} pill-overdue" 
+                   href="{{ route('receivables.index', ['status' => 'overdue']) }}">
+                    <i class="fas fa-exclamation-triangle"></i> Telat
+                </a>
+                <a class="filter-pill {{ request('status') == 'voided' ? 'active' : '' }} pill-voided" 
+                   href="{{ route('receivables.index', ['status' => 'voided']) }}">
+                    <i class="fas fa-ban"></i> Batal
+                </a>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table table-modern mb-0">

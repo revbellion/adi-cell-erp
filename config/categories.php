@@ -34,6 +34,7 @@ return [
             ['key' => 'Pending EDC',       'pnl' => false, 'filter' => 'cash_movement'],
             ['key' => 'OMSET',             'pnl' => false, 'filter' => 'cash_movement'],
             ['key' => 'Retur Penjualan',   'pnl' => false, 'filter' => 'cash_movement'],
+            ['key' => 'Kekurangan Kas',    'pnl' => true,  'filter' => 'cash_movement'],
         ],
     ],
 
@@ -58,6 +59,7 @@ return [
             ['key' => 'Retur Pembelian',   'pnl' => false, 'filter' => 'real'],
             ['key' => 'OMSET',             'pnl' => true,  'filter' => 'cash_movement'],
             ['key' => 'Jasa Tarik Tunai EDC', 'pnl' => true, 'filter' => 'real'],
+            ['key' => 'Kelebihan Kas',        'pnl' => true, 'filter' => 'real'],
         ],
     ],
 ];

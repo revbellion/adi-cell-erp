@@ -42,7 +42,7 @@ class CashCounterService
         }
 
         return DB::transaction(function () use ($data) {
-            return CashCounterSession::create([
+            $session = CashCounterSession::create([
                 'user_id' => auth()->id(),
                 'account_id' => $data['account_id'] ?? null,
                 'opening_balance' => $data['opening_balance'] ?? 0,
@@ -50,6 +50,10 @@ class CashCounterService
                 'denominations' => $data['denominations'],
                 'total_amount' => $data['total_amount'],
             ]);
+
+            $this->createAdjustment($session);
+
+            return $session;
         });
     }
 
@@ -63,6 +67,9 @@ class CashCounterService
         }
 
         return DB::transaction(function () use ($session, $data) {
+            $session->incomes()->whereIn('category', ['Kelebihan Kas'])->delete();
+            $session->expenses()->whereIn('category', ['Kekurangan Kas'])->delete();
+
             $session->update([
                 'account_id' => $data['account_id'] ?? null,
                 'opening_balance' => $data['opening_balance'] ?? 0,
@@ -70,6 +77,8 @@ class CashCounterService
                 'denominations' => $data['denominations'],
                 'total_amount' => $data['total_amount'],
             ]);
+
+            $this->createAdjustment($session);
 
             return $session->fresh();
         });
@@ -147,6 +156,31 @@ class CashCounterService
             'total_income' => $incomes->sum(),
             'total_expense' => $expenses->sum(),
         ];
+    }
+
+    private function createAdjustment(CashCounterSession $session): void
+    {
+        $diff = $session->total_amount - $session->opening_balance;
+        if ($diff === 0) return;
+
+        $data = [
+            'account_id' => $session->account_id,
+            'date' => now()->format('Y-m-d H:i:s'),
+            'description' => "{$session->title}",
+            'cash_counter_session_id' => $session->id,
+        ];
+
+        if ($diff > 0) {
+            Income::create(array_merge($data, [
+                'amount' => $diff,
+                'category' => 'Kelebihan Kas',
+            ]));
+        } else {
+            Expense::create(array_merge($data, [
+                'amount' => abs($diff),
+                'category' => 'Kekurangan Kas',
+            ]));
+        }
     }
 
     private function authorize(CashCounterSession $session): void

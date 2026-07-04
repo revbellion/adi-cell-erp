@@ -638,14 +638,14 @@
 @push('scripts')
 <script>
 const denoms = [
-    { key: 100000, label: 'Rp 100.000', color: '#f43f5e' },
-    { key: 50000,  label: 'Rp 50.000',  color: '#3b82f6' },
-    { key: 20000,  label: 'Rp 20.000',  color: '#10b981' },
-    { key: 10000,  label: 'Rp 10.000',  color: '#8b5cf6' },
-    { key: 5000,   label: 'Rp 5.000',   color: '#f59e0b' },
-    { key: 2000,   label: 'Rp 2.000',   color: '#6b7280' },
-    { key: 1000,   label: 'Rp 1.000',   color: '#84cc16' },
-    { key: 'c500',  value: 500,  label: 'Koin Rp 500',   color: '#a855f7' },
+    { key: '100k', value: 100000, label: 'Rp 100.000', color: '#f43f5e' },
+    { key: '50k',  value: 50000,  label: 'Rp 50.000',  color: '#3b82f6' },
+    { key: '20k',  value: 20000,  label: 'Rp 20.000',  color: '#10b981' },
+    { key: '10k',  value: 10000,  label: 'Rp 10.000',  color: '#8b5cf6' },
+    { key: '5k',   value: 5000,   label: 'Rp 5.000',   color: '#f59e0b' },
+    { key: '2k',   value: 2000,   label: 'Rp 2.000',   color: '#6b7280' },
+    { key: '1k',   value: 1000,   label: 'Rp 1.000',   color: '#84cc16' },
+    { key: '500',  value: 500,    label: 'Koin Rp 500',  color: '#a855f7' },
 ];
 
 let chartInstance = null;

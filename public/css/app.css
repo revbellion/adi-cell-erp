@@ -203,6 +203,69 @@
     .card-modern:hover {
         box-shadow: var(--card-shadow-hover);
     }
+    .filter-pills-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.25rem;
+    }
+    .filter-pills {
+        display: inline-flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1.5px solid transparent;
+        white-space: nowrap;
+    }
+    .filter-pill i {
+        font-size: 0.75rem;
+    }
+    .filter-pill.active {
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .filter-pill:not(.active) {
+        background: var(--bg-body);
+        color: var(--text-muted);
+        border-color: var(--border-table);
+    }
+    .filter-pill:not(.active):hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+    }
+    .pill-all:not(.active) i { color: var(--theme-primary); }
+    .pill-all.active { background: var(--theme-primary); }
+    .pill-unpaid:not(.active) i { color: #d97706; }
+    .pill-unpaid.active { background: #d97706; }
+    .pill-paid:not(.active) i { color: #16a34a; }
+    .pill-paid.active { background: #16a34a; }
+    .pill-overdue:not(.active) i { color: #dc2626; }
+    .pill-overdue.active { background: #dc2626; }
+    .pill-voided:not(.active) i { color: #6b7280; }
+    .pill-voided.active { background: #6b7280; }
+    .dark-mode .filter-pill:not(.active) {
+        background: rgba(255,255,255,0.06);
+        border-color: var(--border-table);
+        color: var(--text-muted);
+    }
+    .dark-mode .filter-pill:not(.active):hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+    }
+    .dark-mode .filter-pill.active {
+        box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+
     .card-modern .card-header {
         background: var(--bg-card);
         border-bottom: 1px solid var(--border-subtle);
@@ -436,9 +499,6 @@
         .card-header .d-flex.align-items-center.gap-2 .btn { width: 100%; }
         .page-header-actions { flex-wrap: wrap; gap: 0.35rem !important; }
         .page-header-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.6rem; }
-        .nav-tabs-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .nav-tabs-wrapper .nav { flex-wrap: nowrap; }
-        .nav-tabs-wrapper .nav .nav-link { white-space: nowrap; }
         .bill-card-row { flex-wrap: wrap; }
         .summary-bar { flex-wrap: wrap; gap: 0.5rem !important; }
         .summary-bar .d-flex.gap-4 { gap: 0.5rem !important; }
