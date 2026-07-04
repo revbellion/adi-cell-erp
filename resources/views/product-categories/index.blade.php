@@ -4,9 +4,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Kategori Barang</h4>
-    <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
-        <i class="fas fa-plus me-1"></i>Tambah Kategori
-    </button>
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
+            <i class="fas fa-plus me-1"></i>Tambah Kategori
+        </button>
+    </div>
 </div>
 
 <div class="bulk-action-bar mb-3 d-none" id="bulkActionBar">

@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\PendingTransaction;
 use App\Models\Income;
 use App\Models\Expense;
+use App\Models\Mutation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -15,9 +16,27 @@ class PendingTransactionService
     {
         $transit = Account::where('name', config('accounts.in_transit_name'))->first();
         if (!$transit) {
-            throw new \DomainException('Akun "Dalam Perjalanan" tidak ditemukan.');
+            throw new \DomainException('Akun "Pending" tidak ditemukan.');
         }
         return $transit;
+    }
+
+    private function getCashAccount(): Account
+    {
+        $cash = Account::where('name', config('accounts.cash_name'))->first();
+        if (!$cash) {
+            throw new \DomainException('Akun Cash tidak ditemukan.');
+        }
+        return $cash;
+    }
+
+    private function getBcaAccount(): Account
+    {
+        $bca = Account::where('name', config('accounts.bca_name'))->first();
+        if (!$bca) {
+            throw new \DomainException('Akun BCA tidak ditemukan.');
+        }
+        return $bca;
     }
 
     public function create(array $data): PendingTransaction
@@ -51,27 +70,53 @@ class PendingTransactionService
             ]);
 
             if ($data['type'] === 'transfer') {
-                // Transfer: Uang masuk ke Dalam Perjalanan dulu, baru ke Cash saat complete
                 $transit = $this->getTransitAccount();
-                $income = Income::create([
-                    'account_id' => $transit->id,
-                    'amount' => $pending->amount,
-                    'category' => 'Transfer Masuk',
-                    'description' => "Transfer dari {$pending->description}",
+                $bca = $this->getBcaAccount();
+                $mutation = Mutation::create([
                     'date' => $pendingDate,
+                    'from_account_id' => $bca->id,
+                    'to_account_id' => $transit->id,
+                    'amount' => $pending->amount,
+                    'description' => "Transfer pending: {$pending->description}",
+                    'source' => 'pending',
                 ]);
-                $pending->update(['income_id' => $income->id]);
+                $pending->update(['mutation_id' => $mutation->id]);
+            } elseif ($data['type'] === 'tf_masuk') {
+                $transit = $this->getTransitAccount();
+                $bca = $this->getBcaAccount();
+                $mutation = Mutation::create([
+                    'date' => $pendingDate,
+                    'from_account_id' => $transit->id,
+                    'to_account_id' => $bca->id,
+                    'amount' => $pending->amount,
+                    'description' => "TF masuk: {$pending->description}",
+                    'source' => 'pending',
+                ]);
+                $pending->update(['mutation_id' => $mutation->id]);
             } else {
-                // EDC: Cash sudah keluar, tapi bank belum terima
                 $transit = $this->getTransitAccount();
-                $expense = Expense::create([
-                    'account_id' => $transit->id,
-                    'amount' => $pending->amount,
-                    'category' => 'Pending EDC',
-                    'description' => "EDC pending: {$pending->description}",
+                $cash = $this->getCashAccount();
+                $mutation = Mutation::create([
                     'date' => $pendingDate,
+                    'from_account_id' => $cash->id,
+                    'to_account_id' => $transit->id,
+                    'amount' => $pending->amount,
+                    'description' => "EDC pending: {$pending->description}",
+                    'source' => 'pending',
                 ]);
-                $pending->update(['expense_id' => $expense->id]);
+                $pending->update(['mutation_id' => $mutation->id]);
+
+                $feeServiceAmount = (int) round($data['amount'] * 2 / 100);
+                $feeBersih = $feeServiceAmount - $mdrAmount;
+                if ($feeBersih > 0) {
+                    Income::create([
+                        'account_id' => $cash->id,
+                        'amount' => $feeBersih,
+                        'category' => 'Jasa Tarik Tunai EDC',
+                        'description' => "Fee EDC bersih: {$data['description']}",
+                        'date' => $pendingDate,
+                    ]);
+                }
             }
 
             return $pending;
@@ -94,6 +139,9 @@ class PendingTransactionService
             if ($pending->type === 'edc' && $account->type !== 'bank') {
                 throw new \DomainException('EDC harus diselesaikan ke akun Bank.');
             }
+            if ($pending->type === 'tf_masuk' && $account->type !== 'cash') {
+                throw new \DomainException('TF Masuk harus diselesaikan ke akun Cash.');
+            }
 
             $now = Carbon::now();
             $completedDate = !empty($data['completed_date'])
@@ -101,27 +149,46 @@ class PendingTransactionService
                 : $now->format('Y-m-d H:i:s');
 
             if ($pending->type === 'transfer') {
-                $expense = Expense::create([
-                    'account_id' => $data['completed_account_id'],
-                    'amount' => $pending->net_amount,
-                    'category' => 'Cash Keluar',
-                    'description' => "Cash keluar untuk {$pending->description}",
+                $transit = $this->getTransitAccount();
+                Mutation::create([
                     'date' => $completedDate,
+                    'from_account_id' => $transit->id,
+                    'to_account_id' => $data['completed_account_id'],
+                    'amount' => $pending->amount,
+                    'description' => "Selesai transfer: {$pending->description}",
+                    'source' => 'pending',
                 ]);
                 $pending->update([
                     'status' => 'completed',
                     'completed_date' => $completedDate,
                     'completed_type' => $data['completed_type'],
                     'completed_account_id' => $data['completed_account_id'],
-                    'expense_id' => $expense->id,
+                ]);
+            } elseif ($pending->type === 'tf_masuk') {
+                $transit = $this->getTransitAccount();
+                Mutation::create([
+                    'date' => $completedDate,
+                    'from_account_id' => $data['completed_account_id'],
+                    'to_account_id' => $transit->id,
+                    'amount' => $pending->amount,
+                    'description' => "Selesai TF masuk: {$pending->description}",
+                    'source' => 'pending',
+                ]);
+                $pending->update([
+                    'status' => 'completed',
+                    'completed_date' => $completedDate,
+                    'completed_type' => $data['completed_type'],
+                    'completed_account_id' => $data['completed_account_id'],
                 ]);
             } else {
-                $income = Income::create([
-                    'account_id' => $data['completed_account_id'],
-                    'amount' => $pending->net_amount,
-                    'category' => 'Pending EDC',
-                    'description' => "EDC settlement: {$pending->description}",
+                $transit = $this->getTransitAccount();
+                Mutation::create([
                     'date' => $completedDate,
+                    'from_account_id' => $transit->id,
+                    'to_account_id' => $data['completed_account_id'],
+                    'amount' => $pending->amount,
+                    'description' => "EDC settlement: {$pending->description}",
+                    'source' => 'pending',
                 ]);
 
                 if ($pending->mdr_amount > 0) {
@@ -139,7 +206,6 @@ class PendingTransactionService
                     'completed_date' => $completedDate,
                     'completed_type' => $data['completed_type'],
                     'completed_account_id' => $data['completed_account_id'],
-                    'income_id' => $income->id,
                 ]);
             }
 
@@ -172,10 +238,6 @@ class PendingTransactionService
         return DB::transaction(function () use ($id) {
             $pending = PendingTransaction::lockForUpdate()->findOrFail($id);
 
-            if ($pending->status !== 'pending') {
-                throw new \DomainException('Hanya transaksi pending yang bisa dihapus.');
-            }
-
             $this->deleteLinkedTransactions($pending);
 
             return $pending->delete();
@@ -184,12 +246,69 @@ class PendingTransactionService
 
     private function deleteLinkedTransactions(PendingTransaction $pending): void
     {
-        if ($pending->income_id) {
-            Income::where('id', $pending->income_id)->delete();
+        if ($pending->status === 'pending') {
+            if ($pending->mutation_id) {
+                Mutation::where('id', $pending->mutation_id)->delete();
+            }
+            if ($pending->type === 'edc') {
+                $feeServiceAmount = (int) round($pending->amount * 2 / 100);
+                $feeBersih = $feeServiceAmount - $pending->mdr_amount;
+                if ($feeBersih > 0) {
+                    Income::where('amount', $feeBersih)
+                        ->where('category', 'Jasa Tarik Tunai EDC')
+                        ->where('description', "Fee EDC bersih: {$pending->description}")
+                        ->delete();
+                }
+            }
+            return;
         }
 
-        if ($pending->expense_id) {
-            Expense::where('id', $pending->expense_id)->delete();
+        // Cascade delete untuk completed — hapus semua yg dibuat oleh create + complete
+        if ($pending->mutation_id) {
+            Mutation::where('id', $pending->mutation_id)->delete();
+        }
+
+        $transit = $this->getTransitAccount();
+        if ($pending->type === 'transfer') {
+            Mutation::where('from_account_id', $transit->id)
+                ->where('to_account_id', $pending->completed_account_id)
+                ->where('amount', $pending->amount)
+                ->where('source', 'pending')
+                ->where('description', "Selesai transfer: {$pending->description}")
+                ->delete();
+        } elseif ($pending->type === 'tf_masuk') {
+            Mutation::where('from_account_id', $pending->completed_account_id)
+                ->where('to_account_id', $transit->id)
+                ->where('amount', $pending->amount)
+                ->where('source', 'pending')
+                ->where('description', "Selesai TF masuk: {$pending->description}")
+                ->delete();
+        } else {
+            Mutation::where('from_account_id', $transit->id)
+                ->where('to_account_id', $pending->completed_account_id)
+                ->where('amount', $pending->amount)
+                ->where('source', 'pending')
+                ->where('description', "EDC settlement: {$pending->description}")
+                ->delete();
+
+            Expense::where('account_id', $pending->completed_account_id)
+                ->where('amount', $pending->mdr_amount)
+                ->where('category', 'Biaya MDR')
+                ->where('description', "Biaya MDR EDC (" . ($pending->bank_type ?? 'umum') . ") untuk {$pending->description}")
+                ->delete();
+
+            $feeService = (int) round($pending->amount * 2 / 100);
+            $feeBersih = $feeService - $pending->mdr_amount;
+            if ($feeBersih > 0) {
+                $cashAccount = Account::where('name', config('accounts.cash_name'))->first();
+                if ($cashAccount) {
+                    Income::where('account_id', $cashAccount->id)
+                        ->where('amount', $feeBersih)
+                        ->where('category', 'Jasa Tarik Tunai EDC')
+                        ->where('description', "Fee EDC bersih: {$pending->description}")
+                        ->delete();
+                }
+            }
         }
     }
 

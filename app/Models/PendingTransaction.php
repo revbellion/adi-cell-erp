@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PendingTransaction extends Model
 {
+    public function mutation(): BelongsTo
+    {
+        return $this->belongsTo(Mutation::class, 'mutation_id');
+    }
+
     protected $fillable = [
         'type',
         'bank_type',
@@ -20,8 +25,7 @@ class PendingTransaction extends Model
         'completed_date',
         'completed_type',
         'completed_account_id',
-        'income_id',
-        'expense_id',
+        'mutation_id',
     ];
 
     protected function casts(): array
@@ -61,6 +65,7 @@ class PendingTransaction extends Model
         return match($this->type) {
             'edc' => 'EDC',
             'transfer' => 'Transfer',
+            'tf_masuk' => 'TF Masuk',
             default => $this->type,
         };
     }

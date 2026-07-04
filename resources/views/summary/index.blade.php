@@ -4,14 +4,16 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Ringkasan Bulanan</h4>
-    <form autocomplete="off" method="GET" action="{{ route('summary.index') }}" class="d-flex align-items-center gap-2">
-        <label class="form-label mb-0 text-muted" style="font-size:0.85rem;">Tampilkan</label>
-        <select name="months" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
-            <option value="3" {{ $months == 3 ? 'selected' : '' }}>3 Bulan</option>
-            <option value="6" {{ $months == 6 ? 'selected' : '' }}>6 Bulan</option>
-            <option value="12" {{ $months == 12 ? 'selected' : '' }}>12 Bulan</option>
-        </select>
-    </form>
+    <div class="page-header-actions">
+        <form autocomplete="off" method="GET" action="{{ route('summary.index') }}" class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0 text-muted" style="font-size:0.85rem;">Tampilkan</label>
+            <select name="months" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                <option value="3" {{ $months == 3 ? 'selected' : '' }}>3 Bulan</option>
+                <option value="6" {{ $months == 6 ? 'selected' : '' }}>6 Bulan</option>
+                <option value="12" {{ $months == 12 ? 'selected' : '' }}>12 Bulan</option>
+            </select>
+        </form>
+    </div>
 </div>
 
 <div class="card card-modern shadow-sm">

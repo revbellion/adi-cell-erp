@@ -107,7 +107,7 @@ class PendingTransactionController extends Controller
         return array_filter(
             Validator::make($raw, [
                 'status' => 'nullable|in:pending,completed,cancelled',
-                'type' => 'nullable|in:edc,transfer',
+                'type' => 'nullable|in:edc,transfer,tf_masuk',
                 'search' => 'nullable|string|max:100',
             ])->valid(),
             fn($v) => $v !== null

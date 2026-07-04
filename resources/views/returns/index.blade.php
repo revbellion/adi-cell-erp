@@ -7,7 +7,7 @@
         <h4 class="fw-bold mb-1">Retur Barang</h4>
         <p class="text-muted mb-0" style="font-size:0.8rem;">Catat retur penjualan (dari customer) dan retur pembelian (ke supplier)</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <button type="button" class="btn btn-modern btn-warning" data-bs-toggle="modal" data-bs-target="#modalReturJual">
             <i class="fas fa-undo-alt me-1"></i>Retur Penjualan
         </button>

@@ -28,7 +28,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Transaksi Pending</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <a href="{{ route('pending.export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn btn-modern btn-success">
             <i class="fas fa-file-excel me-1"></i>Export
         </a>
@@ -51,7 +51,7 @@
         <select name="type" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
             <option value="">Semua Tipe</option>
             <option value="edc" {{ request('type') == 'edc' ? 'selected' : '' }}>EDC</option>
-            <option value="transfer" {{ request('type') == 'transfer' ? 'selected' : '' }}>Transfer</option>
+            <option value="tf_masuk" {{ request('type') == 'tf_masuk' ? 'selected' : '' }}>TF Masuk</option>
         </select>
     </div>
     <div class="col-auto">
@@ -110,7 +110,7 @@
                         <td>
                             {!! $pending->status_badge !!}
                             @if($pending->status === 'pending')
-                                @if($pending->type === 'transfer')
+                                @if($pending->type === 'transfer' || $pending->type === 'tf_masuk')
                                     <span class="badge bg-success bg-opacity-10 text-success" style="font-size:0.65rem;">BCA ✓</span>
                                 @else
                                     <span class="badge bg-danger bg-opacity-10 text-danger" style="font-size:0.65rem;">Cash ✓</span>
@@ -120,7 +120,7 @@
                         <td>{{ $pending->completedAccount?->name ?? '-' }}</td>
                         <td class="pe-3">
                             @if($pending->status === 'pending')
-                                @if($pending->type === 'transfer')
+                                @if($pending->type === 'transfer' || $pending->type === 'tf_masuk')
                                 <button type="button" class="btn btn-modern btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalComplete"
                                     data-id="{{ $pending->id }}"
                                     data-description="{{ $pending->description }}"
@@ -210,7 +210,7 @@
                     <select name="type" id="pending-type" class="form-select" required onchange="toggleBankField()">
                         <option value="">Pilih Tipe</option>
                         <option value="edc">EDC</option>
-                        <option value="transfer">Transfer</option>
+                        <option value="tf_masuk">TF Masuk</option>
                     </select>
                 </div>
                 <div class="mb-3" id="bank-type-field" style="display:none;">
@@ -359,7 +359,7 @@ $('#modalComplete').on('show.bs.modal', function (event) {
     $('#completed-type').val(action);
 
     // Set title dan info berdasarkan tipe
-    if (type === 'transfer') {
+    if (type === 'transfer' || type === 'tf_masuk') {
         $('#modal-title').text('Cash Keluar');
         $('#btn-submit').html('<i class="fas fa-arrow-up me-1"></i>Catat Cash Keluar');
     } else {
@@ -374,8 +374,8 @@ $('#modalComplete').on('show.bs.modal', function (event) {
     var cashId = '{{ $accounts->firstWhere("name", config("accounts.cash_name"))?->id }}';
     
     select.find('option').show();
-    if (type === 'transfer') {
-        // Transfer: sembunyikan dropdown, pakai Cash otomatis
+    if (type === 'transfer' || type === 'tf_masuk') {
+        // Transfer & TF Masuk: sembunyikan dropdown, pakai Cash otomatis
         select.hide().prop('required', false);
         select.val(cashId);
         infoText.text('Cash (otomatis)').show();

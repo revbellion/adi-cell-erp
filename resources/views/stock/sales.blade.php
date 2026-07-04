@@ -83,7 +83,7 @@
                     </div>
                     <div class="pos-summary-row">
                         <span>Diskon</span>
-                        <input type="number" id="pos-diskon" placeholder="0" min="0" value="0" style="width:120px;text-align:right;border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:0.9rem;">
+                        <input type="number" id="pos-diskon" placeholder="0" min="0" value="0" style="min-width:80px;max-width:120px;width:100%;text-align:right;border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:0.9rem;">
                     </div>
                     <div class="pos-summary-row pos-summary-total">
                         <span>Total</span>

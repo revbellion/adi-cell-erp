@@ -26,7 +26,7 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
 @endphp
 <div class="card card-modern mb-3">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex justify-content-between align-items-start bill-card-row">
             <div class="flex-grow-1">
                 <div class="d-flex align-items-center gap-2 mb-1">
                     <span class="fw-semibold">{{ $bill->name }}</span>

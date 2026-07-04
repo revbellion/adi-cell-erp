@@ -7,9 +7,11 @@
         <h4 class="fw-bold mb-1">Pelanggan</h4>
         <p class="text-muted mb-0" style="font-size:0.8rem;">Database pelanggan untuk mencatat piutang dan riwayat transaksi</p>
     </div>
-    <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-        <i class="fas fa-plus me-1"></i>Tambah Pelanggan
-    </button>
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+            <i class="fas fa-plus me-1"></i>Tambah Pelanggan
+        </button>
+    </div>
 </div>
 
 {{-- Filter --}}

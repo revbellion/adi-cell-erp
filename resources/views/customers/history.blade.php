@@ -11,9 +11,11 @@
             {{ $customer->name }}
         </p>
     </div>
-    <a href="{{ route('receivables.index', ['search' => $customer->name]) }}" class="btn btn-modern btn-primary btn-sm">
-        <i class="fas fa-file-invoice-dollar me-1"></i>Lihat Piutang
-    </a>
+    <div class="page-header-actions">
+        <a href="{{ route('receivables.index', ['search' => $customer->name]) }}" class="btn btn-modern btn-primary btn-sm">
+            <i class="fas fa-file-invoice-dollar me-1"></i>Lihat Piutang
+        </a>
+    </div>
 </div>
 
 {{-- Info Pelanggan --}}

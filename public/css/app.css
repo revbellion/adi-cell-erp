@@ -262,6 +262,8 @@
     .btn-modern.btn-danger:hover { background: #dc2626; border-color: #dc2626; }
     .btn-modern.btn-warning { background: #f59e0b; border-color: #f59e0b; color: #fff; }
     .btn-modern.btn-warning:hover { background: #d97706; border-color: #d97706; color: #fff; }
+    .btn-modern.btn-info { background: #06b6d4; border-color: #06b6d4; color: #fff; }
+    .btn-modern.btn-info:hover { background: #0891b2; border-color: #0891b2; color: #fff; transform: translateY(-1px); }
     .btn-modern.btn-secondary { background: #6b7280; border-color: #6b7280; color: #fff; }
     .btn-modern.btn-secondary:hover { background: #4b5563; border-color: #4b5563; }
 
@@ -422,11 +424,22 @@
     }
     @media (max-width: 575.98px) {
         .page-content { padding: 0.75rem; }
-        .topbar .topbar-brand { font-size: 0.85rem; }
+        .topbar .topbar-brand { font-size: 0.85rem; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .filter-form .col-auto { flex: 0 0 100%; max-width: 100%; margin-top: 0.25rem; }
         .filter-form .col-auto .btn { width: 100%; }
         .filter-form .col-auto .form-control,
         .filter-form .col-auto .form-select { width: 100% !important; }
+        .card-header .d-flex.align-items-center.gap-2 { flex-wrap: wrap; }
+        .card-header .d-flex.align-items-center.gap-2 .form-control,
+        .card-header .d-flex.align-items-center.gap-2 .form-select,
+        .card-header .d-flex.align-items-center.gap-2 .input-group { width: 100% !important; }
+        .card-header .d-flex.align-items-center.gap-2 .btn { width: 100%; }
+        .page-header-actions { flex-wrap: wrap; gap: 0.35rem !important; }
+        .page-header-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.6rem; }
+        .nav-tabs-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .nav-tabs-wrapper .nav { flex-wrap: nowrap; }
+        .nav-tabs-wrapper .nav .nav-link { white-space: nowrap; }
+        .bill-card-row { flex-wrap: wrap; }
         .summary-bar { flex-wrap: wrap; gap: 0.5rem !important; }
         .summary-bar .d-flex.gap-4 { gap: 0.5rem !important; }
         .pos-cart-card, .pos-grid-card { min-height: 300px !important; }

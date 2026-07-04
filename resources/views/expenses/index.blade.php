@@ -5,19 +5,19 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0">Pengeluaran</h4>
-    <div>
-        <a href="{{ route('expenses.export', request()->only(['date_from', 'date_to', 'category', 'type'])) }}" class="btn btn-modern btn-success btn-sm me-1">
-            <i class="fas fa-file-excel me-1"></i>Export
-        </a>
-        <button type="button" class="btn btn-modern btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPengeluaran">
-            <i class="fas fa-plus me-1"></i>Tambah
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">Pengeluaran</h4>
+        <div class="page-header-actions">
+            <a href="{{ route('expenses.export', request()->only(['date_from', 'date_to', 'category', 'type'])) }}" class="btn btn-modern btn-success btn-sm me-1">
+                <i class="fas fa-file-excel me-1"></i>Export
+            </a>
+            <button type="button" class="btn btn-modern btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPengeluaran">
+                <i class="fas fa-plus me-1"></i>Tambah
+            </button>
+        </div>
     </div>
-</div>
 
-<form method="GET" action="{{ route('expenses.index') }}" autocomplete="off" class="row g-2 mb-3 align-items-center">
+<form method="GET" action="{{ route('expenses.index') }}" autocomplete="off" class="row g-2 mb-3 align-items-center filter-form">
     <div class="col-auto">
         <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm" style="width:auto;" onchange="this.form.submit()">
     </div>

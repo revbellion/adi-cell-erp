@@ -50,7 +50,7 @@
                     </span>
                     @endif
                 </span>
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <form autocomplete="off" method="GET" action="{{ route('stock.report') }}" class="d-flex align-items-center gap-1">
                         <div class="input-group input-group-sm" style="width:180px;">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>

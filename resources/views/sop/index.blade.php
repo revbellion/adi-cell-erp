@@ -4,9 +4,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold mb-0">SOP Tutup Buku Bulanan</h4>
-    <a href="{{ asset('docs/06_SOP_TUTUP_BUKU.md') }}" target="_blank" class="btn btn-modern btn-secondary btn-sm">
-        <i class="fas fa-download me-1"></i>Download Markdown
-    </a>
+    <div class="page-header-actions">
+        <a href="{{ asset('docs/06_SOP_TUTUP_BUKU.md') }}" target="_blank" class="btn btn-modern btn-secondary btn-sm">
+            <i class="fas fa-download me-1"></i>Download Markdown
+        </a>
+    </div>
 </div>
 
 <div class="alert alert-info d-flex align-items-center gap-2 py-2 px-3 mb-4" style="font-size:0.9rem;">
@@ -315,7 +317,7 @@
             <span class="fw-bold" id="progress-text">0 dari 10 langkah selesai</span>
             <span class="text-muted ms-2" style="font-size:0.85rem;">Centang tiap langkah setelah selesai</span>
         </div>
-        <div style="width:200px;">
+        <div style="width:200px;max-width:100%;">
             <div class="progress" style="height:8px;">
                 <div class="progress-bar bg-success" id="progress-bar" role="progressbar" style="width:0%;"></div>
             </div>

@@ -6,7 +6,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold mb-0">Detail User</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-modern btn-sm">
             <i class="fas fa-edit me-1"></i> Edit User
         </a>

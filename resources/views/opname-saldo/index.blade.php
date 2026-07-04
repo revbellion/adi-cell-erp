@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Opname Saldo PPOB & E-Wallet</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <form autocomplete="off" method="GET" action="{{ route('opname-saldo.index') }}" class="d-flex gap-2">
             <input type="date" name="date" value="{{ $date }}" class="form-control form-control-sm" style="width:auto;" onchange="this.form.submit()">
         </form>
@@ -47,7 +47,7 @@
                                 <input type="number" 
                                     name="accounts[{{ $accountId }}]" 
                                     class="form-control form-control-sm text-end saldo-aktual" 
-                                    style="width:180px;display:inline-block;"
+                                    style="max-width:180px;width:100%;display:inline-block;"
                                     data-account="{{ $accountId }}"
                                     data-saldo-sistem="{{ $data['balance'] }}"
                                     placeholder="{{ rp($data['balance']) }}"

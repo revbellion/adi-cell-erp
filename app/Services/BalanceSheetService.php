@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\HppRecord;
 use App\Models\Income;
 use App\Models\Expense;
+use App\Models\InitialCapital;
 use App\Models\OpeningBalance;
 use App\Models\Mutation;
 use App\Models\Product;
@@ -20,6 +21,9 @@ class BalanceSheetService
         $targetDate = Carbon::parse($date)->endOfDay();
         $period = $targetDate->format('Y-m');
         $monthStart = $targetDate->copy()->startOfMonth();
+
+        // Auto-init initial capital dari periode pertama jika belum ada
+        $this->ensureInitialCapital();
 
         // === ASET LANCAR ===
 
@@ -70,13 +74,8 @@ class BalanceSheetService
 
         // === EKUITAS ===
 
-        // 1. Modal Awal (total opening balance periode pertama atau dari periode awal)
-        $openingBalances = OpeningBalance::where('period', '<=', $period)
-            ->select('account_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('account_id')
-            ->pluck('total', 'account_id');
-
-        $totalModalAwal = $openingBalances->sum();
+        // 1. Modal Awal (modal awal bisnis saat pertama kali didirikan)
+        $initialCapital = InitialCapital::sum('amount');
 
         // 2. Prive (pengambilan profit owner)
         $totalPrive = Expense::where('date', '<=', $targetDate)
@@ -88,7 +87,7 @@ class BalanceSheetService
         // 4. Laba periode berjalan
         $currentProfit = $this->calculatePeriodProfit($monthStart, $targetDate);
 
-        $totalEquity = $totalModalAwal + $retainedEarnings + $currentProfit - $totalPrive;
+        $totalEquity = $initialCapital + $retainedEarnings + $currentProfit - $totalPrive;
 
         return [
             'date' => $targetDate->format('Y-m-d'),
@@ -104,7 +103,8 @@ class BalanceSheetService
             'totalInventory' => $totalInventory,
             'totalCurrentAssets' => $totalCurrentAssets,
             'totalLiabilities' => $totalLiabilities,
-            'totalModalAwal' => $totalModalAwal,
+            'totalModalAwal' => $initialCapital,
+            'initialCapital' => $initialCapital,
             'totalPrive' => $totalPrive,
             'retainedEarnings' => $retainedEarnings,
             'currentProfit' => $currentProfit,
@@ -238,5 +238,28 @@ class BalanceSheetService
             ->reverse()
             ->values()
             ->toArray();
+    }
+
+    private function ensureInitialCapital(): void
+    {
+        if (InitialCapital::exists()) {
+            return;
+        }
+
+        $firstPeriod = OpeningBalance::min('period');
+        if (!$firstPeriod) {
+            return;
+        }
+
+        $total = OpeningBalance::where('period', $firstPeriod)->sum('amount');
+        if ($total <= 0) {
+            return;
+        }
+
+        InitialCapital::create([
+            'amount' => $total,
+            'date' => $firstPeriod . '-01',
+            'description' => 'Modal awal otomatis dari saldo awal periode ' . $firstPeriod,
+        ]);
     }
 }

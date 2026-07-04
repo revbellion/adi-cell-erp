@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\Receivable;
 use App\Models\ReceivablePayment;
@@ -13,6 +14,8 @@ class ReceivableService
 {
     public function create(array $data): Receivable
     {
+        $data['phone'] = normalizePhone($data['phone'] ?? null);
+
         $now = Carbon::now();
         $parsedDate = Carbon::parse($data['date']);
         $data['date'] = $parsedDate->format('Y-m-d') . ' ' . $now->format('H:i:s');
@@ -20,6 +23,22 @@ class ReceivableService
         $data['status'] = 'unpaid';
 
         return DB::transaction(function () use ($data, $now) {
+            $data = $this->resolveCustomer($data);
+
+            $existing = Receivable::where('status', 'unpaid')
+                ->whereDoesntHave('receivablePayments')
+                ->where(function ($q) use ($data) {
+                    if (!empty($data['customer_id'])) {
+                        $q->where('customer_id', $data['customer_id']);
+                    }
+                    $q->orWhere('name', $data['name']);
+                })
+                ->latest('date')
+                ->first();
+            if ($existing) {
+                return $this->addNominal($existing->id, $data['amount']);
+            }
+
             $receivable = Receivable::create($data);
 
             // Buat Expense: kasih pinjaman ke customer
@@ -38,8 +57,46 @@ class ReceivableService
         });
     }
 
+    public function addNominal(int $id, int $additionalAmount): Receivable
+    {
+        return DB::transaction(function () use ($id, $additionalAmount) {
+            $receivable = Receivable::lockForUpdate()->findOrFail($id);
+
+            if ($receivable->status !== 'unpaid') {
+                throw new \DomainException('Hanya piutang unpaid yang bisa ditambah nominal.');
+            }
+
+            if ($receivable->receivablePayments()->exists()) {
+                throw new \DomainException('Piutang yang sudah memiliki pembayaran tidak bisa ditambah nominal.');
+            }
+
+            $now = Carbon::now();
+            $newAmount = $receivable->amount + $additionalAmount;
+            $newDate = $now->format('Y-m-d H:i:s');
+            $newDueDate = $now->copy()->addDays(3)->format('Y-m-d H:i:s');
+
+            $receivable->update([
+                'amount'   => $newAmount,
+                'date'     => $newDate,
+                'due_date' => $newDueDate,
+            ]);
+
+            if ($receivable->expense_id) {
+                Expense::where('id', $receivable->expense_id)->update([
+                    'amount'      => $newAmount,
+                    'date'        => $newDate,
+                    'description' => "Piutang {$receivable->name} (+Rp " . number_format($additionalAmount, 0, ',', '.') . ')',
+                ]);
+            }
+
+            return $receivable;
+        });
+    }
+
     public function update(int $id, array $data): Receivable
     {
+        $data['phone'] = normalizePhone($data['phone'] ?? null);
+
         return DB::transaction(function () use ($id, $data) {
             $receivable = Receivable::lockForUpdate()->findOrFail($id);
 
@@ -214,5 +271,27 @@ class ReceivableService
         }
 
         return $account->id;
+    }
+
+    private function resolveCustomer(array $data): array
+    {
+        if (!empty($data['customer_id'])) {
+            return $data;
+        }
+
+        $existing = Customer::where('name', $data['name'])->first();
+
+        if ($existing) {
+            $data['customer_id'] = $existing->id;
+            return $data;
+        }
+
+        $customer = Customer::create([
+            'name' => $data['name'],
+            'phone' => $data['phone'] ?? null,
+        ]);
+
+        $data['customer_id'] = $customer->id;
+        return $data;
     }
 }

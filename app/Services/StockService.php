@@ -128,18 +128,6 @@ class StockService
                     );
                 }
 
-                // Validasi FIFO: pastikan remaining_qty cukup
-                $totalRemaining = StockTransaction::where('product_id', $product->id)
-                    ->where('type', 'in')
-                    ->where('remaining_qty', '>', 0)
-                    ->sum('remaining_qty');
-
-                if ($totalRemaining < $item['qty']) {
-                    throw new \InvalidArgumentException(
-                        'Stok ' . $product->name . ' tidak mencukupi (FIFO). Tersedia: ' . $totalRemaining
-                    );
-                }
-
                 $subtotal = $item['qty'] * $item['price'];
                 $total += $subtotal;
                 $itemNames[] = $product->name . ' (' . $item['qty'] . ' ' . $product->unit . ')';
@@ -210,6 +198,16 @@ class StockService
                         'qty'                  => $consumed,
                         'price'                => $batch->price,
                     ];
+                }
+
+                if ($qtyToSell > 0) {
+                    \Log::warning('FIFO inconsistency', [
+                        'product' => $product->name,
+                        'qty_to_sell' => $trx['data']['qty'],
+                        'unmatched_qty' => $qtyToSell,
+                        'hpp_amount' => $hppAmount,
+                        'stock' => $product->stock,
+                    ]);
                 }
 
                 $sellingAmount = (int) round($trx['data']['qty'] * $sellingPrice * $ratio);

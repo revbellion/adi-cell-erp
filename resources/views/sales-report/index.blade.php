@@ -12,15 +12,17 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Laporan Penjualan</h4>
-    <a href="{{ route('sales-report.export', request()->query()) }}" class="btn btn-modern btn-success btn-sm">
-        <i class="fas fa-file-excel me-1"></i>Export Excel
-    </a>
+    <div class="page-header-actions">
+        <a href="{{ route('sales-report.export', request()->query()) }}" class="btn btn-modern btn-success btn-sm">
+            <i class="fas fa-file-excel me-1"></i>Export Excel
+        </a>
+    </div>
 </div>
 
 {{-- Filter --}}
 <div class="card card-modern shadow-sm mb-4">
     <div class="card-body py-3">
-        <form autocomplete="off" method="GET" action="{{ route('sales-report.index') }}" class="row g-2 align-items-end">
+        <form autocomplete="off" method="GET" action="{{ route('sales-report.index') }}" class="row g-2 align-items-end filter-form">
             <div class="col-auto">
                 <label class="form-label fw-semibold" style="font-size:0.8rem;">Dari</label>
                 <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control form-control-sm">

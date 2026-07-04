@@ -8,7 +8,7 @@
 
 <div class="card card-modern shadow-sm">
     <div class="card-body">
-        <form autocomplete="off" method="GET" action="{{ route('opening-balances.index') }}" class="row g-2 align-items-center mb-4">
+        <form autocomplete="off" method="GET" action="{{ route('opening-balances.index') }}" class="row g-2 align-items-center mb-4 filter-form">
             <div class="col-auto">
                 <label class="fw-semibold" style="color:#374151;">Periode:</label>
             </div>

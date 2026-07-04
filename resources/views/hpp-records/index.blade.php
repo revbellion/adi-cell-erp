@@ -9,7 +9,7 @@
 {{-- Filter --}}
 <div class="card card-modern shadow-sm mb-4">
     <div class="card-body py-3">
-        <form autocomplete="off" method="GET" action="{{ route('hpp-records.index') }}" class="row g-2 align-items-end">
+        <form autocomplete="off" method="GET" action="{{ route('hpp-records.index') }}" class="row g-2 align-items-end filter-form">
             <input type="hidden" name="tab" value="{{ $tab }}">
             <div class="col-auto">
                 <label class="form-label fw-semibold" style="font-size:0.8rem;">Dari</label>
@@ -159,13 +159,13 @@
     @if($receipts->count() > 0)
         @foreach($receipts as $receipt)
         <div class="card card-modern shadow-sm mb-3">
-            <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <i class="fas fa-file-invoice" style="color:#8b5cf6;"></i>
                     <span class="fw-semibold" style="font-size:0.9rem;">{{ $receipt['receipt_id'] ?? 'Manual' }}</span>
                     <span class="text-muted" style="font-size:0.8rem;">{{ tgl($receipt['date']) }}</span>
                 </div>
-                <div class="d-flex gap-3" style="font-size:0.8rem;">
+                <div class="d-flex gap-3 flex-wrap" style="font-size:0.8rem;">
                     <span>Jual: <strong>{{ rp($receipt['total_selling']) }}</strong></span>
                     <span>HPP: <strong style="color:#f59e0b;">{{ rp($receipt['total_hpp']) }}</strong></span>
                     <span>Profit: <strong style="color:#10b981;">{{ rp($receipt['total_profit']) }}</strong></span>

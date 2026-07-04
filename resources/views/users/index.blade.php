@@ -6,16 +6,16 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold mb-0">Kelola User</h4>
-    <div class="d-flex gap-2">
-        <form method="GET" action="{{ route('users.index') }}" autocomplete="off" class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
+        <form method="GET" action="{{ route('users.index') }}" autocomplete="off" class="d-flex gap-2 flex-wrap">
             <input type="text" name="search" class="form-control form-control-sm" style="width:200px;" placeholder="Cari nama atau username..." value="{{ request('search') }}">
             @if(request('search'))
                 <a href="{{ route('users.index') }}" class="btn btn-sm btn-modern btn-secondary"><i class="fas fa-times"></i></a>
             @endif
+            <a href="{{ route('users.create') }}" class="btn btn-primary btn-modern btn-sm">
+                <i class="fas fa-plus me-1"></i> Tambah User
+            </a>
         </form>
-        <a href="{{ route('users.create') }}" class="btn btn-primary btn-modern btn-sm">
-            <i class="fas fa-plus me-1"></i> Tambah User
-        </a>
     </div>
 </div>
 

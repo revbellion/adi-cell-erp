@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Jasa Cetak</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
             <i class="fas fa-plus me-1"></i>Tambah Pesanan
         </button>

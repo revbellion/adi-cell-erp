@@ -2,7 +2,7 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div class="d-flex gap-2 flex-wrap dashboard-actions">
         <button type="button" class="btn btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalCepatPendapatan">
             <i class="fas fa-plus me-1"></i>Pendapatan
@@ -66,7 +66,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">OMSET BULAN INI</p>
-                        <h4 class="fw-bold mb-0">{{ rp($totalIncome) }}</h4>
+                        <h4 class="fw-bold mb-0">{{ rp($totalOmset) }}</h4>
                     </div>
                     <div class="rounded-3 p-2" style="background:#f0fdf4;">
                         <i class="fas fa-chart-line" style="color:#22c55e;"></i>
@@ -80,7 +80,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">BIAYA OPERASIONAL BULAN INI</p>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">PENGELUARAN BULAN INI</p>
                         <h4 class="fw-bold mb-0">{{ rp($totalExpense) }}</h4>
                     </div>
                     <div class="rounded-3 p-2" style="background:#fffbeb;">
@@ -126,20 +126,22 @@
     <div class="col-lg-3 col-sm-6">
         <div class="card stat-card shadow-sm" style="border-left: 4px solid #8b5cf6;">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <p class="text-muted small fw-semibold mb-0" style="font-size:0.75rem;letter-spacing:0.03em;">IN PROCESS</p>
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-semibold mb-1" style="font-size:0.75rem;letter-spacing:0.03em;">IN PROCESS</p>
+                        <div class="d-flex gap-3 align-items-center">
+                            <div>
+                                <p class="text-muted mb-0" style="font-size:0.7rem;">BCA</p>
+                                <h6 class="fw-bold mb-0" style="font-size:0.85rem;">{{ rp($bcaInProcess) }}</h6>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0" style="font-size:0.7rem;">Cash</p>
+                                <h6 class="fw-bold mb-0" style="font-size:0.85rem;">{{ rp($cashInProcess) }}</h6>
+                            </div>
+                        </div>
+                    </div>
                     <div class="rounded-3 p-2" style="background:#f5f3ff;">
                         <i class="fas fa-clock" style="color:#8b5cf6;"></i>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1" style="font-size:0.7rem;">BCA</p>
-                        <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ rp($bcaInProcess) }}</h6>
-                    </div>
-                    <div>
-                        <p class="text-muted mb-1" style="font-size:0.7rem;">Cash</p>
-                        <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ rp($cashInProcess) }}</h6>
                     </div>
                 </div>
             </div>
@@ -277,7 +279,7 @@
                     <tbody>
                         @php $totalSaldo = 0; @endphp
                         @foreach($accounts as $account)
-                            @if(!in_array($account->name, ['Cash', 'BCA']))
+                            @if(in_array($account->type, ['ewallet', 'ppob']))
                                 @php $totalSaldo += $account->balance; @endphp
                                 <tr>
                                     <td class="ps-3">{{ $account->name }}</td>
@@ -301,10 +303,10 @@
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card card-modern shadow-sm h-100">
+        <div class="card card-modern shadow-sm">
             <div class="card-header d-flex align-items-center">
                 <i class="fas fa-chart-area me-2" style="color:#f59e0b;"></i>
-                <span class="fw-semibold">Profit 7 Hari</span>
+                <span class="fw-semibold">Profit Harian</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">

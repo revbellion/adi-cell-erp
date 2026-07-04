@@ -17,7 +17,7 @@ class StorePendingTransactionRequest extends FormRequest
             'type' => [
                 'required',
                 'string',
-                'in:edc,transfer',
+                'in:edc,transfer,tf_masuk',
             ],
             'bank_type' => [
                 'nullable',

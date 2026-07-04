@@ -124,11 +124,12 @@ Route::middleware('auth')->group(function () {
         Route::post('bills/{recurring_bill}/pay', [BillController::class, 'pay'])->name('bills.pay');
     });
     Route::middleware('permission:receivables')->group(function () {
+        Route::delete('receivables/bulk-delete', [ReceivableController::class, 'bulkDelete'])->name('receivables.bulk-delete');
         Route::resource('receivables', ReceivableController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::post('receivables/bulk-delete', [ReceivableController::class, 'bulkDelete'])->name('receivables.bulk-delete');
         Route::post('receivables/pay', [ReceivableController::class, 'pay'])->name('receivables.pay');
         Route::post('receivables/batch-pay', [ReceivableController::class, 'batchPay'])->name('receivables.batch-pay');
         Route::post('receivables/{id}/void', [ReceivableController::class, 'void'])->name('receivables.void');
+        Route::post('receivables/{id}/add-nominal', [ReceivableController::class, 'addNominal'])->name('receivables.add-nominal');
         Route::get('receivables/export', [ReceivableController::class, 'export'])->name('receivables.export');
     });
     Route::middleware('permission:pending')->group(function () {
@@ -153,6 +154,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:reports')->group(function () {
         Route::get('reports/profit-loss', [ReportProfitLossController::class, 'index'])->name('reports.profit-loss');
         Route::get('reports/balance-sheet', [ReportBalanceSheetController::class, 'index'])->name('reports.balance-sheet');
+        Route::post('reports/balance-sheet/initial-capital', [ReportBalanceSheetController::class, 'saveInitialCapital'])->name('reports.balance-sheet.initial-capital');
     });
 
     Route::middleware('permission:sales_report')->group(function () {

@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Piutang</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <button type="button" class="btn btn-modern btn-success" id="btn-batch-bayar" style="display:none;" onclick="openBatchBayar()">
             <i class="fas fa-check-double me-1"></i>Bayar Semua (<span id="batch-count">0</span>) - <span id="batch-total-btn">Rp 0</span>
         </button>
@@ -51,7 +51,7 @@
 
 <div class="card card-modern shadow-sm">
     <div class="card-body p-0">
-        <div class="px-3 pt-3">
+        <div class="px-3 pt-3 nav-tabs-wrapper">
             <ul class="nav nav-tabs border-0">
                 <li class="nav-item">
                     <a class="nav-link border-0 fw-semibold {{ request('status') == '' ? 'active' : '' }}" 
@@ -107,6 +107,12 @@
                         <td>{!! $receivable->status_badge !!}</td>
                         <td class="pe-3">
                             @if($receivable->status == 'unpaid')
+                            <button type="button" class="btn btn-modern btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahNominal"
+                                data-id="{{ $receivable->id }}"
+                                data-name="{{ $receivable->name }}"
+                                data-amount="{{ $receivable->amount }}">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
                             <button type="button" class="btn btn-modern btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditPiutang"
                                 data-id="{{ $receivable->id }}"
                                 data-name="{{ $receivable->name }}"
@@ -192,9 +198,13 @@
                     <select name="customer_id" class="form-select" id="tambah-customer-select">
                         <option value="">Tanpa Pelanggan / Ketik Manual</option>
                         @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
+                        <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-address="{{ $customer->address }}" data-email="{{ $customer->email }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
                         @endforeach
                     </select>
+                    <div id="tambah-customer-info" class="mt-2 p-2 rounded-3 d-none" style="background:var(--border-subtle);font-size:0.85rem;">
+                        <div id="tambah-customer-address" class="text-muted"></div>
+                        <div id="tambah-customer-email" class="text-muted"></div>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nama</label>
@@ -202,7 +212,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">No. HP</label>
-                    <input type="text" name="phone" class="form-control" placeholder="08xxx">
+                    <input type="text" name="phone" id="tambah-phone" class="form-control" placeholder="08xxx">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Total Bayar</label>
@@ -237,9 +247,13 @@
                     <select name="customer_id" class="form-select" id="edit-customer-select">
                         <option value="">Tanpa Pelanggan</option>
                         @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
+                        <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-address="{{ $customer->address }}" data-email="{{ $customer->email }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
                         @endforeach
                     </select>
+                    <div id="edit-customer-info" class="mt-2 p-2 rounded-3 d-none" style="background:var(--border-subtle);font-size:0.85rem;">
+                        <div id="edit-customer-address" class="text-muted"></div>
+                        <div id="edit-customer-email" class="text-muted"></div>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nama</label>
@@ -305,6 +319,36 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="submit" class="btn btn-modern btn-success">Bayar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade modal-modern" tabindex="-1" id="modalTambahNominal">
+    <div class="modal-dialog">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formTambahNominal">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Tambah Nominal Piutang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nama</label>
+                    <p class="fw-semibold mb-0" id="tambah-nominal-name"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nominal Saat Ini</label>
+                    <p class="fw-semibold mb-0" id="tambah-nominal-current"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tambah Nominal</label>
+                    <input type="number" step="1" name="amount" class="form-control" required min="1" placeholder="Rp">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-modern btn-info"><i class="fas fa-plus-circle me-1"></i>Tambah</button>
             </div>
         </form>
     </div>
@@ -424,14 +468,23 @@ $('#formBayarPiutang').on('submit', function(e) {
     }
 });
 
+$('#modalTambahNominal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    $('#tambah-nominal-name').text(button.data('name'));
+    $('#tambah-nominal-current').text('Rp ' + parseInt(button.data('amount')).toLocaleString('id-ID'));
+    $('#formTambahNominal').attr('action', '{{ url("receivables") }}/' + button.data('id') + '/add-nominal');
+});
+
 $('#modalEditPiutang').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     $('#edit-receivable-name').val(button.data('name'));
     $('#edit-receivable-phone').val(button.data('phone'));
     $('#edit-receivable-amount').val(button.data('amount'));
     $('#edit-receivable-date').val(button.data('date'));
-    $('#edit-customer-select').val(button.data('customer-id') || '');
     $('#formEditPiutang').attr('action', '{{ url("receivables") }}/' + button.data('id'));
+    var selected = document.getElementById('edit-customer-select');
+    selected.value = button.data('customer-id') || '';
+    fillCustomerInfo(selected, 'edit');
 });
 
 // Batch payment functions
@@ -476,18 +529,35 @@ function openBatchBayar() {
     new bootstrap.Modal(document.getElementById('modalBatchBayar')).show();
 }
 
-// Customer auto-fill for tambah modal
-document.getElementById('tambah-customer-select')?.addEventListener('change', function() {
-    var selected = this.options[this.selectedIndex];
-    if (selected.value) {
-        document.getElementById('tambah-name').value = selected.dataset.name;
-        document.getElementById('tambah-name').readOnly = true;
-        document.querySelector('[name="phone"]').value = selected.dataset.phone || '';
+function fillCustomerInfo(select, modal) {
+    var opt = select.options[select.selectedIndex];
+    var nameId = modal === 'tambah' ? 'tambah-name' : 'edit-receivable-name';
+    var phoneId = modal === 'tambah' ? 'tambah-phone' : 'edit-receivable-phone';
+    var infoId = modal + '-customer-info';
+    var addrId = modal + '-customer-address';
+    var emailId = modal + '-customer-email';
+
+    if (opt.value) {
+        document.getElementById(nameId).value = opt.dataset.name;
+        document.getElementById(nameId).readOnly = true;
+        document.getElementById(phoneId).value = opt.dataset.phone || '';
+        var info = document.getElementById(infoId);
+        info.classList.remove('d-none');
+        document.getElementById(addrId).textContent = opt.dataset.address ? 'Alamat: ' + opt.dataset.address : '';
+        document.getElementById(emailId).textContent = opt.dataset.email ? 'Email: ' + opt.dataset.email : '';
     } else {
-        document.getElementById('tambah-name').value = '';
-        document.getElementById('tambah-name').readOnly = false;
-        document.querySelector('[name="phone"]').value = '';
+        document.getElementById(nameId).value = '';
+        document.getElementById(nameId).readOnly = false;
+        document.getElementById(phoneId).value = '';
+        document.getElementById(infoId).classList.add('d-none');
     }
+}
+
+document.getElementById('tambah-customer-select')?.addEventListener('change', function() {
+    fillCustomerInfo(this, 'tambah');
+});
+document.getElementById('edit-customer-select')?.addEventListener('change', function() {
+    fillCustomerInfo(this, 'edit');
 });
 </script>
 @endpush

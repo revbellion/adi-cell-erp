@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Mutasi</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 page-header-actions">
         <a href="{{ route('mutations.export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn btn-modern btn-success">
             <i class="fas fa-file-excel me-1"></i>Export
         </a>
@@ -93,7 +93,8 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
-                            </div>
+    </div>
+</div>
                             @else
                             <span class="badge bg-secondary" style="font-size:0.65rem;">{{ ucfirst($mutasi->source ?? 'Sistem') }}</span>
                             @endif

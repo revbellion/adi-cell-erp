@@ -11,7 +11,7 @@
     <div class="card-body">
         {{-- Search + Category Filter --}}
         <div class="d-flex flex-wrap gap-2 mb-3">
-            <div class="input-group input-group-sm" style="width:220px;">
+            <div class="input-group input-group-sm" style="min-width:160px;max-width:220px;">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                 <input type="text" id="opname-search" class="form-control" placeholder="Cari barang..." autocomplete="off">
             </div>

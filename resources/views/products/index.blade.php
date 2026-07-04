@@ -2,9 +2,9 @@
 @section('title', 'Barang')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">Daftar Barang</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Barang</h4>
+        <div class="d-flex gap-2 page-header-actions">
         <a href="{{ route('products.template') }}" class="btn btn-modern btn-outline-secondary btn-sm">
             <i class="fas fa-file-download me-1"></i>Template
         </a>

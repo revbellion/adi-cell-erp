@@ -66,14 +66,14 @@ class DashboardService
 
         $netProfit = $totalIncome - $totalHpp - $totalOpExpense;
 
-        // Card "Biaya Operasional" = Listrik, Gaji, Amal, Internet
+        // Card "Pengeluaran Bulan Ini" = expense PnL saja (exclude Stok Masuk, Piutang, dll)
         $totalExpense = Expense::whereBetween('date', [$dateStart, $dateEnd])
-            ->where(function ($q) {
-                $q->where('category', 'like', '%listrik%')
-                  ->orWhere('category', 'like', '%gaji%')
-                  ->orWhere('category', 'like', '%amal%')
-                  ->orWhere('category', 'like', '%internet%');
-            })
+            ->whereNotIn('category', $this->nonPnlExpenseCategories())
+            ->sum('amount') ?? 0;
+
+        // Card "Omset Bulan Ini" = pendapatan real (Penjualan, OMSET PPOB, Jasa Servis, Jasa Cetak, Jasa Tarik Tunai EDC)
+        $totalOmset = Income::whereBetween('date', [$dateStart, $dateEnd])
+            ->whereIn('category', ['Penjualan', 'OMSET', 'Jasa Servis', 'Jasa Cetak', 'Jasa Tarik Tunai EDC'])
             ->sum('amount') ?? 0;
 
         $products = Product::activeWithCategory()->get();
@@ -88,6 +88,7 @@ class DashboardService
             'bcaInProcess' => $bcaInProcess,
             'cashInProcess' => $cashInProcess,
             'totalIncome' => $totalIncome,
+            'totalOmset' => $totalOmset,
             'cashBalance' => $cashBalance,
             'products' => $products,
             'dailyProfits' => $this->getDailyProfits(),
@@ -134,9 +135,9 @@ class DashboardService
             ->where('type', 'edc')
             ->sum('amount') ?? 0;
 
-        // Cash In Process = transfer pending (BCA sudah terima, cash belum diserahkan)
+        // Cash In Process = transfer + tf_masuk pending (BCA sudah terima, cash belum diserahkan)
         $cashInProcess = \App\Models\PendingTransaction::where('status', 'pending')
-            ->where('type', 'transfer')
+            ->whereIn('type', ['transfer', 'tf_masuk'])
             ->sum('amount') ?? 0;
 
         return [$cashBalance, $bcaBalance, $bcaInProcess, $cashInProcess];
@@ -145,33 +146,38 @@ class DashboardService
     private function getDailyProfits(): array
     {
         $today = Carbon::now()->endOfDay();
+        $monthStart = Carbon::now()->startOfMonth();
         $sevenDaysAgo = Carbon::now()->subDays(6)->startOfDay();
 
+        // Mulai dari max(7 hari lalu, awal bulan) — supaya tidak include hari dari bulan lalu
+        $start = $sevenDaysAgo->max($monthStart);
+
         // Pendapatan asli (sama kayak rumus profit utama)
-        $dailyIncomes = Income::whereBetween('date', [$sevenDaysAgo, $today])
+        $dailyIncomes = Income::whereBetween('date', [$start, $today])
             ->whereNotIn('category', $this->nonPnlIncomeCategories())
             ->selectRaw('DATE(date) as d, SUM(amount) as total')->groupBy('d')->pluck('total', 'd');
 
         // Biaya asli (sama kayak rumus profit utama)
-        $dailyExpenses = Expense::whereBetween('date', [$sevenDaysAgo, $today])
+        $dailyExpenses = Expense::whereBetween('date', [$start, $today])
             ->whereNotIn('category', $this->nonPnlExpenseCategories())
             ->selectRaw('DATE(date) as d, SUM(amount) as total')->groupBy('d')->pluck('total', 'd');
 
-        $dailyGrossProfit = HppRecord::whereBetween('date', [$sevenDaysAgo, $today])
-            ->selectRaw('DATE(date) as d, SUM(profit_amount) as total')->groupBy('d')->pluck('total', 'd');
+        // HPP per hari (cost of goods sold)
+        $dailyHpp = HppRecord::whereBetween('date', [$start, $today])
+            ->selectRaw('DATE(date) as d, SUM(hpp_amount) as total')->groupBy('d')->pluck('total', 'd');
 
         $dailyProfits = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i)->toDateString();
+            if (Carbon::parse($date)->lt($start)) continue;
             $income = (int) ($dailyIncomes[$date] ?? 0);
             $expense = (int) ($dailyExpenses[$date] ?? 0);
-            $grossProfit = (int) ($dailyGrossProfit[$date] ?? 0);
+            $hpp = (int) ($dailyHpp[$date] ?? 0);
             $dailyProfits[] = [
                 'date' => $date,
                 'income' => $income,
                 'expense' => $expense,
-                'profit' => $income - $expense,
-                'gross_profit' => $grossProfit,
+                'profit' => $income - $expense - $hpp,
             ];
         }
 

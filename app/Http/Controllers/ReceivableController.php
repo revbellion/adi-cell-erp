@@ -101,6 +101,18 @@ class ReceivableController extends Controller
         return redirect()->back()->with('success', $msg);
     }
 
+    public function addNominal(Request $request, $id)
+    {
+        $request->validate(['amount' => 'required|integer|min:1']);
+
+        try {
+            $this->receivableService->addNominal($id, $request->input('amount'));
+            return redirect()->back()->with('success', 'Nominal piutang berhasil ditambahkan.');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
     public function void($id)
     {
         try {

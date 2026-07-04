@@ -166,8 +166,12 @@
                         <td class="ps-3 fw-bold" colspan="2" style="font-size:0.9rem;">EKUITAS</td>
                     </tr>
                     <tr>
-                        <td class="ps-4">Modal Awal (saldo awal akun)</td>
-                        <td class="pe-3 text-end fw-semibold">{{ rp($totalModalAwal) }}</td>
+                        <td class="ps-4">Modal Awal
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" style="font-size:0.65rem;" data-bs-toggle="modal" data-bs-target="#modalModalAwal">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                        </td>
+                        <td class="pe-3 text-end fw-semibold">{{ rp($initialCapital) }}</td>
                     </tr>
                     <tr>
                         <td class="ps-4">Laba Ditahan</td>
@@ -196,6 +200,31 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+{{-- Modal Edit Modal Awal --}}
+<div class="modal fade modal-modern" tabindex="-1" id="modalModalAwal">
+    <div class="modal-dialog modal-sm">
+        <form autocomplete="off" method="POST" action="{{ route('reports.balance-sheet.initial-capital') }}" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-coins me-2"></i>Modal Awal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted" style="font-size:0.8rem;">Total modal awal saat bisnis pertama kali didirikan.</p>
+                <div class="mb-3">
+                    <label class="form-label">Nominal Modal Awal</label>
+                    <input type="number" step="1" name="amount" class="form-control" required placeholder="0"
+                        value="{{ $initialCapital }}">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
