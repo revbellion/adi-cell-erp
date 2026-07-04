@@ -30,7 +30,7 @@
                     <div class="cc-control-label">Akun Kas</div>
                     <select id="account-select" class="cc-select" onchange="onAccountChange()">
                         @foreach($accounts as $account)
-                        <option value="{{ $account->id }}" data-balance="{{ $balances[$account->id] ?? 0 }}" {{ $cashAccount && $account->id === $cashAccount->id ? 'selected' : '' }}>
+                        <option value="{{ $account->id }}" data-balance="{{ $balances[$account->id] ?? 0 }}" data-last-closing="{{ $lastClosingBalances[$account->id] ?? 0 }}" {{ $cashAccount && $account->id === $cashAccount->id ? 'selected' : '' }}>
                             {{ $account->name }} ({{ ucfirst($account->type) }})
                         </option>
                         @endforeach
@@ -830,10 +830,10 @@ function fillOpeningFromLast() {
     const select = document.getElementById('account-select');
     if (!select.value) { showToast('Pilih akun terlebih dahulu'); return; }
     const option = select.options[select.selectedIndex];
-    const balance = parseInt(option.dataset.balance) || 0;
-    document.getElementById('opening-balance').value = balance;
+    const closing = parseInt(option.dataset.lastClosing) || 0;
+    document.getElementById('opening-balance').value = closing;
     updateTotal();
-    showToast('Saldo awal diisi dari saldo sistem');
+    showToast('Saldo awal diisi dari saldo akhir sesi terakhir');
 }
 
 function updateAccountBalanceInfo(grandTotal) {
@@ -1039,10 +1039,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const accountSelect = document.getElementById('account-select');
     if (accountSelect && accountSelect.value) {
         onAccountChange();
-        // isi saldo awal dari closing sesi terakhir
-        var lastClosing = {{ $lastClosingBalance ?? 0 }};
-        if (lastClosing > 0) {
-            document.getElementById('opening-balance').value = lastClosing;
+        var closing = parseInt(accountSelect.options[accountSelect.selectedIndex].dataset.lastClosing) || 0;
+        if (closing > 0) {
+            document.getElementById('opening-balance').value = closing;
             updateTotal();
         }
     }

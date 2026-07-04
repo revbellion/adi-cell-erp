@@ -26,9 +26,10 @@ class CashCounterController extends Controller
         $period = now()->format('Y-m');
         $balances = $this->dashboardService->calculateAccountBalances($accounts, $period);
 
-        $lastClosingBalance = $cashAccount
-            ? $this->cashCounterService->getLastClosingBalance($cashAccount->id)
-            : 0;
+        $lastClosingBalances = [];
+        foreach ($accounts as $account) {
+            $lastClosingBalances[$account->id] = $this->cashCounterService->getLastClosingBalance($account->id);
+        }
 
         $today = now()->format('Y-m-d');
         $periodTransactions = $this->cashCounterService->getPeriodTransactions(
@@ -38,7 +39,7 @@ class CashCounterController extends Controller
 
         return view('cash-counter.index', compact(
             'accounts', 'cashAccount', 'balances', 'hasCashAccounts',
-            'lastClosingBalance', 'periodTransactions'
+            'lastClosingBalances', 'periodTransactions'
         ));
     }
 
