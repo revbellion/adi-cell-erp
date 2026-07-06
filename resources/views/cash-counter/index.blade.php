@@ -66,7 +66,7 @@
                     <div class="cc-target-input">
                         <span class="cc-target-prefix">Rp</span>
                         <input type="number" id="opening-balance" class="cc-input" min="0" placeholder="0" oninput="updateTotal()">
-                        <button type="button" class="cc-target-btn" onclick="fillOpeningFromLast()" title="Isi dari saldo akhir sesi terakhir">
+                        <button type="button" class="cc-target-btn" onclick="fillOpeningFromSystem()" title="Isi dari saldo sistem">
                             <i class="fas fa-redo-alt"></i>
                         </button>
                     </div>
@@ -826,14 +826,14 @@ function onAccountChange() {
     updateAccountBalanceInfo(getGrandTotal());
 }
 
-function fillOpeningFromLast() {
+function fillOpeningFromSystem() {
     const select = document.getElementById('account-select');
     if (!select.value) { showToast('Pilih akun terlebih dahulu'); return; }
     const option = select.options[select.selectedIndex];
-    const closing = parseInt(option.dataset.lastClosing) || 0;
-    document.getElementById('opening-balance').value = closing;
+    const balance = parseInt(option.dataset.balance) || 0;
+    document.getElementById('opening-balance').value = balance;
     updateTotal();
-    showToast('Saldo awal diisi dari saldo akhir sesi terakhir');
+    showToast('Saldo awal diisi dari saldo sistem');
 }
 
 function updateAccountBalanceInfo(grandTotal) {
@@ -1039,9 +1039,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const accountSelect = document.getElementById('account-select');
     if (accountSelect && accountSelect.value) {
         onAccountChange();
-        var closing = parseInt(accountSelect.options[accountSelect.selectedIndex].dataset.lastClosing) || 0;
-        if (closing > 0) {
-            document.getElementById('opening-balance').value = closing;
+        var balance = parseInt(accountSelect.options[accountSelect.selectedIndex].dataset.balance) || 0;
+        if (balance > 0) {
+            document.getElementById('opening-balance').value = balance;
             updateTotal();
         }
     }

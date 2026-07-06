@@ -24,6 +24,12 @@ class ReceivableController extends Controller
     public function index(Request $request)
     {
         $filters = $this->parseFilters($request);
+        if (!isset($filters['status'])) {
+            $filters['status'] = 'unpaid';
+        }
+        if (($filters['status'] ?? '') === 'all') {
+            unset($filters['status']);
+        }
         $result = $this->receivableService->getAll($filters);
 
         return view('receivables.index', [
@@ -162,7 +168,7 @@ class ReceivableController extends Controller
 
         return array_filter(
             Validator::make($raw, [
-                'status' => 'nullable|in:unpaid,paid,overdue,voided',
+                'status' => 'nullable|in:unpaid,paid,overdue,voided,all',
                 'date_from' => 'nullable|date',
                 'date_to' => 'nullable|date',
                 'search' => 'nullable|string|max:100',
