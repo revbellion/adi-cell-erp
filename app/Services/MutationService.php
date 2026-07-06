@@ -49,8 +49,7 @@ class MutationService
 
     public function getAll(array $filters = []): array
     {
-        $query = Mutation::with('fromAccount', 'toAccount')
-            ->where('source', '!=', 'piutang');
+        $query = Mutation::with('fromAccount', 'toAccount');
 
         if (!empty($filters['date_from'])) {
             $query->whereDate('date', '>=', $filters['date_from']);
