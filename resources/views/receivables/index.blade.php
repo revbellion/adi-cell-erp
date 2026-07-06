@@ -53,11 +53,11 @@
     <div class="card-body p-0">
         <div class="px-3 pt-3 filter-pills-wrapper">
             <div class="filter-pills">
-                <a class="filter-pill {{ request('status') == 'all' || request('status') == '' ? 'active' : '' }} pill-all" 
+                <a class="filter-pill {{ request('status') == 'all' ? 'active' : '' }} pill-all" 
                    href="{{ route('receivables.index', ['status' => 'all']) }}">
                     <i class="fas fa-list-ul"></i> Semua
                 </a>
-                <a class="filter-pill {{ request('status') == 'unpaid' ? 'active' : '' }} pill-unpaid" 
+                <a class="filter-pill {{ request('status') == 'unpaid' || request('status') == '' ? 'active' : '' }} pill-unpaid" 
                    href="{{ route('receivables.index', ['status' => 'unpaid']) }}">
                     <i class="fas fa-clock"></i> Belum Lunas
                 </a>
