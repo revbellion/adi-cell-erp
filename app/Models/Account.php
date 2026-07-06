@@ -32,7 +32,8 @@ class Account extends Model
 
     public function scopeVisible($query)
     {
-        return $query->where('name', '!=', config('accounts.in_transit_name'));
+        return $query->where('name', '!=', config('accounts.in_transit_name'))
+            ->where('type', '!=', 'receivable');
     }
 
     public function openingBalances(): HasMany

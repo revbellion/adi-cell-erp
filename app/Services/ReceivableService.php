@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\Customer;
-use App\Models\Expense;
+use App\Models\Mutation;
 use App\Models\Receivable;
 use App\Models\ReceivablePayment;
 use Carbon\Carbon;
@@ -22,7 +22,7 @@ class ReceivableService
         $data['due_date'] = $parsedDate->copy()->addDays(3)->setTimeFrom($now);
         $data['status'] = 'unpaid';
 
-        return DB::transaction(function () use ($data, $now) {
+        return DB::transaction(function () use ($data) {
             $data = $this->resolveCustomer($data);
 
             $existing = Receivable::where('status', 'unpaid')
@@ -41,17 +41,17 @@ class ReceivableService
 
             $receivable = Receivable::create($data);
 
-            // Buat Expense: kasih pinjaman ke customer
-            $expense = Expense::create([
-                'account_id'     => $data['account_id'] ?? $this->resolveCashAccountId(),
-                'category'       => 'Piutang',
-                'amount'         => $data['amount'],
-                'description'    => "Piutang {$data['name']}",
-                'date'           => $data['date'],
-                'receivable_id'  => $receivable->id,
-            ]);
-
-            $receivable->update(['expense_id' => $expense->id]);
+            $accounts = $this->getPiutangAccounts();
+            if ($accounts['cash'] && $accounts['piutang']) {
+                Mutation::create([
+                    'from_account_id' => $accounts['cash']->id,
+                    'to_account_id' => $accounts['piutang']->id,
+                    'amount' => $data['amount'],
+                    'date' => $data['date'],
+                    'description' => "Piutang {$data['name']}",
+                    'source' => 'piutang',
+                ]);
+            }
 
             return $receivable;
         });
@@ -81,11 +81,15 @@ class ReceivableService
                 'due_date' => $newDueDate,
             ]);
 
-            if ($receivable->expense_id) {
-                Expense::where('id', $receivable->expense_id)->update([
-                    'amount'      => $newAmount,
-                    'date'        => $newDate,
-                    'description' => "Piutang {$receivable->name} (+Rp " . number_format($additionalAmount, 0, ',', '.') . ')',
+            $accounts = $this->getPiutangAccounts();
+            if ($accounts['cash'] && $accounts['piutang']) {
+                Mutation::create([
+                    'from_account_id' => $accounts['cash']->id,
+                    'to_account_id' => $accounts['piutang']->id,
+                    'amount' => $additionalAmount,
+                    'date' => $newDate,
+                    'description' => "Tambah piutang {$receivable->name}",
+                    'source' => 'piutang',
                 ]);
             }
 
@@ -113,11 +117,33 @@ class ReceivableService
             $data['date'] = $parsedDate->format('Y-m-d') . ' ' . $now->format('H:i:s');
             $data['due_date'] = $parsedDate->copy()->addDays(3)->setTimeFrom($now);
 
+            $oldAmount = $receivable->amount;
             $receivable->update($data);
+            $diff = $receivable->amount - $oldAmount;
 
-            // Sync Expense jika jumlah berubah
-            if ($receivable->expense_id && isset($data['amount'])) {
-                Expense::where('id', $receivable->expense_id)->update(['amount' => $data['amount']]);
+            if ($diff !== 0) {
+                $accounts = $this->getPiutangAccounts();
+                if ($accounts['cash'] && $accounts['piutang']) {
+                    if ($diff > 0) {
+                        Mutation::create([
+                            'from_account_id' => $accounts['cash']->id,
+                            'to_account_id' => $accounts['piutang']->id,
+                            'amount' => $diff,
+                            'date' => $data['date'],
+                            'description' => "Edit piutang {$receivable->name} (+{$diff})",
+                            'source' => 'piutang',
+                        ]);
+                    } else {
+                        Mutation::create([
+                            'from_account_id' => $accounts['piutang']->id,
+                            'to_account_id' => $accounts['cash']->id,
+                            'amount' => abs($diff),
+                            'date' => $data['date'],
+                            'description' => "Edit piutang {$receivable->name} ({$diff})",
+                            'source' => 'piutang',
+                        ]);
+                    }
+                }
             }
 
             return $receivable;
@@ -151,20 +177,22 @@ class ReceivableService
                 'date' => $paymentDate,
             ]);
 
-            // Buat Income untuk setiap pembayaran (termasuk parsial)
-            $income = \App\Models\Income::create([
-                'account_id'    => $data['account_id'],
-                'amount'        => $data['amount'],
-                'category'      => 'Piutang',
-                'description'   => "Pembayaran piutang {$receivable->name} (#{$receivable->id})",
-                'date'          => $paymentDate,
-                'receivable_id' => $receivable->id,
-            ]);
+            $accounts = $this->getPiutangAccounts();
+            if ($accounts['piutang']) {
+                Mutation::create([
+                    'from_account_id' => $accounts['piutang']->id,
+                    'to_account_id' => $data['account_id'],
+                    'amount' => $data['amount'],
+                    'date' => $paymentDate,
+                    'description' => "Bayar piutang {$receivable->name}",
+                    'source' => 'piutang',
+                ]);
+            }
 
             $totalPaid = $receivable->receivablePayments()->sum('amount');
 
             if ($totalPaid >= $receivable->amount) {
-                $receivable->update(['status' => 'paid', 'income_id' => $income->id]);
+                $receivable->update(['status' => 'paid']);
             }
 
             return $payment;
@@ -180,15 +208,23 @@ class ReceivableService
                 throw new \DomainException('Hanya piutang berstatus unpaid yang bisa dibatalkan.');
             }
 
-            // Hapus Expense terkait (cash keluar pas buat piutang)
-            if ($receivable->expense_id) {
-                Expense::where('id', $receivable->expense_id)->delete();
+            $sisa = $receivable->amount - $receivable->receivablePayments()->sum('amount');
+
+            if ($sisa > 0) {
+                $accounts = $this->getPiutangAccounts();
+                if ($accounts['cash'] && $accounts['piutang']) {
+                    Mutation::create([
+                        'from_account_id' => $accounts['piutang']->id,
+                        'to_account_id' => $accounts['cash']->id,
+                        'amount' => $sisa,
+                        'date' => now()->format('Y-m-d H:i:s'),
+                        'description' => "Batal piutang {$receivable->name}",
+                        'source' => 'piutang',
+                    ]);
+                }
             }
 
-            $receivable->update([
-                'status' => 'voided',
-                'expense_id' => null,
-            ]);
+            $receivable->update(['status' => 'voided']);
 
             return $receivable;
         });
@@ -203,21 +239,14 @@ class ReceivableService
                 throw new \DomainException('Piutang yang sudah lunas tidak bisa dihapus.');
             }
 
-            // Hapus Expense terkait
-            if ($receivable->expense_id) {
-                Expense::where('id', $receivable->expense_id)->delete();
-            }
-
-            // Hapus semua Income terkait pembayaran
-            $paymentCount = $receivable->receivablePayments()->count();
-            if ($paymentCount > 0) {
-                \App\Models\Income::where('category', 'Piutang')
-                    ->where('receivable_id', $receivable->id)
-                    ->delete();
-            }
-
             // Hapus payments
             $receivable->receivablePayments()->delete();
+
+            // Hapus mutation Piutang terkait — hapus yg source = piutang
+            Mutation::where('source', 'piutang')
+                ->where('description', 'like', "%{$receivable->name}%")
+                ->whereIn('amount', [$receivable->amount])
+                ->delete();
 
             // Hapus receivable
             return $receivable->delete();
@@ -262,15 +291,15 @@ class ReceivableService
         return compact('receivables', 'totalAmount', 'totalRemaining');
     }
 
-    private function resolveCashAccountId(): int
+    private function getPiutangAccounts(): array
     {
-        $account = Account::active()->where('name', config('accounts.cash_name'))->first();
+        $cash = Account::active()->where('name', config('accounts.cash_name'))->first();
+        $piutang = Account::where('type', 'receivable')->first();
 
-        if (! $account) {
-            throw new \DomainException('Akun cash tidak ditemukan. Silakan buat akun cash terlebih dahulu.');
-        }
-
-        return $account->id;
+        return [
+            'cash' => $cash,
+            'piutang' => $piutang,
+        ];
     }
 
     private function resolveCustomer(array $data): array

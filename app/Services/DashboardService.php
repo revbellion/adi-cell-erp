@@ -112,15 +112,10 @@ class DashboardService
 
     private function getReceivableAndEquity($accounts): array
     {
-        $unpaidSub = DB::raw('(SELECT receivable_id, SUM(amount) as paid FROM receivable_payments GROUP BY receivable_id) as rp');
+        $piutangAccount = $accounts->firstWhere('type', 'receivable');
+        $totalReceivable = (int) ($piutangAccount?->balance ?? 0);
 
-        $totalReceivable = DB::table('receivables')
-            ->leftJoin($unpaidSub, 'receivables.id', '=', 'rp.receivable_id')
-            ->where('receivables.status', 'unpaid')
-            ->selectRaw('COALESCE(SUM(receivables.amount - COALESCE(rp.paid, 0)), 0) as total_remaining')
-            ->value('total_remaining') ?? 0;
-
-        $totalEquity = $accounts->sum('balance') + $totalReceivable;
+        $totalEquity = $accounts->sum('balance');
 
         return [$totalReceivable, $totalEquity];
     }
