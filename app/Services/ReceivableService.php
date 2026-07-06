@@ -242,13 +242,7 @@ class ReceivableService
             // Hapus payments
             $receivable->receivablePayments()->delete();
 
-            // Hapus mutation Piutang terkait — hapus yg source = piutang
-            Mutation::where('source', 'piutang')
-                ->where('description', 'like', "%{$receivable->name}%")
-                ->whereIn('amount', [$receivable->amount])
-                ->delete();
-
-            // Hapus receivable
+            // Hapus receivable (mutation tetap untuk audit trail)
             return $receivable->delete();
         });
     }

@@ -7,6 +7,7 @@ use App\Models\OpeningBalance;
 use App\Models\Mutation;
 use App\Models\Expense;
 use App\Models\Receivable;
+use App\Models\ReceivablePayment;
 use App\Models\Income;
 use App\Models\Product;
 use App\Models\StockTransaction;
@@ -112,8 +113,9 @@ class DashboardService
 
     private function getReceivableAndEquity($accounts): array
     {
-        $piutangAccount = $accounts->firstWhere('type', 'receivable');
-        $totalReceivable = (int) ($piutangAccount?->balance ?? 0);
+        $totalReceivable = Receivable::where('status', 'unpaid')
+            ->sum('amount') - ReceivablePayment::sum('amount');
+        if ($totalReceivable < 0) $totalReceivable = 0;
 
         $totalEquity = $accounts->sum('balance');
 
