@@ -48,8 +48,9 @@ class ReceivableService
                     'to_account_id' => $accounts['piutang']->id,
                     'amount' => $data['amount'],
                     'date' => $data['date'],
-                    'description' => "Piutang {$data['name']}",
+                    'description' => "Piutang {$data['name']} (#{$receivable->id})",
                     'source' => 'piutang',
+                    'receivable_id' => $receivable->id,
                 ]);
             }
 
@@ -90,6 +91,7 @@ class ReceivableService
                     'date' => $newDate,
                     'description' => "Tambah piutang {$receivable->name}",
                     'source' => 'piutang',
+                    'receivable_id' => $receivable->id,
                 ]);
             }
 
@@ -132,6 +134,7 @@ class ReceivableService
                             'date' => $data['date'],
                             'description' => "Edit piutang {$receivable->name} (+{$diff})",
                             'source' => 'piutang',
+                            'receivable_id' => $receivable->id,
                         ]);
                     } else {
                         Mutation::create([
@@ -141,6 +144,7 @@ class ReceivableService
                             'date' => $data['date'],
                             'description' => "Edit piutang {$receivable->name} ({$diff})",
                             'source' => 'piutang',
+                            'receivable_id' => $receivable->id,
                         ]);
                     }
                 }

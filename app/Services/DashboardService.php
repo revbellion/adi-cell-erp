@@ -7,7 +7,6 @@ use App\Models\OpeningBalance;
 use App\Models\Mutation;
 use App\Models\Expense;
 use App\Models\Receivable;
-use App\Models\ReceivablePayment;
 use App\Models\Income;
 use App\Models\Product;
 use App\Models\StockTransaction;
@@ -113,9 +112,13 @@ class DashboardService
 
     private function getReceivableAndEquity($accounts): array
     {
-        $totalReceivable = Receivable::where('status', 'unpaid')
-            ->sum('amount') - ReceivablePayment::sum('amount');
-        if ($totalReceivable < 0) $totalReceivable = 0;
+        $unpaidSub = DB::raw('(SELECT receivable_id, SUM(amount) as paid FROM receivable_payments GROUP BY receivable_id) as rp');
+
+        $totalReceivable = DB::table('receivables')
+            ->leftJoin($unpaidSub, 'receivables.id', '=', 'rp.receivable_id')
+            ->where('receivables.status', 'unpaid')
+            ->selectRaw('COALESCE(SUM(receivables.amount - COALESCE(rp.paid, 0)), 0) as total_remaining')
+            ->value('total_remaining') ?? 0;
 
         $totalEquity = $accounts->sum('balance');
 
