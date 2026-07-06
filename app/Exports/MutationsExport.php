@@ -18,7 +18,8 @@ class MutationsExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        $query = Mutation::with('fromAccount', 'toAccount');
+        $query = Mutation::with('fromAccount', 'toAccount')
+            ->where('source', '!=', 'piutang');
 
         if (!empty($this->filters['date_from'])) {
             $query->whereDate('date', '>=', $this->filters['date_from']);
