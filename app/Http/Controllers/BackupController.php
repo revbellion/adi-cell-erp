@@ -4,12 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\Process\Process;
 
 class BackupController extends Controller
 {
     public function index()
     {
         return view('backups.index');
+    }
+
+    protected function getMysqlDumpPath(): string
+    {
+        // Bisa di-set di .env: DB_MYSQLDUMP_PATH=mysqldump (default: pakai system path)
+        return env('DB_MYSQLDUMP_PATH', 'mysqldump');
+    }
+
+    protected function getMysqlClientPath(): string
+    {
+        return env('DB_MYSQL_CLIENT', 'mysql');
     }
 
     public function download()
@@ -21,28 +33,27 @@ class BackupController extends Controller
         $username = $db['username'];
         $password = $db['password'];
 
-        $mysqlDir = env('DB_MYSQL_DIR', 'C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin');
-
         $filename = 'cash_tracker_' . now()->format('Y-m-d_His') . '.sql';
         $filepath = storage_path('app/' . $filename);
 
-        $userOption = !empty($password) ? '--password=' . escapeshellarg($password) : '--skip-password';
+        $passwordArg = !empty($password) ? '--password=' . escapeshellarg($password) : '--skip-password';
 
         $command = sprintf(
-            '%s %s --host=%s --port=%s --user=%s %s > %s 2>&1',
-            escapeshellarg($mysqlDir . '\mysqldump.exe'),
-            $userOption,
+            '%s --host=%s --port=%s --user=%s %s %s > %s',
+            escapeshellarg($this->getMysqlDumpPath()),
             escapeshellarg($host),
             escapeshellarg($port),
             escapeshellarg($username),
+            $passwordArg,
             escapeshellarg($database),
             escapeshellarg($filepath)
         );
 
-        exec($command, $output, $exitCode);
+        $process = Process::fromShellCommandline($command);
+        $process->run();
 
-        if ($exitCode !== 0) {
-            return redirect()->back()->with('error', 'Gagal backup database. Path: ' . $mysqlDir);
+        if (!$process->isSuccessful()) {
+            return redirect()->back()->with('error', 'Gagal backup database. Pastikan mysqldump tersedia di server. Jika perlu, set DB_MYSQLDUMP_PATH di .env');
         }
 
         return response()->download($filepath)->deleteFileAfterSend(true);
@@ -61,26 +72,37 @@ class BackupController extends Controller
         $username = $db['username'];
         $password = $db['password'];
 
-        $mysqlDir = env('DB_MYSQL_DIR', 'C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin');
         $filepath = $request->file('backup_file')->getRealPath();
 
-        $passArg = !empty($password) ? '--password=' . escapeshellarg($password) : '';
+        // Strip mysqldump warnings from backup file (e.g. "mysqldump: [Warning] ...")
+        // so they don't cause SQL syntax errors during restore
+        $cleanPath = $filepath . '.clean';
+        file_put_contents($cleanPath, preg_replace(
+            '/^mysqldump:\s*\[Warning\].*\n/m',
+            '',
+            file_get_contents($filepath)
+        ));
+
+        $passwordArg = !empty($password) ? '--password=' . escapeshellarg($password) : '';
 
         $command = sprintf(
             '%s --host=%s --port=%s --user=%s %s %s < %s 2>&1',
-            escapeshellarg($mysqlDir . '\mysql.exe'),
+            escapeshellarg($this->getMysqlClientPath()),
             escapeshellarg($host),
             escapeshellarg($port),
             escapeshellarg($username),
-            $passArg,
+            $passwordArg,
             escapeshellarg($database),
-            escapeshellarg($filepath)
+            escapeshellarg($cleanPath)
         );
 
-        exec($command, $output, $exitCode);
+        $process = Process::fromShellCommandline($command);
+        $process->run();
 
-        if ($exitCode !== 0) {
-            $errorMsg = implode("\n", $output);
+        @unlink($cleanPath);
+
+        if (!$process->isSuccessful()) {
+            $errorMsg = $process->getErrorOutput() ?: $process->getOutput();
             return redirect()->back()->with('error', 'Gagal restore database: ' . $errorMsg);
         }
 
@@ -106,7 +128,6 @@ class BackupController extends Controller
                 DB::table('opname_saldo')->truncate();
                 DB::table('stock_transactions')->truncate();
                 DB::table('bill_payments')->truncate();
-                DB::table('cash_counter_sessions')->truncate();
             });
         } finally {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
