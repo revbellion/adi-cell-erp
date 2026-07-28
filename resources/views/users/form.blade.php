@@ -2,11 +2,15 @@
     $title = isset($user) ? 'Edit User' : 'Tambah User';
     $isEditing = isset($user);
     $defaultPermissions = ['pos', 'stock_in', 'stock_opname'];
-    $checkedPerms = old('permissions', $user->permissions ?? ($isEditing ? [] : $defaultPermissions));
-    if (is_string($checkedPerms)) {
-        $checkedPerms = explode(',', $checkedPerms);
-    }
     $isAdmin = old('is_admin', $user->is_admin ?? false);
+    $checkedPerms = old('permissions', $user->permissions ?? []);
+    if ($isAdmin) {
+        $checkedPerms = [];
+    } elseif (is_string($checkedPerms)) {
+        $checkedPerms = explode(',', $checkedPerms);
+    } elseif (!$isEditing) {
+        $checkedPerms = $defaultPermissions;
+    }
 @endphp
 @extends('layouts.app')
 
