@@ -112,6 +112,41 @@ class PrintOrderService
         return compact('orders', 'totalAmount', 'totalQty');
     }
 
+    public function getReceipt(int $id): ?object
+    {
+        $order = PrintOrder::with('account')->find($id);
+
+        if (!$order) return null;
+
+        $serviceLabel = $this->serviceTypes[$order->service_type] ?? $order->service_type;
+
+        return (object) [
+            'id'             => $order->id,
+            'receipt_id'     => 'JC-' . str_pad($order->id, 4, '0', STR_PAD_LEFT),
+            'date'           => $order->date,
+            'account'        => $order->account,
+            'service_type'   => $order->service_type,
+            'service_label'  => $serviceLabel,
+            'quantity'       => $order->quantity,
+            'price_per_unit' => $order->price_per_unit,
+            'total'          => $order->total,
+            'description'    => $order->description,
+        ];
+    }
+
+    public function getOrdersByIds(array $ids)
+    {
+        return PrintOrder::with('account')
+            ->whereIn('id', $ids)
+            ->orderBy('date')
+            ->get()
+            ->map(function ($order) {
+                $order->receipt_id = 'JC-' . str_pad($order->id, 4, '0', STR_PAD_LEFT);
+                $order->service_label = $this->serviceTypes[$order->service_type] ?? $order->service_type;
+                return $order;
+            });
+    }
+
     public function getServiceTypes(): array
     {
         return $this->serviceTypes;

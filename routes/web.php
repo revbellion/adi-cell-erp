@@ -197,6 +197,16 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:print_orders')->group(function () {
         Route::resource('print-orders', PrintOrderController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('print-orders/bulk-delete', [PrintOrderController::class, 'bulkDelete'])->name('print-orders.bulk-delete');
+        Route::get('print-orders/export', [PrintOrderController::class, 'export'])->name('print-orders.export');
+        Route::get('print-orders/bulk-receipt', [PrintOrderController::class, 'bulkReceipt'])->name('print-orders.bulk-receipt');
+        Route::get('print-orders/{id}/receipt', [PrintOrderController::class, 'receipt'])->name('print-orders.receipt');
+        Route::get('print-orders/{id}/receipt/pdf', [PrintOrderController::class, 'receiptPdf'])->name('print-orders.receipt.pdf');
+    });
+
+    // Store Profile
+    Route::middleware('auth')->group(function () {
+        Route::get('store-profile', [\App\Http\Controllers\StoreProfileController::class, 'index'])->name('store-profile.index');
+        Route::put('store-profile', [\App\Http\Controllers\StoreProfileController::class, 'update'])->name('store-profile.update');
     });
 
     // Jasa Servis

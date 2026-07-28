@@ -175,7 +175,7 @@ class StockService
 
                 // Ambil batch stok masuk (FIFO: tertua dulu)
                 $batches = StockTransaction::where('product_id', $product->id)
-                    ->where('type', 'in')
+                    ->whereIn('type', ['in', 'opname'])
                     ->where('remaining_qty', '>', 0)
                     ->orderBy('date')
                     ->orderBy('id')
@@ -324,13 +324,14 @@ class StockService
                 $price = $product->purchase_price;
 
                 StockTransaction::create([
-                    'product_id'  => $product->id,
-                    'type'        => 'opname',
-                    'qty'         => $newStock,
-                    'price'       => $price,
-                    'account_id'  => null,
-                    'description' => $item['description'] ?? 'Stok opname',
-                    'date'        => now()->format('Y-m-d H:i:s'),
+                    'product_id'    => $product->id,
+                    'type'          => 'opname',
+                    'qty'           => $newStock,
+                    'remaining_qty' => $newStock,
+                    'price'         => $price,
+                    'account_id'    => null,
+                    'description'   => $item['description'] ?? 'Stok opname',
+                    'date'          => now()->format('Y-m-d H:i:s'),
                 ]);
 
                 $product->update([

@@ -271,7 +271,7 @@
         {{-- ═══ PENGATURAN ═══ --}}
         @if(Auth::user()->isAdmin())
         @php
-            $pengaturanActive = request()->routeIs('backups.*') || request()->routeIs('users.*');
+            $pengaturanActive = request()->routeIs('backups.*') || request()->routeIs('users.*') || request()->routeIs('store-profile.*');
         @endphp
         <div class="nav-item">
             <a class="nav-link group-header {{ $pengaturanActive ? 'active' : '' }}"
@@ -293,6 +293,10 @@
                 <a class="nav-link sub-link {{ request()->routeIs('sop.*') ? 'active' : '' }}" href="{{ route('sop.index') }}">
                     <i class="fas fa-book"></i>
                     <span class="nav-label">SOP Tutup Buku</span>
+                </a>
+                <a class="nav-link sub-link {{ request()->routeIs('store-profile.*') ? 'active' : '' }}" href="{{ route('store-profile.index') }}">
+                    <i class="fas fa-store"></i>
+                    <span class="nav-label">Profil Toko</span>
                 </a>
             </div>
         </div>

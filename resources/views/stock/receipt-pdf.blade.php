@@ -4,47 +4,55 @@
     <meta charset="utf-8">
     <title>Resi {{ $receipt->receipt_id }}</title>
     <style>
-        @page { margin: 8mm 6mm; }
+        @page { margin: 6mm 5mm; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'DejaVu Sans Mono', monospace;
-            font-size: 10px;
-            line-height: 1.3;
+            font-family: 'Courier', monospace;
+            font-size: 12px;
+            line-height: 1.4;
             color: #000;
-            width: 70mm;
+            width: 72mm;
             margin: 0 auto;
-        }
-        .header { text-align: center; margin-bottom: 8px; }
-        .header h1 {
-            margin: 0;
-            font-size: 18px;
             font-weight: bold;
         }
-        .header p { margin: 1px 0; font-size: 9px; }
-        .divider { border-top: 1px dashed #000; margin: 6px 0; }
-        .divider-solid { border-top: 1px solid #000; margin: 6px 0; }
-        .info { font-size: 9px; margin-bottom: 6px; }
-        .info div { margin: 1px 0; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        th, td { padding: 2px 0; text-align: left; font-weight: bold; }
+        .header { text-align: center; margin-bottom: 10px; }
+        .header h1 {
+            margin: 0 0 2px;
+            font-size: 20px;
+            font-weight: 900;
+        }
+        .header p { margin: 2px 0; font-size: 11px; font-weight: bold; }
+        .divider { border-top: 2px dashed #000; margin: 8px 0; }
+        .divider-solid { border-top: 2px solid #000; margin: 8px 0; }
+        .info { font-size: 11px; margin-bottom: 8px; font-weight: bold; }
+        .info div { margin: 2px 0; }
+        .info strong { font-weight: 900; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { padding: 3px 0; text-align: left; font-weight: bold; }
         th {
-            border-bottom: 1px solid #000;
-            font-size: 10px;
+            border-bottom: 2px solid #000;
+            font-size: 11px;
+            font-weight: 900;
+            padding-bottom: 3px;
         }
         .qty { text-align: center; }
         .price { text-align: right; }
-        .item-row td { padding-top: 3px; }
         .total-label { text-align: right; padding-right: 4px; }
         .total-value { text-align: right; font-weight: bold; }
-        .grand-total td { font-size: 14px; font-weight: bold; padding-top: 4px; }
-        .footer { text-align: center; margin-top: 10px; font-size: 10px; font-weight: bold; }
+        .grand-total td { font-size: 15px; font-weight: 900; padding-top: 4px; }
+        .footer { text-align: center; margin-top: 10px; font-size: 12px; font-weight: bold; }
         .footer p { margin: 2px 0; }
     </style>
 </head>
 <body>
+    @php $profile = \App\Models\StoreProfile::first(); @endphp
     <div class="header">
-        <h1>ADI CELL</h1>
-        <p>Jl. Toko No. 123</p>
-        <p>Telp: 0812-3456-7890</p>
+        <h1>{{ $profile->store_name ?? 'ADI CELL' }}</h1>
+        <p>{{ $profile->address ?? 'Jl. Toko No. 123' }}</p>
+        <p>Telp: {{ $profile->phone ?? '0812-3456-7890' }}</p>
+        @if(!empty($profile->email))
+        <p>{{ $profile->email }}</p>
+        @endif
     </div>
     <div class="divider-solid"></div>
     <div class="info">
@@ -99,8 +107,8 @@
     </table>
     <div class="divider-solid"></div>
     <div class="footer">
-        <p>Terima kasih!</p>
-        <p style="font-weight:normal;font-size:8px;">Barang yang sudah dibeli tidak dapat dikembalikan</p>
+        <p>{{ $profile->footer_text ?? 'Terima kasih!' }}</p>
+        <p style="font-weight:normal;font-size:10px;">Barang yang sudah dibeli tidak dapat dikembalikan</p>
     </div>
 
     <script type="text/javascript">

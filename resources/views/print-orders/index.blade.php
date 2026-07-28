@@ -5,6 +5,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Jasa Cetak</h4>
     <div class="d-flex gap-2 page-header-actions">
+        <a href="{{ route('print-orders.export', request()->only(['date_from', 'date_to', 'service_type', 'search'])) }}" class="btn btn-modern btn-success btn-sm me-1">
+            <i class="fas fa-file-excel me-1"></i>Export
+        </a>
         <button type="button" class="btn btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
             <i class="fas fa-plus me-1"></i>Tambah Pesanan
         </button>
@@ -43,6 +46,11 @@
             @method('DELETE')
             <button type="submit" class="btn btn-modern btn-danger btn-sm" onclick="event.preventDefault(); confirmDelete('Hapus data yang dipilih?').then(ok => ok && this.closest('form').submit());">
                 <i class="fas fa-trash me-1"></i>Hapus
+            </button>
+        </form>
+        <form autocomplete="off" id="bulkReceiptForm" method="GET" action="{{ route('print-orders.bulk-receipt') }}" style="display:inline;">
+            <button type="submit" class="btn btn-modern btn-info btn-sm" onclick="event.preventDefault(); populateBulkReceiptIds(); this.closest('form').submit();">
+                <i class="fas fa-receipt me-1"></i>Cetak Resi
             </button>
         </form>
         <button type="button" class="btn btn-modern btn-secondary btn-sm" onclick="clearBulkSelection()">
@@ -94,6 +102,9 @@
                         <td class="fw-semibold">{{ rp($order->total) }}</td>
                         <td>{{ $order->description ?? '-' }}</td>
                         <td class="pe-3">
+                            <a href="{{ route('print-orders.receipt', $order->id) }}" target="_blank" class="btn btn-modern btn-info btn-sm" title="Cetak Resi">
+                                <i class="fas fa-receipt"></i>
+                            </a>
                             <button type="button" class="btn btn-modern btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEdit"
                                 data-id="{{ $order->id }}"
                                 data-date="{{ $order->date->format('Y-m-d') }}"
@@ -306,6 +317,18 @@ function clearBulkSelection() {
         cb.checked = false;
     });
     updateBulkBar();
+}
+
+function populateBulkReceiptIds() {
+    var form = document.getElementById('bulkReceiptForm');
+    form.querySelectorAll('input[name="ids[]"]').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.bulk-select-item:checked').forEach(function(cb) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = cb.value;
+        form.appendChild(input);
+    });
 }
 
 $('#modalEdit').on('show.bs.modal', function (event) {

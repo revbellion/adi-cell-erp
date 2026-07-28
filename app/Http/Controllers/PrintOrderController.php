@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PrintOrdersExport;
 use App\Http\Requests\StorePrintOrderRequest;
 use App\Http\Requests\UpdatePrintOrderRequest;
 use App\Models\Account;
 use App\Services\PrintOrderService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PrintOrderController extends Controller
 {
@@ -73,6 +76,54 @@ class PrintOrderController extends Controller
             }
         }
         return redirect()->back()->with('success', "{$deleted} data berhasil dihapus.");
+    }
+
+    public function export(Request $request)
+    {
+        $filters = $this->parseFilters($request);
+
+        return Excel::download(new PrintOrdersExport($filters), 'jasa-cetak.xlsx');
+    }
+
+    public function receipt(int $id)
+    {
+        $order = $this->printOrderService->getReceipt($id);
+
+        if (!$order) {
+            return redirect()->route('print-orders.index')->with('error', 'Pesanan tidak ditemukan.');
+        }
+
+        return view('print-orders.receipt', compact('order'));
+    }
+
+    public function receiptPdf(int $id)
+    {
+        $order = $this->printOrderService->getReceipt($id);
+
+        if (!$order) {
+            return redirect()->route('print-orders.index')->with('error', 'Pesanan tidak ditemukan.');
+        }
+
+        $pdf = Pdf::loadView('print-orders.receipt-pdf', compact('order'));
+        $pdf->setPaper([0, 0, 226, 300], 'portrait');
+
+        return $pdf->stream('resi-JC-' . str_pad($id, 4, '0', STR_PAD_LEFT) . '.pdf');
+    }
+
+    public function bulkReceipt(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return redirect()->route('print-orders.index')->with('error', 'Tidak ada data dipilih.');
+        }
+
+        $orders = $this->printOrderService->getOrdersByIds($ids);
+
+        if ($orders->isEmpty()) {
+            return redirect()->route('print-orders.index')->with('error', 'Pesanan tidak ditemukan.');
+        }
+
+        return view('print-orders.receipt-bulk', compact('orders'));
     }
 
     private function parseFilters(Request $request): array
