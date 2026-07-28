@@ -7,6 +7,8 @@
     <input type="hidden" name="account_id" id="pos-account" value="">
     <input type="hidden" name="date" id="pos-date" value="">
     <input type="hidden" name="discount" id="pos-discount-hidden" value="0">
+    <input type="hidden" name="paid_amount" id="pos-paid-hidden" value="0">
+    <input type="hidden" name="change_amount" id="pos-change-hidden" value="0">
 
     <div class="pos-layout">
         {{-- LEFT: Products --}}
@@ -770,12 +772,16 @@ function hitungKembali() {
     if (grandTotal < 0) grandTotal = 0;
     var kembali = bayar - grandTotal;
     var el = document.getElementById('pos-kembali');
+    document.getElementById('pos-paid-hidden').value = bayar;
     if (bayar === 0) {
         el.value = 'Rp 0';
+        document.getElementById('pos-change-hidden').value = 0;
     } else if (kembali >= 0) {
         el.value = formatRp(kembali);
+        document.getElementById('pos-change-hidden').value = kembali;
     } else {
         el.value = 'Kurang ' + formatRp(Math.abs(kembali));
+        document.getElementById('pos-change-hidden').value = 0;
     }
 }
 

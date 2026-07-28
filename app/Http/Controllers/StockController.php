@@ -105,13 +105,17 @@ class StockController extends Controller
             'account_id'       => 'required|exists:accounts,id',
             'date'             => 'required|date',
             'discount'         => 'nullable|integer|min:0',
+            'paid_amount'      => 'nullable|integer|min:0',
+            'change_amount'    => 'nullable|integer|min:0',
         ]);
 
         try {
             $receiptId = $this->stockService->recordSale($validated['items'], [
-                'account_id' => $validated['account_id'],
-                'date'       => $validated['date'],
-                'discount'   => $validated['discount'] ?? 0,
+                'account_id'    => $validated['account_id'],
+                'date'          => $validated['date'],
+                'discount'      => $validated['discount'] ?? 0,
+                'paid_amount'   => $validated['paid_amount'] ?? 0,
+                'change_amount' => $validated['change_amount'] ?? 0,
             ]);
         } catch (\InvalidArgumentException $e) {
             return redirect()->back()->with('error', $e->getMessage());

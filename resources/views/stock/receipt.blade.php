@@ -89,11 +89,11 @@
             </tr>
             <tr>
                 <td colspan="3">Tunai</td>
-                <td class="price">{{ number_format($receipt->income->amount ?? $receipt->total, 0, ',', '.') }}</td>
+                <td class="price">{{ number_format($receipt->income->paid_amount ?? $receipt->total, 0, ',', '.') }}</td>
             </tr>
             <tr class="grand-total">
                 <td colspan="3">Kembali</td>
-                <td class="price">{{ number_format(($receipt->income->amount ?? $receipt->total) - $receipt->total, 0, ',', '.') }}</td>
+                <td class="price">{{ number_format($receipt->income->change_amount ?? 0, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

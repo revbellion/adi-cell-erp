@@ -12,6 +12,8 @@ class Income extends Model
         'date',
         'amount',
         'discount',
+        'paid_amount',
+        'change_amount',
         'description',
         'category',
         'stock_transaction_id',

@@ -98,11 +98,11 @@
         </tr>
         <tr>
             <td>Tunai</td>
-            <td class="total-value">{{ number_format($receipt->income->amount ?? $receipt->total, 0, ',', '.') }}</td>
+            <td class="total-value">{{ number_format($receipt->income->paid_amount ?? $receipt->total, 0, ',', '.') }}</td>
         </tr>
         <tr class="grand-total">
             <td>Kembali</td>
-            <td class="total-value">{{ number_format(($receipt->income->amount ?? $receipt->total) - $receipt->total, 0, ',', '.') }}</td>
+            <td class="total-value">{{ number_format($receipt->income->change_amount ?? 0, 0, ',', '.') }}</td>
         </tr>
     </table>
     <div class="divider-solid"></div>

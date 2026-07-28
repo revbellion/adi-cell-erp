@@ -150,12 +150,14 @@ class StockService
             $grandTotal = max($total - $discount, 0);
 
             $income = Income::create([
-                'account_id'  => $saleInfo['account_id'],
-                'category'    => 'Penjualan',
-                'amount'      => $grandTotal,
-                'discount'    => $discount,
-                'description' => 'Penjualan ' . now()->format('d/m/Y H:i') . ' - ' . implode(', ', $itemNames),
-                'date'        => $saleInfo['date'] . ' ' . now()->format('H:i:s'),
+                'account_id'    => $saleInfo['account_id'],
+                'category'      => 'Penjualan',
+                'amount'        => $grandTotal,
+                'discount'      => $discount,
+                'paid_amount'   => $saleInfo['paid_amount'] ?? 0,
+                'change_amount' => $saleInfo['change_amount'] ?? 0,
+                'description'   => 'Penjualan ' . now()->format('d/m/Y H:i') . ' - ' . implode(', ', $itemNames),
+                'date'          => $saleInfo['date'] . ' ' . now()->format('H:i:s'),
             ]);
 
             // Rasio diskon untuk distribusi proporsional ke HppRecord
