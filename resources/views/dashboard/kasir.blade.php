@@ -74,7 +74,7 @@
 <div class="alert alert-warning alert-modern py-2 px-3 mb-4 d-flex align-items-center gap-2" role="alert">
     <i class="fas fa-exclamation-triangle"></i>
     <span>Terdapat <strong>{{ $lowStockCount }} barang</strong> dengan stok menipis. Segera lakukan stok masuk.</span>
-    <a href="{{ route('stock.in') }}" class="btn btn-modern btn-sm btn-warning ms-auto">Stok Masuk</a>
+    <a href="{{ route('stock.in') }}" class="btn btn-modern btn-sm btn-warning ms-auto"><i class="fas fa-warehouse me-1"></i>Stok Masuk</a>
 </div>
 @endif
 

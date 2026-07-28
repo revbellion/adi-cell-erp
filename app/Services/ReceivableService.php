@@ -15,11 +15,7 @@ class ReceivableService
     public function create(array $data): Receivable
     {
         $data['phone'] = normalizePhone($data['phone'] ?? null);
-
-        $now = Carbon::now();
-        $parsedDate = Carbon::parse($data['date']);
-        $data['date'] = $parsedDate->format('Y-m-d') . ' ' . $now->format('H:i:s');
-        $data['due_date'] = $parsedDate->copy()->addDays(3)->setTimeFrom($now);
+        $data = $this->resolveDateFields($data);
         $data['status'] = 'unpaid';
 
         return DB::transaction(function () use ($data) {
@@ -89,7 +85,7 @@ class ReceivableService
                     'to_account_id' => $accounts['piutang']->id,
                     'amount' => $additionalAmount,
                     'date' => $newDate,
-                    'description' => "Tambah piutang {$receivable->name}",
+                    'description' => "Tambah piutang {$receivable->name} (#{$receivable->id})",
                     'source' => 'piutang',
                     'receivable_id' => $receivable->id,
                 ]);
@@ -114,10 +110,7 @@ class ReceivableService
                 throw new \DomainException('Piutang yang sudah memiliki pembayaran tidak bisa diedit.');
             }
 
-            $now = Carbon::now();
-            $parsedDate = Carbon::parse($data['date']);
-            $data['date'] = $parsedDate->format('Y-m-d') . ' ' . $now->format('H:i:s');
-            $data['due_date'] = $parsedDate->copy()->addDays(3)->setTimeFrom($now);
+            $data = $this->resolveDateFields($data);
 
             $oldAmount = $receivable->amount;
             $receivable->update($data);
@@ -190,6 +183,7 @@ class ReceivableService
                     'date' => $paymentDate,
                     'description' => "Bayar piutang {$receivable->name}",
                     'source' => 'piutang',
+                    'receivable_id' => $receivable->id,
                 ]);
             }
 
@@ -246,7 +240,7 @@ class ReceivableService
             // Hapus payments
             $receivable->receivablePayments()->delete();
 
-            // Hapus receivable (mutation tetap untuk audit trail)
+            // Hapus receivable (mutation terkait akan terhapus otomatis via DB cascade)
             return $receivable->delete();
         });
     }
@@ -298,6 +292,15 @@ class ReceivableService
             'cash' => $cash,
             'piutang' => $piutang,
         ];
+    }
+
+    private function resolveDateFields(array $data): array
+    {
+        $now = Carbon::now();
+        $parsedDate = Carbon::parse($data['date']);
+        $data['date'] = $parsedDate->format('Y-m-d') . ' ' . $now->format('H:i:s');
+        $data['due_date'] = $parsedDate->copy()->addDays(3)->setTimeFrom($now);
+        return $data;
     }
 
     private function resolveCustomer(array $data): array

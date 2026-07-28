@@ -29,6 +29,7 @@ return [
             ['key' => 'Cash Keluar',    'pnl' => false, 'filter' => 'cash_movement'],
             // tetap masuk laba-rugi, tapi di tab Mutasi
             ['key' => 'Biaya MDR',      'pnl' => true,  'filter' => 'cash_movement'],
+            ['key' => 'Biaya Admin Topup', 'pnl' => true, 'filter' => 'cash_movement'],
             ['key' => 'Stok Opname Minus', 'pnl' => false, 'filter' => 'cash_movement'],
             ['key' => 'Penyesuaian Kas',   'pnl' => false, 'filter' => 'cash_movement'],
             ['key' => 'Pending EDC',       'pnl' => false, 'filter' => 'cash_movement'],

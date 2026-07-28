@@ -25,7 +25,7 @@ class StoreCashCounterSessionRequest extends FormRequest
                 },
             ],
             'title' => 'required|string|max:255',
-            'opening_balance' => 'required|integer|min:0',
+            'opening_balance' => 'required|integer',
             'denominations' => 'required|array',
             'denominations.*' => 'integer|min:0',
             'total_amount' => 'required|integer|min:0',
@@ -47,7 +47,7 @@ class StoreCashCounterSessionRequest extends FormRequest
         return [
             'account_id' => 'Akun',
             'title' => 'Judul',
-            'opening_balance' => 'Saldo Awal',
+            'opening_balance' => 'Saldo Cash Sistem',
             'denominations' => 'Denominasi',
             'total_amount' => 'Total',
         ];

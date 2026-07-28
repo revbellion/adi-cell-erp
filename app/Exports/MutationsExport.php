@@ -38,7 +38,7 @@ class MutationsExport implements FromCollection, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        return ['Tanggal', 'Dari', 'Ke', 'Nominal', 'Keterangan'];
+        return ['Tanggal', 'Dari', 'Ke', 'Nominal', 'Biaya Admin', 'Keterangan'];
     }
 
     public function map($row): array
@@ -48,6 +48,7 @@ class MutationsExport implements FromCollection, WithHeadings, WithMapping
             $row->fromAccount->name ?? '-',
             $row->toAccount->name ?? '-',
             $row->amount,
+            $row->admin_fee ?? 0,
             $row->description ?? '-',
         ];
     }

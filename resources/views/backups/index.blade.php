@@ -51,7 +51,7 @@
     <div class="col-12">
         <div class="card card-modern shadow-sm border-danger">
             <div class="card-header d-flex align-items-center">
-                <i class="fas fa-trash-alt me-2" style="color:#ef4444;"></i>
+                <i class="fas fa-trash me-2" style="color:#ef4444;"></i>
                 <span class="fw-semibold">Reset Semua Data</span>
             </div>
             <div class="card-body">
@@ -67,7 +67,7 @@
                     </div>
                     <button type="submit" class="btn btn-modern btn-danger"
                             onclick="event.preventDefault(); confirmDelete('YAKIN ingin reset SEMUA data transaksi? Aksi ini tidak bisa dibatalkan!').then(ok => ok && this.form.submit());">
-                        <i class="fas fa-trash-alt me-1"></i>Reset Semua Data
+                        <i class="fas fa-trash me-1"></i>Reset Semua Data
                     </button>
                 </form>
             </div>

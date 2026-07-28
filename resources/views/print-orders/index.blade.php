@@ -81,6 +81,7 @@
                                 $badgeClass = match($order->service_type) {
                                     'cetak_foto' => 'background:#fff7ed;color:#c2410c;',
                                     'fotokopi' => 'background:#f0fdf4;color:#16a34a;',
+                                    'laminating' => 'background:#eef2ff;color:#4f46e5;',
                                     'print' => 'background:#eff6ff;color:#2563eb;',
                                     default => 'background:#f3f4f6;color:#374151;',
                                 };
@@ -191,8 +192,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -247,8 +248,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>

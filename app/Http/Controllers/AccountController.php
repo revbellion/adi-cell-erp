@@ -11,7 +11,6 @@ use App\Models\Income;
 use App\Models\OpeningBalance;
 use App\Models\ReceivablePayment;
 use App\Models\StockTransaction;
-use App\Models\CashCounterSession;
 use App\Models\PendingTransaction;
 
 class AccountController extends Controller
@@ -92,11 +91,6 @@ class AccountController extends Controller
 
         // Cek stock transactions
         if (StockTransaction::where('account_id', $account->id)->exists()) {
-            return true;
-        }
-
-        // Cek cash counter sessions
-        if (CashCounterSession::where('account_id', $account->id)->exists()) {
             return true;
         }
 

@@ -19,7 +19,7 @@
         </select>
     </div>
     <div class="col-auto">
-        <a href="{{ route('reports.profit-loss') }}" class="btn btn-modern btn-secondary btn-sm">Bulan Ini</a>
+        <a href="{{ route('reports.profit-loss') }}" class="btn btn-modern btn-secondary btn-sm"><i class="fas fa-calendar-alt me-1"></i>Bulan Ini</a>
     </div>
 </form>
 

@@ -18,7 +18,7 @@
     <div class="cc-summary">
         {{-- Total Display --}}
         <div class="cc-total-card">
-            <div class="cc-total-label">Total Uang Dihitung</div>
+            <div class="cc-total-label">Saldo Cash Fisik</div>
             <div class="cc-total-amount" id="grand-total">Rp 0</div>
         </div>
 
@@ -30,7 +30,7 @@
                     <div class="cc-control-label">Akun Kas</div>
                     <select id="account-select" class="cc-select" onchange="onAccountChange()">
                         @foreach($accounts as $account)
-                        <option value="{{ $account->id }}" data-balance="{{ $balances[$account->id] ?? 0 }}" data-last-closing="{{ $lastClosingBalances[$account->id] ?? 0 }}" {{ $cashAccount && $account->id === $cashAccount->id ? 'selected' : '' }}>
+                        <option value="{{ $account->id }}" data-balance="{{ $balances[$account->id] ?? 0 }}" {{ $cashAccount && $account->id === $cashAccount->id ? 'selected' : '' }}>
                             {{ $account->name }} ({{ ucfirst($account->type) }})
                         </option>
                         @endforeach
@@ -62,13 +62,10 @@
             <div class="cc-control-row mt-2">
                 <div class="cc-control-icon"><i class="fas fa-play-circle"></i></div>
                 <div class="cc-control-content">
-                    <div class="cc-control-label">Saldo Awal</div>
+                    <div class="cc-control-label">Saldo Cash Sistem</div>
                     <div class="cc-target-input">
                         <span class="cc-target-prefix">Rp</span>
-                        <input type="number" id="opening-balance" class="cc-input" min="0" placeholder="0" oninput="updateTotal()">
-                        <button type="button" class="cc-target-btn" onclick="fillOpeningFromSystem()" title="Isi dari saldo sistem">
-                            <i class="fas fa-redo-alt"></i>
-                        </button>
+                        <input type="text" id="opening-balance" class="cc-input" readonly value="0">
                     </div>
                 </div>
             </div>
@@ -84,53 +81,17 @@
             </div>
         </div>
 
-        {{-- Distribution Chart --}}
-        <div class="cc-control-card">
-            <div class="cc-control-row mb-2">
-                <div class="cc-control-icon"><i class="fas fa-chart-pie"></i></div>
-                <div class="cc-control-content">
-                    <div class="cc-control-label">Distribusi Denominasi</div>
-                </div>
-            </div>
-            <div class="cc-chart-wrap">
-                <canvas id="distribution-chart"></canvas>
-                <div id="chart-placeholder" class="cc-chart-placeholder">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Masukkan jumlah untuk melihat distribusi</span>
-                </div>
-            </div>
-        </div>
-
         {{-- Action Buttons --}}
         <div class="cc-actions">
             <button class="cc-btn cc-btn-secondary" onclick="resetCalculator()">
                 <i class="fas fa-undo-alt"></i> Reset
-            </button>
-            <button class="cc-btn cc-btn-primary" onclick="copySummary()">
-                <i class="fas fa-copy"></i> Salin
             </button>
             <button class="cc-btn cc-btn-success" onclick="openSaveModal()">
                 <i class="fas fa-save"></i> Simpan
             </button>
         </div>
 
-        {{-- History --}}
-        <div class="cc-history-card">
-            <div class="cc-history-header">
-                <div class="cc-control-row">
-                    <div class="cc-control-icon"><i class="fas fa-history"></i></div>
-                    <div class="cc-control-content">
-                        <div class="cc-control-label">Riwayat Sesi</div>
-                    </div>
-                </div>
-                <button class="cc-btn-sm cc-btn-danger-sm" onclick="clearHistory()">
-                    <i class="fas fa-trash"></i> Hapus Semua
-                </button>
-            </div>
-            <div id="history-list-container" class="cc-history-list">
-                <div class="cc-history-empty">Belum ada sesi tersimpan</div>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -148,17 +109,17 @@
                     <input type="text" id="session-title" class="form-control" placeholder="Contoh: Kas Toko Pagi...">
                 </div>
                 <div class="d-flex justify-content-between mb-1" style="font-size:0.85rem;">
-                    <span class="text-muted">Saldo Awal</span>
+                    <span class="text-muted">Saldo Cash Sistem</span>
                     <strong id="modal-opening-display">Rp 0</strong>
                 </div>
                 <div class="cc-modal-total">
-                    <span>Saldo Akhir</span>
+                    <span>Saldo Cash Fisik</span>
                     <strong id="modal-total-display">Rp 0</strong>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-modern btn-primary" onclick="saveSession()">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="button" class="btn btn-modern btn-primary" onclick="saveSession()"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </div>
     </div>
@@ -509,89 +470,7 @@
 }
 
 /* Chart */
-.cc-chart-wrap {
-    position: relative;
-    height: 160px;
-}
-
-.cc-chart-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    gap: 0.3rem;
-}
-
-.cc-chart-placeholder i { font-size: 1rem; opacity: 0.5; }
-
 /* History */
-.cc-history-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.cc-history-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.cc-history-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.cc-history-empty {
-    text-align: center;
-    padding: 1.5rem;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
-
-.cc-history-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid var(--border-subtle);
-    transition: background 0.1s;
-}
-
-.cc-history-item:hover { background: rgba(var(--theme-primary-rgb), 0.03); }
-.cc-history-item:last-child { border-bottom: none; }
-
-.cc-history-info { flex: 1; min-width: 0; }
-.cc-history-title { font-weight: 600; font-size: 0.8rem; color: var(--text-primary); }
-.cc-history-meta { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem; }
-
-.cc-history-actions { display: flex; gap: 0.25rem; }
-
-.cc-history-btn {
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.65rem;
-    cursor: pointer;
-    transition: all 0.1s;
-}
-
-.cc-history-btn-primary { background: rgba(var(--theme-primary-rgb), 0.1); color: var(--theme-primary); }
-.cc-history-btn-primary:hover { background: var(--theme-primary); color: #fff; }
-.cc-history-btn-danger { background: rgba(239,68,68,0.1); color: #ef4444; }
-.cc-history-btn-danger:hover { background: #ef4444; color: #fff; }
-
 /* Toast */
 .cc-toast {
     position: fixed;
@@ -648,9 +527,8 @@ const denoms = [
     { key: '500',  value: 500,    label: 'Koin Rp 500',  color: '#a855f7' },
 ];
 
-let chartInstance = null;
 const DENOM_KEYS = denoms.map(d => d.key);
-let currentSessionId = null;
+
 
 function getDenomValue(key) {
     const d = denoms.find(x => x.key === key);
@@ -724,7 +602,6 @@ function updateTotal() {
 
     updateReconciliation(grandTotal, opening);
     updateAccountBalanceInfo(grandTotal);
-    updateChart(grandTotal);
 }
 
 function updateReconciliation(grandTotal, opening) {
@@ -753,15 +630,15 @@ function updateReconciliation(grandTotal, opening) {
 
     content.innerHTML = `
         <div class="cc-balance-row">
-            <span>Saldo Awal</span>
+            <span>Saldo Cash Sistem</span>
             <span class="fw-bold">${formatRupiah(opening)}</span>
         </div>
         <div class="cc-balance-row">
-            <span>Saldo Akhir (Hitung Kas)</span>
+            <span>Saldo Cash Fisik</span>
             <span class="fw-bold">${formatRupiah(grandTotal)}</span>
         </div>
         <div class="cc-balance-row" style="border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
-            <span>Selisih Kas</span>
+            <span>Selisih</span>
             <span class="fw-bold" style="color:${diffColor}">${diff >= 0 ? '+' : ''}${formatRupiah(diff)}</span>
         </div>
         <div class="mt-2">
@@ -788,8 +665,8 @@ function loadTransactions() {
     const content = document.getElementById('transactions-content');
     content.innerHTML = '<div class="text-muted text-center" style="font-size:0.8rem;">Memuat...</div>';
 
-    fetch('{{ route("cash-counter.period-transactions") }}?account_id=' + accountId + '&date=' + date)
-    .then(r => r.json())
+    fetch('{{ route("cash-counter.period-transactions") }}?account_id=' + accountId + '&date=' + date, { headers: { 'Accept': 'application/json' } })
+    .then(r => parseJSON(r))
     .then(data => {
         let html = '<div style="font-size:0.8rem;">';
         html += '<div class="fw-bold mb-1" style="color:#10b981;">Pemasukan Hari Ini</div>';
@@ -822,18 +699,10 @@ function onAccountChange() {
         return;
     }
 
+    const balance = parseInt(select.options[select.selectedIndex].dataset.balance) || 0;
+    document.getElementById('opening-balance').value = balance;
     infoPanel.classList.remove('d-none');
     updateAccountBalanceInfo(getGrandTotal());
-}
-
-function fillOpeningFromSystem() {
-    const select = document.getElementById('account-select');
-    if (!select.value) { showToast('Pilih akun terlebih dahulu'); return; }
-    const option = select.options[select.selectedIndex];
-    const balance = parseInt(option.dataset.balance) || 0;
-    document.getElementById('opening-balance').value = balance;
-    updateTotal();
-    showToast('Saldo awal diisi dari saldo sistem');
 }
 
 function updateAccountBalanceInfo(grandTotal) {
@@ -856,71 +725,17 @@ function getGrandTotal() {
     return parseInt(document.getElementById('grand-total').textContent.replace(/[^\d]/g, '')) || 0;
 }
 
-function updateChart() {
-    const labels = [], data = [], colors = [];
-    const placeholder = document.getElementById('chart-placeholder');
-
-    denoms.forEach(d => {
-        const count = getCount(d.key);
-        const subtotal = count * getDenomValue(d.key);
-        if (subtotal > 0) { labels.push(d.label); data.push(subtotal); colors.push(d.color); }
-    });
-
-    if (data.length === 0) {
-        placeholder.style.display = 'flex';
-        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-        return;
-    }
-    placeholder.style.display = 'none';
-
-    const ctx = document.getElementById('distribution-chart').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
-
-    chartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
-        options: {
-            responsive: true, maintainAspectRatio: false, cutout: '65%',
-            plugins: { legend: { position: 'right', labels: { boxWidth: 10, padding: 6, font: { size: 9 }, color: getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#1e293b' } } }
-        }
-    });
-}
-
 function resetCalculator() {
     confirmAction('Reset semua input?').then(ok => {
         if (!ok) return;
         DENOM_KEYS.forEach(key => { setCount(key, 0); });
-        document.getElementById('opening-balance').value = '';
+        onAccountChange();
         document.getElementById('reconciliation-panel').classList.add('d-none');
         document.getElementById('transactions-panel').classList.add('d-none');
         delete document.getElementById('transactions-panel').dataset.loaded;
-        currentSessionId = null;
         updateTotal();
         showToast('Semua input direset');
     });
-}
-
-function copySummary() {
-    const opening = parseInt(document.getElementById('opening-balance').value) || 0;
-    const grandTotal = getGrandTotal();
-    const diff = grandTotal - opening;
-
-    let text = '=== RINGKASAN KAS ===\n\n';
-    text += 'Saldo Awal: ' + formatRupiah(opening) + '\n\n';
-    denoms.forEach(d => {
-        const count = getCount(d.key);
-        if (count > 0) {
-            const value = getDenomValue(d.key);
-            text += d.label + ' : ' + count + ' x ' + formatRupiah(value) + ' = ' + formatRupiah(count * value) + '\n';
-        }
-    });
-    text += '\nSaldo Akhir: ' + formatRupiah(grandTotal);
-    text += '\nSelisih: ' + formatRupiah(Math.abs(diff)) + (diff >= 0 ? ' (Lebih)' : ' (Kurang)');
-
-    const select = document.getElementById('account-select');
-    if (select.value) text += '\nAkun: ' + select.options[select.selectedIndex].text;
-
-    navigator.clipboard.writeText(text).then(() => showToast('Ringkasan disalin'));
 }
 
 const saveModal = new bootstrap.Modal(document.getElementById('saveModal'));
@@ -940,88 +755,29 @@ function saveSession() {
     const denominations = {};
     DENOM_KEYS.forEach(key => { denominations[key] = getCount(key); });
 
+    const select = document.getElementById('account-select');
+    const balance = select.value ? parseInt(select.options[select.selectedIndex].dataset.balance) || 0 : 0;
+    document.getElementById('opening-balance').value = balance;
+
     const body = JSON.stringify({
         title, denominations,
-        opening_balance: parseInt(document.getElementById('opening-balance').value) || 0,
+        opening_balance: balance,
         total_amount: getGrandTotal(),
-        account_id: document.getElementById('account-select').value || null
+        account_id: select.value || null
     });
 
-    const url = currentSessionId ? '{{ url("cash-counter/sessions") }}/' + currentSessionId : '{{ route("cash-counter.sessions.store") }}';
-    const method = currentSessionId ? 'PUT' : 'POST';
-
-    fetch(url, { method, headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body })
-    .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.message || 'Gagal'); }))
-    .then(s => { currentSessionId = s.id; saveModal.hide(); showToast('Sesi disimpan'); loadHistory(); updateTotal(); })
+    fetch('{{ route("cash-counter.save") }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body })
+    .then(r => r.ok ? parseJSON(r) : parseJSON(r).then(e => { throw new Error(e.message || 'Gagal menyimpan'); }))
+    .then(s => { saveModal.hide(); showToast('Sesi disimpan'); updateTotal(); })
     .catch(e => showToast(e.message));
 }
 
-function loadHistory() {
-    fetch('{{ route("cash-counter.history") }}')
-    .then(r => r.json())
-    .then(sessions => {
-        const container = document.getElementById('history-list-container');
-        if (sessions.length === 0) {
-            container.innerHTML = '<div class="cc-history-empty">Belum ada sesi tersimpan</div>';
-            return;
-        }
-        container.innerHTML = sessions.map(s => `
-            <div class="cc-history-item">
-                <div class="cc-history-info">
-                    <div class="cc-history-title">${escapeHtml(s.title)}</div>
-                    <div class="cc-history-meta">${formatRupiah(s.total_amount)}${s.account ? ' &middot; ' + escapeHtml(s.account.name) : ''} &middot; ${new Date(s.created_at).toLocaleDateString('id-ID')}</div>
-                </div>
-                <div class="cc-history-actions">
-                    <button class="cc-history-btn cc-history-btn-primary" onclick="loadSession(${s.id})" title="Muat"><i class="fas fa-folder-open"></i></button>
-                    <button class="cc-history-btn cc-history-btn-danger" onclick="deleteSession(${s.id})" title="Hapus"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-        `).join('');
-    });
-}
 
-function loadSession(id) {
-    fetch(`{{ url("cash-counter/sessions") }}/${id}`)
-    .then(r => r.json())
-    .then(s => {
-        const data = s.denominations || {};
-        DENOM_KEYS.forEach(key => { setCount(key, data[key] || 0); });
-        document.getElementById('opening-balance').value = s.opening_balance || 0;
-        if (s.account_id) { document.getElementById('account-select').value = s.account_id; onAccountChange(); }
-        currentSessionId = s.id;
-        updateTotal();
-        showToast('Sesi "' + escapeHtml(s.title) + '" dimuat');
-    });
-}
 
-function deleteSession(id) {
-    confirmDelete('Hapus sesi ini?').then(ok => {
-        if (!ok) return;
-        fetch(`{{ url("cash-counter/sessions") }}/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-        .then(r => r.json())
-        .then(() => { showToast('Sesi dihapus'); loadHistory(); });
-    });
-}
-
-function clearHistory() {
-    confirmDelete('Hapus semua sesi?').then(ok => {
-        if (!ok) return;
-        fetch('{{ route("cash-counter.history") }}')
-        .then(r => r.json())
-        .then(sessions => {
-            if (sessions.length === 0) { showToast('Tidak ada sesi'); return; }
-            Promise.all(sessions.map(s =>
-                fetch(`{{ url("cash-counter/sessions") }}/${s.id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-            )).then(() => { showToast('Semua sesi dihapus'); loadHistory(); })
-            .catch(() => showToast('Gagal menghapus beberapa sesi'));
-        });
-    });
-}
-
-function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+function parseJSON(r) {
+    const ct = r.headers.get('content-type') || '';
+    if (ct.includes('application/json')) return r.json();
+    return r.text().then(t => { throw new Error('Gagal memuat data'); });
 }
 
 function showToast(msg) {
@@ -1033,18 +789,8 @@ function showToast(msg) {
 
 document.addEventListener('DOMContentLoaded', function() {
     buildCards();
+    onAccountChange();
     updateTotal();
-    loadHistory();
-
-    const accountSelect = document.getElementById('account-select');
-    if (accountSelect && accountSelect.value) {
-        onAccountChange();
-        var balance = parseInt(accountSelect.options[accountSelect.selectedIndex].dataset.balance) || 0;
-        if (balance > 0) {
-            document.getElementById('opening-balance').value = balance;
-            updateTotal();
-        }
-    }
 });
 </script>
 @endpush

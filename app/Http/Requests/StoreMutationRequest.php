@@ -38,6 +38,11 @@ class StoreMutationRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'admin_fee' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 

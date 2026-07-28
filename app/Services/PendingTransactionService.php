@@ -140,7 +140,7 @@ class PendingTransactionService
                 throw new \DomainException('EDC harus diselesaikan ke akun Bank.');
             }
             if ($pending->type === 'tf_masuk' && $account->type !== 'cash') {
-                throw new \DomainException('TF Masuk harus diselesaikan ke akun Cash.');
+                throw new \DomainException('Transfer harus diselesaikan ke akun Cash.');
             }
 
             $now = Carbon::now();

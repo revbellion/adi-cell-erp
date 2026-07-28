@@ -95,7 +95,6 @@ class StockService
                     'category'            => 'Stok Masuk',
                     'amount'              => $total,
                     'description'         => $desc,
-                    'description'         => 'Pembelian ' . $product->name . ' (' . $item['qty'] . ' ' . $product->unit . ')',
                     'date'                => $date,
                     'stock_transaction_id'=> $transaction->id,
                 ]);

@@ -51,7 +51,7 @@
         <select name="type" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
             <option value="">Semua Tipe</option>
             <option value="edc" {{ request('type') == 'edc' ? 'selected' : '' }}>EDC</option>
-            <option value="tf_masuk" {{ request('type') == 'tf_masuk' ? 'selected' : '' }}>TF Masuk</option>
+            <option value="tf_masuk" {{ request('type') == 'tf_masuk' ? 'selected' : '' }}>Transfer</option>
         </select>
     </div>
     <div class="col-auto">
@@ -210,7 +210,7 @@
                     <select name="type" id="pending-type" class="form-select" required onchange="toggleBankField()">
                         <option value="">Pilih Tipe</option>
                         <option value="edc">EDC</option>
-                        <option value="tf_masuk">TF Masuk</option>
+                        <option value="tf_masuk">Transfer</option>
                     </select>
                 </div>
                 <div class="mb-3" id="bank-type-field" style="display:none;">
@@ -251,7 +251,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
@@ -290,8 +290,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary" id="btn-submit"><i class="fas fa-check me-1"></i>Selesaikan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-success" id="btn-submit"><i class="fas fa-check me-1"></i>Selesaikan</button>
             </div>
         </form>
     </div>
@@ -375,7 +375,7 @@ $('#modalComplete').on('show.bs.modal', function (event) {
     
     select.find('option').show();
     if (type === 'transfer' || type === 'tf_masuk') {
-        // Transfer & TF Masuk: sembunyikan dropdown, pakai Cash otomatis
+        // Transfer: sembunyikan dropdown, pakai Cash otomatis
         select.hide().prop('required', false);
         select.val(cashId);
         infoText.text('Cash (otomatis)').show();

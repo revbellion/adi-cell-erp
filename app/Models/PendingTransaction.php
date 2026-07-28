@@ -65,7 +65,7 @@ class PendingTransaction extends Model
         return match($this->type) {
             'edc' => 'EDC',
             'transfer' => 'Transfer',
-            'tf_masuk' => 'TF Masuk',
+            'tf_masuk' => 'Transfer',
             default => $this->type,
         };
     }

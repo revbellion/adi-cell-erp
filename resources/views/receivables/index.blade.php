@@ -225,8 +225,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -274,8 +274,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -317,8 +317,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-success">Bayar</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-check me-1"></i>Bayar</button>
             </div>
         </form>
     </div>
@@ -347,7 +347,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-info"><i class="fas fa-plus-circle me-1"></i>Tambah</button>
             </div>
         </form>
@@ -390,7 +390,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-check me-1"></i>Bayar Semua</button>
             </div>
         </form>
@@ -401,14 +401,6 @@
 @push('scripts')
 <script>
 // Bulk delete selection
-document.querySelector('.bulk-select-all:not(#check-all)')?.addEventListener('change', function() {
-    var checked = this.checked;
-    document.querySelectorAll('.bulk-select-item').forEach(function(cb) {
-        cb.checked = checked;
-    });
-    updateBulkBar();
-});
-
 document.querySelectorAll('.bulk-select-item').forEach(function(cb) {
     cb.addEventListener('change', updateBulkBar);
 });

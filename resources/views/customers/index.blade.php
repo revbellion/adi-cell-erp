@@ -27,7 +27,7 @@
         </select>
     </div>
     <div class="col-md-2">
-        <a href="{{ route('customers.index') }}" class="btn btn-modern btn-secondary btn-sm w-100">Reset</a>
+        <a href="{{ route('customers.index') }}" class="btn btn-modern btn-secondary btn-sm w-100"><i class="fas fa-times me-1"></i>Reset</a>
     </div>
 </form>
 
@@ -149,8 +149,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -189,8 +189,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>

@@ -177,7 +177,7 @@
                         {{ $bs['paid'] }}/{{ $bs['total'] }} selesai
                     </span>
                 </div>
-                <a href="{{ route('bills.index', ['period' => $period]) }}" class="btn btn-modern btn-sm btn-outline-secondary">Kelola</a>
+                <a href="{{ route('bills.index', ['period' => $period]) }}" class="btn btn-modern btn-sm btn-outline-secondary"><i class="fas fa-cog me-1"></i>Kelola</a>
             </div>
             <div class="card-body py-2">
                 <div class="row g-2">
@@ -397,8 +397,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-success">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -445,8 +445,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-danger">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -496,8 +496,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -528,7 +528,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-warning"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
@@ -577,7 +577,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-check me-1"></i>Konfirmasi Bayar</button>
             </div>
         </form>
@@ -644,7 +644,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-save me-1"></i>Simpan Stok Masuk</button>
             </div>
         </form>

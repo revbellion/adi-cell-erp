@@ -61,7 +61,7 @@
                 <button type="submit" class="btn btn-primary btn-modern">
                     <i class="fas fa-save me-1"></i> Simpan
                 </button>
-                <a href="{{ route('users.index') }}" class="btn btn-secondary btn-modern">Batal</a>
+                <a href="{{ route('users.index') }}" class="btn btn-secondary btn-modern"><i class="fas fa-times me-1"></i>Batal</a>
             </div>
         </form>
     </div>

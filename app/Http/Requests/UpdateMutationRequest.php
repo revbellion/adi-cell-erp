@@ -19,6 +19,7 @@ class UpdateMutationRequest extends FormRequest
             'to_account_id' => ['required', 'exists:accounts,id'],
             'amount' => ['required', 'integer', 'min:1'],
             'description' => ['nullable', 'string', 'max:255'],
+            'admin_fee' => ['nullable', 'integer', 'min:1'],
         ];
     }
 

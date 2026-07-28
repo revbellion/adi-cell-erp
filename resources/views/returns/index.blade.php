@@ -175,7 +175,7 @@
                 <div id="retur-nota-error" class="alert alert-danger py-2 d-none"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-warning" id="btn-submit-retur-jual" disabled>
                     <i class="fas fa-undo-alt me-1"></i>Catat Retur
                 </button>
@@ -232,7 +232,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-info">
                     <i class="fas fa-check me-1"></i>Catat Retur
                 </button>

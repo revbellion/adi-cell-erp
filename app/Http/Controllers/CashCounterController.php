@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCashCounterSessionRequest;
 use App\Models\Account;
-use App\Models\CashCounterSession;
 use App\Services\CashCounterService;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
@@ -26,11 +25,6 @@ class CashCounterController extends Controller
         $period = now()->format('Y-m');
         $balances = $this->dashboardService->calculateAccountBalances($accounts, $period);
 
-        $lastClosingBalances = [];
-        foreach ($accounts as $account) {
-            $lastClosingBalances[$account->id] = $this->cashCounterService->getLastClosingBalance($account->id);
-        }
-
         $today = now()->format('Y-m-d');
         $periodTransactions = $this->cashCounterService->getPeriodTransactions(
             $cashAccount?->id,
@@ -39,64 +33,22 @@ class CashCounterController extends Controller
 
         return view('cash-counter.index', compact(
             'accounts', 'cashAccount', 'balances', 'hasCashAccounts',
-            'lastClosingBalances', 'periodTransactions'
+            'periodTransactions'
         ));
-    }
-
-    public function history(): JsonResponse
-    {
-        $sessions = CashCounterSession::with('account')
-            ->where('user_id', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get(['id', 'account_id', 'title', 'opening_balance', 'total_amount', 'created_at']);
-
-        return response()->json($sessions);
-    }
-
-    public function show(CashCounterSession $session): JsonResponse
-    {
-        if ((int) $session->user_id !== (int) auth()->id()) {
-            abort(403);
-        }
-
-        $session->load('account');
-        $session->summary = $this->cashCounterService->getSessionSummary($session);
-
-        return response()->json($session);
     }
 
     public function store(StoreCashCounterSessionRequest $request): JsonResponse
     {
-        try {
-            $session = $this->cashCounterService->createSession($request->validated());
-            $session->load('account');
+        $data = $request->validated();
 
-            return response()->json($session, 201);
-        } catch (\DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+        $calculatedTotal = $this->cashCounterService->calculateTotal($data['denominations']);
+        if ($calculatedTotal !== (int) $data['total_amount']) {
+            return response()->json(['message' => 'Total tidak sesuai dengan jumlah denominasi.'], 422);
         }
-    }
 
-    public function update(StoreCashCounterSessionRequest $request, CashCounterSession $session): JsonResponse
-    {
-        try {
-            $session = $this->cashCounterService->updateSession($session, $request->validated());
+        $result = $this->cashCounterService->saveAdjustment($data);
 
-            return response()->json($session);
-        } catch (\DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
-        }
-    }
-
-    public function destroy(CashCounterSession $session): JsonResponse
-    {
-        try {
-            $this->cashCounterService->deleteSession($session);
-
-            return response()->json(['ok' => true]);
-        } catch (\DomainException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
-        }
+        return response()->json($result, $result['adjusted'] ? 201 : 200);
     }
 
     public function periodTransactions(Request $request): JsonResponse

@@ -22,7 +22,7 @@ class StorePrintOrderRequest extends FormRequest
             'service_type' => [
                 'required',
                 'string',
-                'in:cetak_foto,fotokopi,print,ketik,browsing',
+                'in:cetak_foto,fotokopi,laminating,print,ketik,browsing',
             ],
             'quantity' => [
                 'required',

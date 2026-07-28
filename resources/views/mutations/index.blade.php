@@ -56,6 +56,7 @@
                         <th class="sortable" data-sort="string">Dari</th>
                         <th class="sortable" data-sort="string">Ke</th>
                         <th class="sortable" data-sort="number">Nominal</th>
+                        <th class="sortable" data-sort="number">Biaya Admin</th>
                         <th class="sortable" data-sort="string">Keterangan</th>
                         <th class="pe-3">Aksi</th>
                     </tr>
@@ -72,6 +73,13 @@
                         <td>{{ $mutasi->fromAccount->name ?? '-' }}</td>
                         <td>{{ $mutasi->toAccount->name ?? '-' }}</td>
                         <td class="fw-semibold">{{ rp($mutasi->amount) }}</td>
+                        <td>
+                            @if($mutasi->admin_fee)
+                            <span class="text-danger fw-semibold" style="font-size:0.85rem;">{{ rp($mutasi->admin_fee) }}</span>
+                            @else
+                            <span class="text-muted" style="font-size:0.85rem;">-</span>
+                            @endif
+                        </td>
                         <td>{{ $mutasi->description ?? '-' }}</td>
                         <td class="pe-3">
                             @if($mutasi->source === 'manual')
@@ -83,6 +91,7 @@
                                     data-from_account_id="{{ $mutasi->from_account_id }}"
                                     data-to_account_id="{{ $mutasi->to_account_id }}"
                                     data-amount="{{ $mutasi->amount }}"
+                                    data-admin_fee="{{ $mutasi->admin_fee ?? 0 }}"
                                     data-description="{{ $mutasi->description }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
@@ -163,13 +172,20 @@
                     <input type="number" step="1" name="amount" id="add-mutation-amount" class="form-control" required>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Biaya Admin <small class="text-muted">(opsional)</small></label>
+                    <input type="number" step="1" name="admin_fee" class="form-control" placeholder="0" id="add-mutation-admin-fee">
+                    <div class="form-text" style="font-size:0.75rem;color:var(--text-muted);">
+                        Jika diisi, otomatis dicatat sebagai pengeluaran <strong>Biaya Admin Topup</strong> dari akun tujuan.
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Keterangan</label>
                     <textarea name="description" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -212,13 +228,20 @@
                     <input type="number" step="1" name="amount" id="edit-mutation-amount" class="form-control" required>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Biaya Admin <small class="text-muted">(opsional)</small></label>
+                    <input type="number" step="1" name="admin_fee" id="edit-mutation-admin-fee" class="form-control" placeholder="0">
+                    <div class="form-text" style="font-size:0.75rem;color:var(--text-muted);">
+                        Jika diisi, otomatis dicatat sebagai pengeluaran <strong>Biaya Admin Topup</strong> dari akun tujuan.
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Keterangan</label>
                     <textarea name="description" id="edit-mutation-description" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-modern btn-primary">Simpan</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -369,6 +392,7 @@ $('#modalEditMutasi').on('show.bs.modal', function (event) {
     $('#edit-mutation-from').val(fromId);
     $('#edit-mutation-to').val(toId);
     $('#edit-mutation-amount').val(button.data('amount'));
+    $('#edit-mutation-admin-fee').val(button.data('admin_fee') > 0 ? button.data('admin_fee') : '');
     $('#edit-mutation-description').val(button.data('description'));
     $('#formEditMutasi').attr('action', '{{ url("mutations") }}/' + id);
     

@@ -75,7 +75,7 @@
                     <span class="fw-semibold"><i class="fas fa-shopping-cart me-2"></i>Keranjang Stok Masuk</span>
         <div class="d-flex align-items-center gap-2 flex-wrap">
                         <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 d-none" id="in-clear-all" onclick="inClearAll()" title="Hapus semua">
-                            <i class="fas fa-trash-alt" style="font-size:0.7rem;"></i>
+                            <i class="fas fa-trash" style="font-size:0.7rem;"></i>
                         </button>
                         <span class="badge bg-success" id="in-cart-count">0</span>
                     </div>

@@ -6,7 +6,6 @@ use App\Models\Account;
 use App\Models\OpeningBalance;
 use App\Models\Mutation;
 use App\Models\Expense;
-use App\Models\Receivable;
 use App\Models\Income;
 use App\Models\Product;
 use App\Models\StockTransaction;
@@ -54,8 +53,6 @@ class DashboardService
         $totalIncome = Income::whereBetween('date', [$dateStart, $dateEnd])
             ->whereNotIn('category', $this->nonPnlIncomeCategories())
             ->sum('amount') ?? 0;
-
-        $totalRevenue = $totalIncome;
 
         $totalHpp = HppRecord::whereBetween('date', [$dateStart, $dateEnd])
             ->sum('hpp_amount') ?? 0;

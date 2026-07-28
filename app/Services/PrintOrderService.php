@@ -12,6 +12,7 @@ class PrintOrderService
     private array $serviceTypes = [
         'cetak_foto' => 'Cetak Foto',
         'fotokopi' => 'Fotokopi',
+        'laminating' => 'Laminating',
         'print' => 'Print',
         'ketik' => 'Jasa Ketik',
         'browsing' => 'Browsing / Internet',

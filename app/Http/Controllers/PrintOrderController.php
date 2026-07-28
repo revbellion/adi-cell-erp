@@ -84,7 +84,7 @@ class PrintOrderController extends Controller
             Validator::make($raw, [
                 'date_from' => 'nullable|date',
                 'date_to' => 'nullable|date',
-                'service_type' => 'nullable|string|in:cetak_foto,fotokopi,print,ketik,browsing',
+                'service_type' => 'nullable|string|in:cetak_foto,fotokopi,laminating,print,ketik,browsing',
                 'search' => 'nullable|string|max:100',
             ])->valid(),
             fn($v) => $v !== null

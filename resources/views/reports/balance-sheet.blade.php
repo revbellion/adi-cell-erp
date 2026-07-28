@@ -15,7 +15,7 @@
         <input type="date" name="date" value="{{ $selectedDate }}" class="form-control form-control-sm" onchange="this.form.submit()" style="width:auto;">
     </div>
     <div class="col-auto">
-        <a href="{{ route('reports.balance-sheet') }}" class="btn btn-modern btn-secondary btn-sm">Hari Ini</a>
+        <a href="{{ route('reports.balance-sheet') }}" class="btn btn-modern btn-secondary btn-sm"><i class="fas fa-calendar-day me-1"></i>Hari Ini</a>
     </div>
 </form>
 
@@ -168,7 +168,7 @@
                     <tr>
                         <td class="ps-4">Modal Awal
                             <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" style="font-size:0.65rem;" data-bs-toggle="modal" data-bs-target="#modalModalAwal">
-                                <i class="fas fa-pen"></i>
+                                <i class="fas fa-edit"></i>
                             </button>
                         </td>
                         <td class="pe-3 text-end fw-semibold">{{ rp($initialCapital) }}</td>
@@ -221,7 +221,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
                 <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>

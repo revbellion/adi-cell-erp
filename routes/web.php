@@ -208,11 +208,7 @@ Route::middleware('auth')->group(function () {
     // Cash Counter
     Route::middleware('permission:cash_counter')->prefix('cash-counter')->name('cash-counter.')->group(function () {
         Route::get('/', [CashCounterController::class, 'index'])->name('index');
-        Route::get('/history', [CashCounterController::class, 'history'])->name('history');
-        Route::post('/sessions', [CashCounterController::class, 'store'])->name('sessions.store');
-        Route::get('/sessions/{session}', [CashCounterController::class, 'show'])->name('sessions.show');
-        Route::put('/sessions/{session}', [CashCounterController::class, 'update'])->name('sessions.update');
-        Route::delete('/sessions/{session}', [CashCounterController::class, 'destroy'])->name('sessions.destroy');
+        Route::post('/save', [CashCounterController::class, 'store'])->name('save');
         Route::get('/period-transactions', [CashCounterController::class, 'periodTransactions'])->name('period-transactions');
     });
 

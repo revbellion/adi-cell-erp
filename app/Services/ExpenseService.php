@@ -25,6 +25,11 @@ class ExpenseService
         return DB::transaction(function () use ($id, $data) {
             $expense = Expense::findOrFail($id);
 
+            // Blokir edit expense dari mutasi (biaya admin otomatis)
+            if ($expense->mutation_id !== null) {
+                throw new \DomainException('Biaya admin dari mutasi tidak bisa diedit. Ubah dari form Mutasi.');
+            }
+
             // Blokir edit expense sistem
             if (in_array($expense->category, $this->systemCategories())) {
                 throw new \DomainException('Pengeluaran sistem tidak bisa diedit.');
@@ -49,6 +54,11 @@ class ExpenseService
     {
         return DB::transaction(function () use ($id) {
             $expense = Expense::findOrFail($id);
+
+            // Blokir hapus expense dari mutasi (biaya admin otomatis)
+            if ($expense->mutation_id !== null) {
+                throw new \DomainException('Biaya admin dari mutasi tidak bisa dihapus. Hapus dari form Mutasi.');
+            }
 
             // Blokir hapus expense sistem
             if (in_array($expense->category, $this->systemCategories())) {

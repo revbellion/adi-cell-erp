@@ -16,7 +16,7 @@ class Expense extends Model
         'description',
         'stock_transaction_id',
         'receivable_id',
-        'cash_counter_session_id',
+        'mutation_id',
     ];
 
     protected function casts(): array
@@ -47,8 +47,9 @@ class Expense extends Model
         return $this->hasOne(BillPayment::class);
     }
 
-    public function cashCounterSession(): BelongsTo
+    public function mutation(): BelongsTo
     {
-        return $this->belongsTo(CashCounterSession::class);
+        return $this->belongsTo(Mutation::class);
     }
+
 }

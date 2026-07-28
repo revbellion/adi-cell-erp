@@ -2,12 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Account;
-use App\Models\CashCounterSession;
 use App\Models\Expense;
 use App\Models\Income;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class CashCounterService
 {
@@ -34,102 +31,32 @@ class CashCounterService
         return $total;
     }
 
-    public function createSession(array $data): CashCounterSession
+    public function saveAdjustment(array $data): array
     {
-        $calculatedTotal = $this->calculateTotal($data['denominations']);
-        if ($calculatedTotal !== (int) $data['total_amount']) {
-            throw new \DomainException('Total tidak sesuai dengan jumlah denominasi.');
+        $diff = (int) $data['total_amount'] - (int) $data['opening_balance'];
+        if ($diff === 0) {
+            return ['adjusted' => false, 'message' => 'Saldo seimbang, tidak ada penyesuaian.'];
         }
 
-        return DB::transaction(function () use ($data) {
-            $session = CashCounterSession::create([
-                'user_id' => auth()->id(),
-                'account_id' => $data['account_id'] ?? null,
-                'opening_balance' => $data['opening_balance'] ?? 0,
-                'title' => $data['title'],
-                'denominations' => $data['denominations'],
-                'total_amount' => $data['total_amount'],
-            ]);
-
-            $this->createAdjustment($session);
-
-            return $session;
-        });
-    }
-
-    public function updateSession(CashCounterSession $session, array $data): CashCounterSession
-    {
-        $this->authorize($session);
-
-        $calculatedTotal = $this->calculateTotal($data['denominations']);
-        if ($calculatedTotal !== (int) $data['total_amount']) {
-            throw new \DomainException('Total tidak sesuai dengan jumlah denominasi.');
-        }
-
-        return DB::transaction(function () use ($session, $data) {
-            $session->incomes()->whereIn('category', ['OMSET'])->delete();
-            $session->expenses()->whereIn('category', ['OMSET'])->delete();
-
-            $session->update([
-                'account_id' => $data['account_id'] ?? null,
-                'opening_balance' => $data['opening_balance'] ?? 0,
-                'title' => $data['title'],
-                'denominations' => $data['denominations'],
-                'total_amount' => $data['total_amount'],
-            ]);
-
-            $this->createAdjustment($session);
-
-            return $session->fresh();
-        });
-    }
-
-    public function deleteSession(CashCounterSession $session): void
-    {
-        $this->authorize($session);
-
-        DB::transaction(function () use ($session) {
-            $session->incomes()->delete();
-            $session->expenses()->delete();
-            $session->delete();
-        });
-    }
-
-    public function getLastClosingBalance(?int $accountId): int
-    {
-        if (!$accountId) return 0;
-
-        $last = CashCounterSession::where('account_id', $accountId)
-            ->latest()
-            ->first();
-
-        return $last?->total_amount ?? 0;
-    }
-
-    public function getSessionSummary(CashCounterSession $session): array
-    {
-        $session->load(['incomes', 'expenses']);
-
-        $incomes = $session->incomes()
-            ->selectRaw('category, SUM(amount) as total')
-            ->groupBy('category')
-            ->pluck('total', 'category');
-
-        $expenses = $session->expenses()
-            ->selectRaw('category, SUM(amount) as total')
-            ->groupBy('category')
-            ->pluck('total', 'category');
-
-        return [
-            'total_income' => $session->incomes()->sum('amount'),
-            'total_expense' => $session->expenses()->sum('amount'),
-            'incomes_by_category' => $incomes,
-            'expenses_by_category' => $expenses,
-            'expected_closing' => $session->expected_closing,
-            'reconciliation_diff' => $session->reconciliation_diff,
-            'reconciliation_status' => $session->reconciliation_status,
-            'reconciliation_badge' => $session->reconciliation_badge,
+        $record = [
+            'account_id' => $data['account_id'] ?? null,
+            'date' => now()->format('Y-m-d H:i:s'),
+            'description' => "Selisih Cash Fisik vs Sistem ({$data['title']})",
         ];
+
+        if ($diff > 0) {
+            $record = Income::create(array_merge($record, [
+                'amount' => $diff,
+                'category' => 'OMSET',
+            ]));
+        } else {
+            $record = Expense::create(array_merge($record, [
+                'amount' => abs($diff),
+                'category' => 'OMSET',
+            ]));
+        }
+
+        return ['adjusted' => true, 'record' => $record];
     }
 
     public function getPeriodTransactions(?int $accountId, string $date): array
@@ -156,37 +83,5 @@ class CashCounterService
             'total_income' => $incomes->sum(),
             'total_expense' => $expenses->sum(),
         ];
-    }
-
-    private function createAdjustment(CashCounterSession $session): void
-    {
-        $diff = $session->total_amount - $session->opening_balance;
-        if ($diff === 0) return;
-
-        $data = [
-            'account_id' => $session->account_id,
-            'date' => now()->format('Y-m-d H:i:s'),
-            'description' => "{$session->title}",
-            'cash_counter_session_id' => $session->id,
-        ];
-
-        if ($diff > 0) {
-            Income::create(array_merge($data, [
-                'amount' => $diff,
-                'category' => 'OMSET',
-            ]));
-        } else {
-            Expense::create(array_merge($data, [
-                'amount' => abs($diff),
-                'category' => 'OMSET',
-            ]));
-        }
-    }
-
-    private function authorize(CashCounterSession $session): void
-    {
-        if ((int) $session->user_id !== (int) auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
     }
 }

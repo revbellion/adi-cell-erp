@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Mutation extends Model
 {
@@ -14,6 +15,8 @@ class Mutation extends Model
         'amount',
         'description',
         'source',
+        'receivable_id',
+        'admin_fee',
     ];
 
     protected function casts(): array
@@ -32,5 +35,10 @@ class Mutation extends Model
     public function toAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'to_account_id');
+    }
+
+    public function adminFeeExpense(): HasOne
+    {
+        return $this->hasOne(Expense::class, 'mutation_id');
     }
 }
