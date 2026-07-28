@@ -3,6 +3,9 @@
     $isEditing = isset($user);
     $defaultPermissions = ['pos', 'stock_in', 'stock_opname'];
     $checkedPerms = old('permissions', $user->permissions ?? ($isEditing ? [] : $defaultPermissions));
+    if (is_string($checkedPerms)) {
+        $checkedPerms = explode(',', $checkedPerms);
+    }
     $isAdmin = old('is_admin', $user->is_admin ?? false);
 @endphp
 @extends('layouts.app')
