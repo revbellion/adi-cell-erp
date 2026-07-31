@@ -1,50 +1,100 @@
 #!/bin/bash
-# Deploy Script — Cash Tracker (ADI CELL POS)
-# Usage: bash deploy.sh
+# ============================================================
+# deploy.sh — Deploy aman ke Hostinger (adicell-pos)
+#
+# Alur: backup tar (file lama di server) → scp → md5 verify
+#       → php -l → view:cache → HTTP check
+#       → AUTO-ROLLBACK kalau ada langkah yang gagal
+#
+# Pakai:
+#   ./deploy.sh              → deploy semua file .php/.js/.css yang berubah (git status)
+#   ./deploy.sh file1 file2  → deploy file tertentu
+#   ./deploy.sh --dry-run    → lihat rencana tanpa eksekusi
+#
+# Catatan: .env* TIDAK pernah ikut ter-deploy (ada filter eksplisit).
+# ============================================================
+set -euo pipefail
 
-set -e
+HOST="adicell-pos"
+REMOTE="/home/u564540896/domains/red-anteater-980940.hostingersite.com/public_html/pos"
+URL="https://red-anteater-980940.hostingersite.com/pos/login"
+STAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP="/home/u564540896/backups/files/pos_deploy_${STAMP}.tgz"
+DRY=0
 
-echo "=== Cash Tracker Deploy Script ==="
-echo ""
+if [ "${1:-}" = "--dry-run" ]; then DRY=1; shift; fi
 
-# Check composer
-if ! command -v composer &> /dev/null; then
-    echo "❌ Composer not found. Install first."
-    exit 1
-fi
+cd "$(dirname "$0")"
 
-# 1. Install dependencies
-echo "➡️  Installing PHP dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction
+rollback() {
+  echo "!! AUTO-ROLLBACK: restore dari $BACKUP"
+  if [ "$DRY" = 1 ]; then echo "   (dry-run) skip"; return; fi
+  ssh "$HOST" "tar xzf $BACKUP -C $REMOTE 2>/dev/null; cd $REMOTE && /usr/bin/php artisan view:cache >/dev/null 2>&1" || true
+  echo "!! Server kembali ke kondisi sebelum deploy."
+}
 
-# 2. Build assets
-if command -v npm &> /dev/null; then
-    echo "➡️  Building assets..."
-    npm ci --production && npm run build
+# --- [1/6] Kumpulkan file ---
+if [ $# -gt 0 ]; then
+  FILES=("$@")
 else
-    echo "⚠️  npm not found, skipping asset build"
+  FILES=($(git status --porcelain 2>/dev/null | awk '{print $2}' | grep -E '\.(php|js|css)$' | grep -v '^\.env' || true))
 fi
 
-# 3. Environment
-if [ ! -f .env ]; then
-    echo "➡️  Creating .env from .env.example..."
-    cp .env.example .env
-    echo "⚠️  Edit .env with your database & domain settings, then run:"
-    echo "   php artisan key:generate"
-    echo "   php artisan migrate --force"
+if [ ${#FILES[@]} -eq 0 ]; then
+  echo "Tidak ada file berubah — selesai."
+  exit 0
 fi
 
-# 4. Storage link
-echo "➡️  Creating storage link..."
-php artisan storage:link --force 2>/dev/null || true
+echo "== [1/6] File yang akan di-deploy (${#FILES[@]}):"
+printf '   %s\n' "${FILES[@]}"
 
-# 5. Optimize
-echo "➡️  Caching..."
-php artisan config:cache 2>/dev/null || echo "⚠️  config:cache skipped"
-php artisan route:cache 2>/dev/null || echo "⚠️  route:cache skipped"
-php artisan view:cache 2>/dev/null || echo "⚠️  view:cache skipped"
+# --- [2/6] Backup kondisi server saat ini ---
+echo "== [2/6] Backup file lama di server → $BACKUP"
+if [ "$DRY" = 1 ]; then
+  echo "   (dry-run)"
+else
+  ssh "$HOST" "mkdir -p /home/u564540896/backups/files && cd $REMOTE && tar czf $BACKUP ${FILES[*]} 2>/dev/null || true"
+fi
+
+# --- [3/6] Upload ---
+echo "== [3/6] Upload via scp"
+for f in "${FILES[@]}"; do
+  if [ "$DRY" = 1 ]; then echo "   (dry-run) scp $f"; continue; fi
+  if ! scp -q "$f" "$HOST:$REMOTE/$f"; then echo "!! Gagal upload $f"; rollback; exit 1; fi
+done
+
+# --- [4/6] Verifikasi md5 lokal = server ---
+echo "== [4/6] Verifikasi md5"
+for f in "${FILES[@]}"; do
+  if [ "$DRY" = 1 ]; then continue; fi
+  L=$(md5sum "$f" | awk '{print $1}')
+  R=$(ssh "$HOST" "md5sum $REMOTE/$f" | awk '{print $1}')
+  if [ "$L" != "$R" ]; then
+    echo "!! MISMATCH $f → rollback"; rollback; exit 1
+  fi
+  echo "   OK $f"
+done
+
+# --- [5/6] Lint + cache di server ---
+echo "== [5/6] php -l + view:cache"
+if [ "$DRY" = 1 ]; then
+  echo "   (dry-run)"
+else
+  if ! ssh "$HOST" "cd $REMOTE && for f in ${FILES[*]}; do /usr/bin/php -l \"\$f\" >/dev/null 2>&1 || { echo LINT-FAIL \$f; exit 1; }; done && /usr/bin/php artisan view:cache >/dev/null 2>&1"; then
+    echo "!! Lint/cache gagal → rollback"; rollback; exit 1
+  fi
+  echo "   Lint OK + view cache rebuilt"
+fi
+
+# --- [6/6] HTTP check ---
+echo "== [6/6] HTTP check $URL"
+if [ "$DRY" = 1 ]; then echo "   (dry-run) selesai"; exit 0; fi
+CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+if [ "$CODE" != "200" ]; then
+  echo "!! HTTP $CODE → rollback"; rollback; exit 1
+fi
+echo "   HTTP $CODE OK"
 
 echo ""
-echo "✅ Done! Edit .env and run:"
-echo "   php artisan key:generate"
-echo "   php artisan migrate --force"
+echo "== DEPLOY SELESAI ✅ (backup: $BACKUP)"
+echo "   Rollback manual kalau perlu: ssh $HOST \"tar xzf $BACKUP -C $REMOTE\""
