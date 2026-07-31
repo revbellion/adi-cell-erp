@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Services\BillService;
@@ -31,6 +32,7 @@ class DashboardController extends Controller
             $data['cashAccounts'] = Account::active()->where('type', 'cash')->get();
             $data['categories'] = Expense::select('category')->distinct()->pluck('category');
             $data['incomeCategories'] = Income::select('category')->distinct()->pluck('category');
+            $data['customers'] = Customer::active()->orderBy('name')->get();
 
             if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $period)) {
                 $period = now()->format('Y-m');

@@ -514,12 +514,29 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Nama Pelanggan</label>
-                    <input type="text" name="name" class="form-control" required placeholder="Nama pelanggan">
+                    <label class="form-label">Pelanggan</label>
+                    <select name="customer_id" class="form-select" id="tambah-customer-select">
+                        <option value="">Tanpa Pelanggan / Ketik Manual</option>
+                        @foreach($customers as $customer)
+                        <option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-address="{{ $customer->address }}" data-email="{{ $customer->email }}">{{ $customer->name }} {{ $customer->phone ? '- ' . $customer->phone : '' }}</option>
+                        @endforeach
+                    </select>
+                    <div id="tambah-customer-info" class="mt-2 p-2 rounded-3 d-none" style="background:var(--border-subtle);font-size:0.85rem;">
+                        <div id="tambah-customer-address" class="text-muted"></div>
+                        <div id="tambah-customer-email" class="text-muted"></div>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Nominal Piutang</label>
-                    <input type="number" step="1" name="amount" class="form-control" required placeholder="0">
+                    <label class="form-label">Nama</label>
+                    <input type="text" name="name" id="tambah-name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">No. HP</label>
+                    <input type="text" name="phone" id="tambah-phone" class="form-control" placeholder="08xxx">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total Bayar</label>
+                    <input type="number" step="1" name="amount" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Tanggal</label>
@@ -529,7 +546,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
-                <button type="submit" class="btn btn-modern btn-warning"><i class="fas fa-save me-1"></i>Simpan</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -811,6 +828,30 @@ document.addEventListener('DOMContentLoaded', function () {
     
     if (dashAmount) {
         dashAmount.addEventListener('input', updateDashBalance);
+    }
+
+    // Fungsi dropdown Pelanggan untuk modal Tambah Piutang (konsisten dgn modul piutang)
+    var tambahCustomerSelect = document.getElementById('tambah-customer-select');
+    if (tambahCustomerSelect) {
+        tambahCustomerSelect.addEventListener('change', function() {
+            var opt = this.options[this.selectedIndex];
+            var nameEl = document.getElementById('tambah-name');
+            var phoneEl = document.getElementById('tambah-phone');
+            var infoEl = document.getElementById('tambah-customer-info');
+            if (opt.value) {
+                nameEl.value = opt.dataset.name;
+                nameEl.readOnly = true;
+                phoneEl.value = opt.dataset.phone || '';
+                infoEl.classList.remove('d-none');
+                document.getElementById('tambah-customer-address').textContent = opt.dataset.address ? 'Alamat: ' + opt.dataset.address : '';
+                document.getElementById('tambah-customer-email').textContent = opt.dataset.email ? 'Email: ' + opt.dataset.email : '';
+            } else {
+                nameEl.value = '';
+                nameEl.readOnly = false;
+                phoneEl.value = '';
+                infoEl.classList.add('d-none');
+            }
+        });
     }
 });
 </script>
