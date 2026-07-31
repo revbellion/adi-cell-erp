@@ -348,7 +348,7 @@ function setupSaldoProjection(selectId, amountId, displayId, mode) {
     function update() {
         var opt = select.options[select.selectedIndex];
         var balance = opt && opt.value !== '' ? parseInt(opt.dataset.balance || 0) : null;
-        var nominal = amount ? parseInt(amount.value) || 0 : 0;
+        var nominal = amount ? numVal(amount) : 0;
 
         if (balance === null) {
             display.textContent = 'Saldo: -';
@@ -391,8 +391,8 @@ $('#modalEditMutasi').on('show.bs.modal', function (event) {
     $('#edit-mutation-date').val(button.data('date'));
     $('#edit-mutation-from').val(fromId);
     $('#edit-mutation-to').val(toId);
-    $('#edit-mutation-amount').val(button.data('amount'));
-    $('#edit-mutation-admin-fee').val(button.data('admin_fee') > 0 ? button.data('admin_fee') : '');
+    setMoney($('#edit-mutation-amount')[0], button.data('amount'));
+    setMoney($('#edit-mutation-admin-fee')[0], button.data('admin_fee') > 0 ? button.data('admin_fee') : '');
     $('#edit-mutation-description').val(button.data('description'));
     $('#formEditMutasi').attr('action', '{{ url("mutations") }}/' + id);
     

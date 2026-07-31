@@ -336,8 +336,8 @@ $('#modalEditBarang').on('show.bs.modal', function (event) {
     var id = button.data('id');
     $('#edit-name').val(button.data('name'));
     $('#edit-category_id').val(button.data('category_id'));
-    $('#edit-purchase_price').val(button.data('purchase_price'));
-    $('#edit-selling_price').val(button.data('selling_price'));
+    setMoney($('#edit-purchase_price')[0], button.data('purchase_price'));
+    setMoney($('#edit-selling_price')[0], button.data('selling_price'));
     $('#edit-stock_min').val(button.data('stock_min'));
     $('#edit-unit').val(button.data('unit'));
     $('#formEditBarang').attr('action', '{{ url("products") }}/' + id);

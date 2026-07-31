@@ -258,7 +258,7 @@ $('#modalEditTagihan').on('show.bs.modal', function (event) {
     $('#edit-name').val(button.data('name'));
     $('#edit-category').val(button.data('category') || '');
     $('#edit-account').val(button.data('account-id') || '');
-    $('#edit-amount').val(button.data('amount'));
+    setMoney($('#edit-amount')[0], button.data('amount'));
     $('#edit-due-day').val(button.data('due-day'));
     $('#edit-is-active').prop('checked', button.data('is-active') == 1);
 });
@@ -271,7 +271,7 @@ $('#modalBayarTagihan').on('show.bs.modal', function (event) {
     var accountId = button.data('account-id');
     $('#formBayarTagihan').attr('action', button.data('action'));
     $('#bayar-nama').text(name);
-    $('#bayar-nominal').val(amount);
+    setMoney($('#bayar-nominal')[0], amount);
     $('#formBayarTagihan select[name="account_id"]').val(accountId || '');
 });
 </script>

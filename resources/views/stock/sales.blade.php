@@ -766,8 +766,8 @@ function removeFromCart(id) {
 }
 
 function hitungKembali() {
-    var bayar = parseInt(document.getElementById('pos-bayar').value) || 0;
-    var diskon = parseInt(document.getElementById('pos-diskon').value) || 0;
+    var bayar = numVal(document.getElementById('pos-bayar'));
+    var diskon = numVal(document.getElementById('pos-diskon'));
     var grandTotal = totalRp - diskon;
     if (grandTotal < 0) grandTotal = 0;
     var kembali = bayar - grandTotal;
@@ -786,7 +786,7 @@ function hitungKembali() {
 }
 
 function updateGrandTotal() {
-    var diskon = parseInt(document.getElementById('pos-diskon').value) || 0;
+    var diskon = numVal(document.getElementById('pos-diskon'));
     var grandTotal = totalRp - diskon;
     if (grandTotal < 0) grandTotal = 0;
     document.getElementById('pos-grand-total').textContent = formatRp(grandTotal);

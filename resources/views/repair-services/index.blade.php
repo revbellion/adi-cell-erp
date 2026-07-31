@@ -340,8 +340,8 @@ document.querySelector('#modalTambah [name="service_fee"]')?.addEventListener('i
 document.querySelector('#modalTambah [name="sparepart_cost"]')?.addEventListener('input', updateTotalCreate);
 
 function updateTotalCreate() {
-    var jasa = parseInt(document.querySelector('#modalTambah [name="service_fee"]').value) || 0;
-    var spare = parseInt(document.querySelector('#modalTambah [name="sparepart_cost"]').value) || 0;
+    var jasa = numVal(document.querySelector('#modalTambah [name="service_fee"]'));
+    var spare = numVal(document.querySelector('#modalTambah [name="sparepart_cost"]'));
     document.getElementById('totalDisplay').value = 'Rp ' + (jasa + spare).toLocaleString('id-ID');
 }
 
@@ -406,8 +406,8 @@ $('#modalEdit').on('show.bs.modal', function (event) {
     $('#edit-device-type').val(button.data('device-type'));
     $('#edit-device-model').val(button.data('device-model'));
     $('#edit-issue-description').val(button.data('issue-description'));
-    $('#edit-service-fee').val(button.data('service-fee'));
-    $('#edit-sparepart-cost').val(button.data('sparepart-cost') || 0);
+    setMoney($('#edit-service-fee')[0], button.data('service-fee'));
+    setMoney($('#edit-sparepart-cost')[0], button.data('sparepart-cost') || 0);
     $('#edit-sparepart-description').val(button.data('sparepart-description'));
 
     var jasa = parseInt(button.data('service-fee')) || 0;
@@ -419,8 +419,8 @@ $('#modalEdit').on('show.bs.modal', function (event) {
 
 // Auto-calculate total on edit modal
 $('#modalEdit').on('change', '[name="service_fee"], [name="sparepart_cost"]', function() {
-    var jasa = parseInt($('#edit-service-fee').val()) || 0;
-    var spare = parseInt($('#edit-sparepart-cost').val()) || 0;
+    var jasa = numVal($('#edit-service-fee')[0]);
+    var spare = numVal($('#edit-sparepart-cost')[0]);
     $('#edit-total-display').val('Rp ' + (jasa + spare).toLocaleString('id-ID'));
 });
 </script>

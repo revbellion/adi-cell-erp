@@ -272,7 +272,7 @@ document.querySelectorAll('[data-bs-target="#modalEditPengeluaran"]').forEach(fu
         document.getElementById('edit-expense-date').value = this.dataset.date;
         document.getElementById('edit-expense-account_id').value = this.dataset.account_id;
         document.getElementById('edit-expense-category').value = this.dataset.category;
-        document.getElementById('edit-expense-amount').value = this.dataset.amount;
+        setMoney(document.getElementById('edit-expense-amount'), this.dataset.amount);
         document.getElementById('edit-expense-description').value = this.dataset.description || '';
     });
 });

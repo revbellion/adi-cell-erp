@@ -597,7 +597,7 @@ function updateTotal() {
     document.getElementById('grand-total').textContent = formatRupiah(grandTotal);
     document.getElementById('modal-total-display').textContent = formatRupiah(grandTotal);
 
-    const opening = parseInt(document.getElementById('opening-balance').value) || 0;
+    const opening = numVal(document.getElementById('opening-balance'));
     document.getElementById('modal-opening-display').textContent = formatRupiah(opening);
 
     updateReconciliation(grandTotal, opening);

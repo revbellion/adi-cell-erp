@@ -410,7 +410,7 @@ function hitungMDR() {
     if (type !== 'edc') return;
     
     var bankType = document.getElementById('bank-type').value;
-    var amount = parseInt(document.getElementById('pending-amount').value) || 0;
+    var amount = numVal(document.getElementById('pending-amount'));
     var mdrRate = bankType === 'bca' ? 0.15 : 1.00;
     var mdrAmount = Math.round(amount * mdrRate / 100);
     var netAmount = amount - mdrAmount;

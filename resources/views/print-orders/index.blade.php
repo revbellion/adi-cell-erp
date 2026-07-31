@@ -338,7 +338,7 @@ $('#modalEdit').on('show.bs.modal', function (event) {
     $('#edit-account-id').val(button.data('account-id'));
     $('#edit-service-type').val(button.data('service-type'));
     $('#edit-quantity').val(button.data('quantity'));
-    $('#edit-price-per-unit').val(button.data('price-per-unit'));
+    setMoney($('#edit-price-per-unit')[0], button.data('price-per-unit'));
     $('#edit-description').val(button.data('description'));
     $('#formEdit').attr('action', '{{ url("print-orders") }}/' + id);
 });

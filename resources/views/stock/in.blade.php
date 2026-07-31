@@ -621,7 +621,7 @@
     // --- Update Price ---
     window.inUpdatePrice = function(id, val) {
         if (!cart[id]) return;
-        cart[id].price = parseInt(val) || 0;
+        cart[id].price = numVal(val);
         updateTotals();
         renderHiddenInputs();
     };
@@ -629,7 +629,7 @@
     // --- Update Discount ---
     window.inUpdateDiscount = function(id, val) {
         if (!cart[id]) return;
-        cart[id].discount = parseInt(val) || 0;
+        cart[id].discount = numVal(val);
         updateTotals();
         renderHiddenInputs();
     };
@@ -691,7 +691,7 @@
             // Controls row
             var netTotal = subtotal - item.discount;
             html += '<div class="in-cart-item-controls">';
-            html += '<input type="number" class="in-cart-price-input" value="' + item.price + '" onchange="inUpdatePrice(' + id + ', this.value)" onfocus="this.select()" title="Harga beli satuan">';
+            html += '<input type="text" inputmode="numeric" class="in-cart-price-input money-input" value="' + (item.price ? item.price.toLocaleString('id-ID') : '0') + '" onchange="inUpdatePrice(' + id + ', this.value)" onfocus="this.select()" title="Harga beli satuan">';
             html += '<span class="in-cart-unit">' + escHtml(item.unit) + '</span>';
             html += '<button type="button" class="in-cart-qty-btn" onclick="inUpdateQty(' + id + ', -1)">−</button>';
             html += '<span class="in-cart-qty-val">' + item.qty + '</span>';
@@ -699,7 +699,7 @@
             html += '<span class="in-cart-subtotal">' + formatRupiah(subtotal) + '</span>';
             html += '<span class="in-cart-separator"></span>';
             html += '<span class="in-cart-discount-label">Diskon</span>';
-            html += '<input type="number" class="in-cart-discount-input" value="' + item.discount + '" min="0" onchange="inUpdateDiscount(' + id + ', this.value)" title="Diskon">';
+            html += '<input type="text" inputmode="numeric" class="in-cart-discount-input money-input" value="' + (item.discount ? item.discount.toLocaleString('id-ID') : '0') + '" min="0" onchange="inUpdateDiscount(' + id + ', this.value)" title="Diskon">';
             html += '<span class="in-cart-net-value">' + formatRupiah(netTotal) + '</span>';
             // Expand button for extra fields
             if (item.category.toLowerCase().includes('perdana') || item.description) {
@@ -808,8 +808,8 @@
                 name: formQuickAdd.name.value,
                 category_id: formQuickAdd.category_id.value,
                 unit: formQuickAdd.unit.value,
-                purchase_price: parseInt(formQuickAdd.purchase_price.value) || 0,
-                selling_price: parseInt(formQuickAdd.selling_price.value) || 0
+                purchase_price: numVal(formQuickAdd.purchase_price),
+                selling_price: numVal(formQuickAdd.selling_price)
             })
         })
         .then(function(res) { return res.json(); })

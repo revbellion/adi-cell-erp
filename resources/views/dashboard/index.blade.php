@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var amount = option.getAttribute('data-amount') || 0;
             var accountId = option.getAttribute('data-account-id') || '';
             var action = option.getAttribute('data-action') || '';
-            document.getElementById('nominal-bayar-dash').value = amount;
+            setMoney(document.getElementById('nominal-bayar-dash'), amount);
             document.getElementById('akun-bayar-dash').value = accountId;
             document.getElementById('formBayarTagihanDash').setAttribute('action', action);
         }
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var select = document.getElementById('stok-product-dash');
         var option = select.options[select.selectedIndex];
         if (select.value) {
-            document.getElementById('stok-price-dash').value = option.getAttribute('data-price') || 0;
+            setMoney(document.getElementById('stok-price-dash'), option.getAttribute('data-price') || 0);
             document.getElementById('stok-unit-dash').value = option.getAttribute('data-unit') || '';
             hitungTotalDash();
         }
@@ -783,7 +783,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.hitungTotalDash = function() {
         var qty = parseInt(document.getElementById('stok-qty-dash').value) || 0;
-        var price = parseInt(document.getElementById('stok-price-dash').value) || 0;
+        var price = numVal(document.getElementById('stok-price-dash'));
         document.getElementById('stok-total-dash').value = 'Rp ' + (qty * price).toLocaleString('id-ID');
     };
 
@@ -795,7 +795,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateDashBalance() {
         function show(el, opt, mode) {
             var balance = opt && opt.value !== '' ? parseInt(opt.dataset.balance || 0) : null;
-            var nominal = dashAmount ? parseInt((dashAmount.value || '').replace(/\./g, '')) || 0 : 0;
+            var nominal = dashAmount ? numVal(dashAmount) : 0;
             if (balance === null) { el.textContent = 'Saldo: -'; return; }
             if (nominal > 0) {
                 var p = mode === 'from' ? balance - nominal : balance + nominal;
@@ -834,28 +834,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     
-    // Format ribuan realtime untuk semua input nominal di modal mutasi
-    document.querySelectorAll('#modalTambahMutasi .money-input').forEach(function(el) {
-        el.addEventListener('input', function() {
-            formatRibuan(this);
-            if (this === dashAmount) updateDashBalance();
-        });
-    });
-
-    // Format ribuan realtime (misal: 900000 -> 900.000)
-    function formatRibuan(input) {
-        var digits = input.value.replace(/\D/g, '');
-        input.value = digits ? parseInt(digits, 10).toLocaleString('id-ID') : '';
-    }
-
-    // Strip titik ribuan sebelum submit biar backend nerima angka bersih
-    var mutasiFormDash = dashAmount ? dashAmount.closest('form') : null;
-    if (mutasiFormDash) {
-        mutasiFormDash.addEventListener('submit', function() {
-            this.querySelectorAll('.money-input').forEach(function(el) {
-                el.value = el.value.replace(/\./g, '');
-            });
-        });
+    // Preview saldo mutasi (format ribuan realtime ditangani helper global di layout)
+    if (dashAmount) {
+        dashAmount.addEventListener('input', updateDashBalance);
     }
 
     // Fungsi dropdown Pelanggan untuk modal Tambah Piutang (konsisten dgn modul piutang)

@@ -439,6 +439,63 @@ document.addEventListener('submit', function(e) {
     const btn = e.submitter || e.target.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
 });
+// ===== FORMAT RIBUAN OTOMATIS (semua input nominal) =====
+// Auto-detect: input dgn name/id mengandung amount|price|fee|cost|nominal|bayar|
+// diskon|discount|refund|balance|total|harga|piutang ATAU punya class "money-input".
+// Modul baru otomatis ke-format selama nama field-nya standar — TANPA edit per-view.
+(function () {
+    var MONEY_RE = /(amount|price|fee|cost|nominal|bayar|diskon|discount|refund|balance|total|harga|piutang)/i;
+
+    window.isMoneyInput = function (el) {
+        if (!el || !el.matches) return false;
+        if (!/^(INPUT|TEXTAREA)$/.test(el.tagName)) return false;
+        if (el.type === 'hidden' || el.disabled || el.readOnly) return false;
+        if (el.classList.contains('money-input')) return true;
+        var n = (el.name || el.id || '');
+        return MONEY_RE.test(n);
+    };
+
+    window.formatMoney = function (el) {
+        if (!isMoneyInput(el)) return;
+        if (el.type === 'number') { el.type = 'text'; el.setAttribute('inputmode', 'numeric'); }
+        var raw = String(el.value || '');
+        if (!raw) return;
+        var neg = raw.trim().charAt(0) === '-';
+        var d = raw.replace(/[^0-9]/g, '');
+        el.value = d ? (neg ? '-' : '') + parseInt(d, 10).toLocaleString('id-ID') : '';
+    };
+
+    window.numVal = function (el) {
+        var v = typeof el === 'string' ? el : (el && el.value);
+        return parseInt(String(v || '').replace(/[^0-9-]/g, '')) || 0;
+    };
+
+    window.setMoney = function (el, v) {
+        if (!el) return;
+        el.value = (v == null || v === '') ? '' : String(v);
+        formatMoney(el);
+    };
+
+    // Format value awal (dari server / data-*) saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input').forEach(formatMoney);
+    });
+
+    // Format realtime saat user mengetik
+    document.addEventListener('input', function (e) {
+        var t = e.target;
+        if (t && t.tagName === 'INPUT') formatMoney(t);
+    });
+
+    // Strip titik ribuan sebelum submit
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (!form || !form.querySelectorAll) return;
+        form.querySelectorAll('input').forEach(function (el) {
+            if (isMoneyInput(el) && el.value) el.value = String(el.value).replace(/\./g, '');
+        });
+    });
+})();
 </script>
 @stack('scripts')
 </body>

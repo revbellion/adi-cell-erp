@@ -275,7 +275,7 @@ document.querySelectorAll('[data-bs-target="#modalEditPendapatan"]').forEach(fun
         document.getElementById('formEditPendapatan').action = '{{ route("incomes.index") }}/' + id;
         document.getElementById('edit-income-date').value = this.dataset.date;
         document.getElementById('edit-income-category').value = this.dataset.category;
-        document.getElementById('edit-income-amount').value = this.dataset.amount;
+        setMoney(document.getElementById('edit-income-amount'), this.dataset.amount);
         document.getElementById('edit-income-description').value = this.dataset.description || '';
         document.getElementById('edit-income-account').value = this.dataset.accountId;
     });

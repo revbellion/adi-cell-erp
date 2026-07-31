@@ -447,12 +447,13 @@ $('#modalBayarPiutang').on('show.bs.modal', function (event) {
     var remaining = parseInt(button.data('amount')) || 0;
     $('#pay-receivable-id').val(button.data('id'));
     $('#pay-name').text(button.data('name'));
-    $('#pay-amount').val(remaining).attr('max', remaining);
+    setMoney($('#pay-amount')[0], remaining);
+    $('#pay-amount').attr('max', remaining);
     $('#pay-remaining').text('Rp ' + remaining.toLocaleString('id-ID'));
 });
 
 $('#formBayarPiutang').on('submit', function(e) {
-    var amount = parseInt($('#pay-amount').val()) || 0;
+    var amount = numVal($('#pay-amount')[0]);
     var max = parseInt($('#pay-amount').attr('max')) || 0;
     if (amount > max) {
         e.preventDefault();
@@ -471,7 +472,7 @@ $('#modalEditPiutang').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     $('#edit-receivable-name').val(button.data('name'));
     $('#edit-receivable-phone').val(button.data('phone'));
-    $('#edit-receivable-amount').val(button.data('amount'));
+    setMoney($('#edit-receivable-amount')[0], button.data('amount'));
     $('#edit-receivable-date').val(button.data('date'));
     $('#formEditPiutang').attr('action', '{{ url("receivables") }}/' + button.data('id'));
     var selected = document.getElementById('edit-customer-select');
