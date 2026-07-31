@@ -492,11 +492,11 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nominal</label>
-                    <input type="number" step="1" name="amount" id="dash-mutation-amount" class="form-control" required>
+                    <input type="text" inputmode="numeric" name="amount" id="dash-mutation-amount" class="form-control money-input" required placeholder="0">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Biaya Admin <small class="text-muted">(opsional)</small></label>
-                    <input type="number" step="1" name="admin_fee" class="form-control" placeholder="0">
+                    <input type="text" inputmode="numeric" name="admin_fee" class="form-control money-input" placeholder="0">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Keterangan</label>
@@ -795,7 +795,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateDashBalance() {
         function show(el, opt, mode) {
             var balance = opt && opt.value !== '' ? parseInt(opt.dataset.balance || 0) : null;
-            var nominal = dashAmount ? parseInt(dashAmount.value) || 0 : 0;
+            var nominal = dashAmount ? parseInt((dashAmount.value || '').replace(/\./g, '')) || 0 : 0;
             if (balance === null) { el.textContent = 'Saldo: -'; return; }
             if (nominal > 0) {
                 var p = mode === 'from' ? balance - nominal : balance + nominal;
@@ -834,8 +834,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     
-    if (dashAmount) {
-        dashAmount.addEventListener('input', updateDashBalance);
+    // Format ribuan realtime untuk semua input nominal di modal mutasi
+    document.querySelectorAll('#modalTambahMutasi .money-input').forEach(function(el) {
+        el.addEventListener('input', function() {
+            formatRibuan(this);
+            if (this === dashAmount) updateDashBalance();
+        });
+    });
+
+    // Format ribuan realtime (misal: 900000 -> 900.000)
+    function formatRibuan(input) {
+        var digits = input.value.replace(/\D/g, '');
+        input.value = digits ? parseInt(digits, 10).toLocaleString('id-ID') : '';
+    }
+
+    // Strip titik ribuan sebelum submit biar backend nerima angka bersih
+    var mutasiFormDash = dashAmount ? dashAmount.closest('form') : null;
+    if (mutasiFormDash) {
+        mutasiFormDash.addEventListener('submit', function() {
+            this.querySelectorAll('.money-input').forEach(function(el) {
+                el.value = el.value.replace(/\./g, '');
+            });
+        });
     }
 
     // Fungsi dropdown Pelanggan untuk modal Tambah Piutang (konsisten dgn modul piutang)
