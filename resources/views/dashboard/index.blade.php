@@ -380,12 +380,14 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Kategori</label>
-                    <input type="text" name="category" class="form-control" list="income-cat-cepat">
-                    <datalist id="income-cat-cepat">
-                        @foreach($incomeCategories as $cat)
-                        <option value="{{ $cat }}">
-                        @endforeach
-                    </datalist>
+                    <select name="category" class="form-select" required>
+                        <option value="">Pilih Kategori</option>
+                        <optgroup label="Pendapatan Real">
+                            @foreach($incomeUserCategories as $cat)
+                            <option value="{{ $cat['key'] }}">{{ $cat['key'] }}</option>
+                            @endforeach
+                        </optgroup>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nominal</label>
@@ -398,7 +400,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
-                <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-save me-1"></i>Simpan</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
             </div>
         </form>
     </div>
@@ -428,12 +430,14 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Kategori</label>
-                    <input type="text" name="category" class="form-control" list="category-list-cepat" required>
-                    <datalist id="category-list-cepat">
-                        @foreach($categories as $category)
-                        <option value="{{ $category }}">
-                        @endforeach
-                    </datalist>
+                    <select name="category" class="form-select" required>
+                        <option value="">Pilih Kategori</option>
+                        <optgroup label="Biaya Real">
+                            @foreach($expenseUserCategories as $cat)
+                            <option value="{{ $cat['key'] }}">{{ $cat['key'] }}</option>
+                            @endforeach
+                        </optgroup>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nominal</label>
@@ -489,6 +493,10 @@
                 <div class="mb-3">
                     <label class="form-label">Nominal</label>
                     <input type="number" step="1" name="amount" id="dash-mutation-amount" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Biaya Admin <small class="text-muted">(opsional)</small></label>
+                    <input type="number" step="1" name="admin_fee" class="form-control" placeholder="0">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Keterangan</label>

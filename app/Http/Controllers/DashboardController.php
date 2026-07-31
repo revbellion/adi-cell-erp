@@ -30,8 +30,8 @@ class DashboardController extends Controller
             $data['accountList'] = Account::active()->visible()->get();
             $data['cashAccount'] = Account::active()->where('name', config('accounts.cash_name'))->first();
             $data['cashAccounts'] = Account::active()->where('type', 'cash')->get();
-            $data['categories'] = Expense::select('category')->distinct()->pluck('category');
-            $data['incomeCategories'] = Income::select('category')->distinct()->pluck('category');
+            $data['expenseUserCategories'] = config('categories.expense.user');
+            $data['incomeUserCategories'] = config('categories.income.user');
             $data['customers'] = Customer::active()->orderBy('name')->get();
 
             if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $period)) {
