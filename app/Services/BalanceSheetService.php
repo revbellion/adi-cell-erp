@@ -203,7 +203,7 @@ class BalanceSheetService
     private function nonPnlIncomeCategories(): array
     {
         return collect(config('categories.income.system'))
-            ->where('pnl', false)
+            ->filter(fn($c) => ($c['pnl'] ?? true) === false)
             ->pluck('key')
             ->values()
             ->all();
@@ -215,9 +215,9 @@ class BalanceSheetService
     private function nonPnlExpenseCategories(): array
     {
         $system = collect(config('categories.expense.system'))
-            ->where('pnl', false)->pluck('key');
+            ->filter(fn($c) => ($c['pnl'] ?? true) === false)->pluck('key');
         $user = collect(config('categories.expense.user'))
-            ->where('pnl', false)->pluck('key');
+            ->filter(fn($c) => ($c['pnl'] ?? true) === false)->pluck('key');
         return $system->merge($user)->values()->all();
     }
 

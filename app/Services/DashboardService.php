@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Models\BillPayment;
 use App\Models\OpeningBalance;
 use App\Models\Mutation;
 use App\Models\Expense;
@@ -63,9 +64,13 @@ class DashboardService
 
         $netProfit = $totalIncome - $totalHpp - $totalOpExpense;
 
-        // Card "Pengeluaran Bulan Ini" = expense PnL saja (exclude Stok Masuk, Piutang, dll)
+        // Card "Pengeluaran Bulan Ini" = expense PnL + SEMUA pembayaran tagihan lunas
+        // (tagihan yang sudah dibayar selalu masuk biar tidak ada pengeluaran yang "hilang")
         $totalExpense = Expense::whereBetween('date', [$dateStart, $dateEnd])
-            ->whereNotIn('category', $this->nonPnlExpenseCategories())
+            ->where(function ($q) {
+                $q->whereNotIn('category', $this->nonPnlExpenseCategories())
+                  ->orWhereIn('id', BillPayment::select('expense_id')->whereNotNull('expense_id'));
+            })
             ->sum('amount') ?? 0;
 
         // Card "Omset Bulan Ini" = pendapatan real (Penjualan, OMSET PPOB, Jasa Servis, Jasa Cetak, Jasa Tarik Tunai EDC)
@@ -275,7 +280,7 @@ class DashboardService
     private function nonPnlIncomeCategories(): array
     {
         return collect(config('categories.income.system'))
-            ->where('pnl', false)
+            ->filter(fn($c) => ($c['pnl'] ?? true) === false)
             ->pluck('key')
             ->values()
             ->all();
@@ -287,9 +292,9 @@ class DashboardService
     private function nonPnlExpenseCategories(): array
     {
         $system = collect(config('categories.expense.system'))
-            ->where('pnl', false)->pluck('key');
+            ->filter(fn($c) => ($c['pnl'] ?? true) === false)->pluck('key');
         $user = collect(config('categories.expense.user'))
-            ->where('pnl', false)->pluck('key');
+            ->filter(fn($c) => ($c['pnl'] ?? true) === false)->pluck('key');
         return $system->merge($user)->values()->all();
     }
 }
