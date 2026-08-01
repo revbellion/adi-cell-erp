@@ -180,59 +180,21 @@
     gap: 4px;
     margin-top: 0.5rem;
 }
-
-.cc-denom-btn {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--border-subtle);
-    border-radius: 6px;
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: all 0.1s;
-    padding: 0;
-}
-
-.cc-denom-btn:hover { background: var(--border-subtle); }
-.cc-denom-btn.cc-minus:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
-.cc-denom-btn.cc-plus:hover { background: rgba(16,185,129,0.1); color: #10b981; }
-
 .cc-denom-count {
-    width: 50px;
+    width: 100%;
     text-align: center;
     border: 1px solid var(--border-subtle);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--bg-card);
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 700;
-    padding: 3px;
-    user-select: none;
+    padding: 8px 6px;
+    outline: none;
+    min-width: 0;
 }
 
-.cc-denom-shortcuts {
-    display: flex;
-    gap: 3px;
-    margin-top: 0.35rem;
-}
-
-.cc-shortcut-btn {
-    padding: 2px 6px;
-    border: 1px solid var(--border-subtle);
-    border-radius: 5px;
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 0.6rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.1s;
-}
-
-.cc-shortcut-btn:hover { background: var(--theme-primary); color: #fff; border-color: var(--theme-primary); }
+.cc-denom-count:focus { border-color: var(--theme-primary); box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.15); }
 
 .cc-denom-subtotal {
     font-size: 0.8rem;
@@ -544,14 +506,7 @@ function buildCards() {
         el.innerHTML = `
             <div class="cc-denom-label">${d.label}</div>
             <div class="cc-denom-controls">
-                <button type="button" class="cc-denom-btn cc-minus" onclick="adjustCount('${d.key}',-1)"><i class="fas fa-minus"></i></button>
-                <span id="count-${d.key}" class="cc-denom-count" data-value="0">0</span>
-                <button type="button" class="cc-denom-btn cc-plus" onclick="adjustCount('${d.key}',1)"><i class="fas fa-plus"></i></button>
-            </div>
-            <div class="cc-denom-shortcuts">
-                <button type="button" class="cc-shortcut-btn" onclick="adjustCount('${d.key}',10)">+10</button>
-                <button type="button" class="cc-shortcut-btn" onclick="adjustCount('${d.key}',50)">+50</button>
-                <button type="button" class="cc-shortcut-btn" onclick="adjustCount('${d.key}',100)">+100</button>
+                <input type="text" id="count-${d.key}" class="cc-denom-count" inputmode="numeric" autocomplete="off" placeholder="0" data-value="0" oninput="onCountInput('${d.key}')" aria-label="Jumlah ${d.label}">
             </div>
             <div class="cc-denom-subtotal" id="subtotal-${d.key}">Rp 0</div>
         `;
@@ -559,12 +514,11 @@ function buildCards() {
     });
 }
 
-function adjustCount(key, change) {
+function onCountInput(key) {
     const el = document.getElementById('count-' + key);
-    let val = parseInt(el.dataset.value) || 0;
-    val = Math.max(0, val + change);
-    el.dataset.value = val;
-    el.textContent = val;
+    const raw = String(el.value).replace(/[^0-9]/g, '');
+    el.value = raw;
+    el.dataset.value = parseInt(raw, 10) || 0;
     updateTotal();
 }
 
@@ -577,7 +531,7 @@ function setCount(key, val) {
     const el = document.getElementById('count-' + key);
     val = Math.max(0, val);
     el.dataset.value = val;
-    el.textContent = val;
+    el.value = val === 0 ? '' : val;
 }
 
 function formatRupiah(num) {
