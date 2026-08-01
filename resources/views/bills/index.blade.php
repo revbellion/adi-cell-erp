@@ -44,7 +44,7 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
                     @if($bill->account)
                     <span><i class="fas fa-wallet me-1"></i>{{ $bill->account->name }}</span>
                     @endif
-                    <span class="fw-semibold">{{ rp($bill->amount) }}</span>
+                    <span class="fw-semibold {{ $bill->is_paid ? 'text-success' : '' }}">{{ rp($bill->is_paid ? $bill->payment->amount : $bill->amount) }}</span>
                 </div>
             </div>
             <div class="d-flex gap-2 align-items-center flex-shrink-0">
@@ -58,9 +58,17 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
                     <i class="fas fa-check"></i> Bayar
                 </button>
                 @else
-                <span class="text-success small">
+                <span class="text-success small me-1">
                     <i class="fas fa-check-circle"></i> {{ \Carbon\Carbon::parse($bill->payment->paid_at)->format('d/m/Y H:i') }}
                 </span>
+                <button type="button" class="btn btn-modern btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditBayar"
+                    data-id="{{ $bill->payment->id }}"
+                    data-amount="{{ intval($bill->payment->amount) }}"
+                    data-account-id="{{ $bill->payment->expense->account_id ?? $bill->account_id }}"
+                    data-period="{{ $bill->payment->period }}"
+                    title="Edit pembayaran (koreksi nominal/akun)">
+                    <i class="fas fa-pen"></i>
+                </button>
                 @endif
                 <button type="button" class="btn btn-modern btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditTagihan"
                     data-id="{{ $bill->id }}"
@@ -247,6 +255,45 @@ $overdue = !$bill->is_paid && (int)$bill->due_day < (int)now()->format('d');
         </form>
     </div>
 </div>
+<!-- Modal Edit Pembayaran -->
+<div class="modal fade modal-modern" tabindex="-1" id="modalEditBayar">
+    <div class="modal-dialog">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditBayar">
+            @csrf
+            @method('PUT')
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Edit Pembayaran Tagihan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Periode</label>
+                    <input type="month" name="period_display" id="editbayar-period" class="form-control" disabled>
+                    <small class="text-muted">Periode tidak bisa diubah. Kalau salah periode, hapus tagihan & bayar ulang.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Akun</label>
+                    <select name="account_id" id="editbayar-account" class="form-select" required>
+                        <option value="">Pilih Akun</option>
+                        @foreach($accounts as $account)
+                        @if($account->type !== 'ppob')
+                        <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endif
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nominal</label>
+                    <input type="text" inputmode="numeric" name="amount" id="editbayar-nominal" class="form-control money-input" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-success"><i class="fas fa-check me-1"></i>Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -273,6 +320,15 @@ $('#modalBayarTagihan').on('show.bs.modal', function (event) {
     $('#bayar-nama').text(name);
     setMoney($('#bayar-nominal')[0], amount);
     $('#formBayarTagihan select[name="account_id"]').val(accountId || '');
+});
+
+$('#modalEditBayar').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    $('#formEditBayar').attr('action', '{{ url("bills/payments") }}/' + id);
+    $('#editbayar-period').val(button.data('period'));
+    setMoney($('#editbayar-nominal')[0], button.data('amount'));
+    $('#editbayar-account').val(button.data('account-id') || '');
 });
 </script>
 @endpush

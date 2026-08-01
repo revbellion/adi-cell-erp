@@ -14,7 +14,7 @@ class BillService
     {
         $bills = RecurringBill::with(['account', 'payments' => function ($q) use ($period) {
             $q->where('period', $period);
-        }])->where('is_active', true)->orderBy('due_day')->get();
+        }, 'payments.expense'])->where('is_active', true)->orderBy('due_day')->get();
 
         return $bills->map(function ($bill) use ($period) {
             $payment = $bill->payments->first();
@@ -91,6 +91,40 @@ class BillService
                     'expense_id' => $expense->id,
                 ]
             );
+
+            return $payment;
+        });
+    }
+
+    public function updatePayment(BillPayment $payment, ?int $amount, int $accountId): BillPayment
+    {
+        return DB::transaction(function () use ($payment, $amount, $accountId) {
+            $payment = BillPayment::lockForUpdate()->findOrFail($payment->id);
+            $bill = $payment->recurringBill;
+
+            $newAmount = $amount ?? (int) $bill->amount;
+
+            // Update expense terkait biar laporan & saldo akun konsisten (tanggal histori tetap)
+            if ($payment->expense_id) {
+                Expense::where('id', $payment->expense_id)->update([
+                    'account_id' => $accountId,
+                    'amount' => $newAmount,
+                ]);
+            } else {
+                $expense = Expense::create([
+                    'account_id' => $accountId,
+                    'category' => $bill->category,
+                    'amount' => $newAmount,
+                    'description' => 'Pembayaran ' . $bill->name . ' ' . str_replace('-', ' ', $payment->period),
+                    'date' => $payment->paid_at
+                        ? $payment->paid_at->format('Y-m-d H:i:s')
+                        : now()->format('Y-m-d H:i:s'),
+                ]);
+                $payment->expense_id = $expense->id;
+            }
+
+            $payment->amount = $newAmount;
+            $payment->save();
 
             return $payment;
         });

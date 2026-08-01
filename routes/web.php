@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:bills')->group(function () {
         Route::resource('bills', BillController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('bills/{recurring_bill}/pay', [BillController::class, 'pay'])->name('bills.pay');
+        Route::put('bills/payments/{billPayment}', [BillController::class, 'updatePayment'])->name('bills.payments.update');
     });
     Route::middleware('permission:receivables')->group(function () {
         Route::delete('receivables/bulk-delete', [ReceivableController::class, 'bulkDelete'])->name('receivables.bulk-delete');

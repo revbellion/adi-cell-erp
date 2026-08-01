@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRecurringBillRequest;
 use App\Http\Requests\UpdateRecurringBillRequest;
 use App\Models\Account;
+use App\Models\BillPayment;
 use App\Models\RecurringBill;
 use App\Services\BillService;
 use Illuminate\Http\Request;
@@ -75,6 +76,25 @@ class BillController extends Controller
             return redirect()->back()->with('success', 'Tagihan ' . $recurring_bill->name . ' berhasil dibayar.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal membayar tagihan: ' . $e->getMessage());
+        }
+    }
+
+    public function updatePayment(Request $request, BillPayment $billPayment)
+    {
+        $request->validate([
+            'amount' => 'nullable|integer|min:1',
+            'account_id' => 'required|exists:accounts,id',
+        ]);
+
+        try {
+            $this->billService->updatePayment(
+                $billPayment,
+                $request->amount,
+                $request->account_id
+            );
+            return redirect()->back()->with('success', 'Pembayaran tagihan berhasil diubah.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengubah pembayaran: ' . $e->getMessage());
         }
     }
 }
