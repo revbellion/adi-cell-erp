@@ -233,6 +233,31 @@ class PendingTransactionService
         });
     }
 
+    public function updateDescription(int $id, string $description): PendingTransaction
+    {
+        return DB::transaction(function () use ($id, $description) {
+            $pending = PendingTransaction::lockForUpdate()->findOrFail($id);
+
+            if ($pending->status !== 'pending') {
+                throw new \DomainException('Hanya transaksi pending yang bisa diedit deskripsinya.');
+            }
+
+            $pending->update(['description' => $description]);
+
+            if ($pending->mutation_id) {
+                $prefix = match ($pending->type) {
+                    'transfer' => 'Transfer pending: ',
+                    'tf_masuk' => 'TF masuk: ',
+                    default => 'EDC pending: ',
+                };
+                Mutation::where('id', $pending->mutation_id)
+                    ->update(['description' => $prefix . $description]);
+            }
+
+            return $pending;
+        });
+    }
+
     public function delete(int $id): bool
     {
         return DB::transaction(function () use ($id) {

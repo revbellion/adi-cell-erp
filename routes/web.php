@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
         Route::post('pending', [\App\Http\Controllers\PendingTransactionController::class, 'store'])->name('pending.store');
         Route::post('pending/{id}/complete', [\App\Http\Controllers\PendingTransactionController::class, 'complete'])->name('pending.complete');
         Route::post('pending/{id}/cancel', [\App\Http\Controllers\PendingTransactionController::class, 'cancel'])->name('pending.cancel');
+        Route::put('pending/{id}/description', [\App\Http\Controllers\PendingTransactionController::class, 'updateDescription'])->name('pending.update-description');
         Route::delete('pending/{id}', [\App\Http\Controllers\PendingTransactionController::class, 'destroy'])->name('pending.destroy');
         Route::post('pending/bulk-delete', [\App\Http\Controllers\PendingTransactionController::class, 'bulkDelete'])->name('pending.bulk-delete');
         Route::get('pending/export', [\App\Http\Controllers\PendingTransactionController::class, 'export'])->name('pending.export');

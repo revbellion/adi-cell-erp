@@ -120,6 +120,12 @@
                         <td>{{ $pending->completedAccount?->name ?? '-' }}</td>
                         <td class="pe-3">
                             @if($pending->status === 'pending')
+                                <button type="button" class="btn btn-modern btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditDeskripsi"
+                                    data-id="{{ $pending->id }}"
+                                    data-description="{{ $pending->description }}"
+                                    title="Edit deskripsi">
+                                    <i class="fas fa-pen"></i>
+                                </button>
                                 @if($pending->type === 'transfer' || $pending->type === 'tf_masuk')
                                 <button type="button" class="btn btn-modern btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalComplete"
                                     data-id="{{ $pending->id }}"
@@ -297,6 +303,31 @@
     </div>
 </div>
 
+<!-- Modal Edit Deskripsi -->
+<div class="modal fade modal-modern" tabindex="-1" id="modalEditDeskripsi">
+    <div class="modal-dialog">
+        <form autocomplete="off" method="POST" action="" class="modal-content" id="formEditDeskripsi">
+            @csrf
+            @method('PUT')
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-pen me-2"></i>Edit Deskripsi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Deskripsi</label>
+                    <input type="text" name="description" id="edit-deskripsi-input" class="form-control" required maxlength="255" placeholder="Contoh: Customer A - EDC">
+                </div>
+                <p class="text-muted mb-0" style="font-size:0.8rem;"><i class="fas fa-info-circle me-1"></i>Deskripsi di histori mutasi ikut diperbarui.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Batal</button>
+                <button type="submit" class="btn btn-modern btn-primary"><i class="fas fa-save me-1"></i>Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 // Bulk selection
@@ -386,6 +417,14 @@ $('#modalComplete').on('show.bs.modal', function (event) {
         infoText.text('BCA (otomatis)').show();
     }
     select.trigger('change');
+});
+
+$('#modalEditDeskripsi').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    var description = button.data('description');
+    $('#formEditDeskripsi').attr('action', '{{ url("pending") }}/' + id + '/description');
+    $('#edit-deskripsi-input').val(description);
 });
 
 // Fungsi toggle bank type field untuk EDC

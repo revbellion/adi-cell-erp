@@ -77,6 +77,20 @@ class PendingTransactionController extends Controller
         }
     }
 
+    public function updateDescription(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'description' => 'required|string|max:255',
+        ]);
+
+        try {
+            $this->pendingService->updateDescription($id, $validated['description']);
+            return redirect()->back()->with('success', 'Deskripsi transaksi berhasil diperbarui.');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
     public function bulkDelete(Request $request)
     {
         $request->validate(['ids' => 'required|array']);
