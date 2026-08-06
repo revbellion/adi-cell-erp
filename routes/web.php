@@ -19,6 +19,7 @@ use App\Http\Controllers\ReportProfitLossController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\PrintOrderController;
+use App\Http\Controllers\PrintLogApiController;
 use App\Http\Controllers\RepairServiceController;
 use App\Http\Controllers\CashCounterController;
 use App\Http\Controllers\CustomerController;
@@ -33,6 +34,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+// API print-calc → POS (token dari config/printsync.php, tanpa login session)
+Route::post('api/print-log', [PrintLogApiController::class, 'store'])->name('api.print-log');
 
 // All protected routes
 Route::middleware('auth')->group(function () {

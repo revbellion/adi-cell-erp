@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
         ]);
 
+        // Endpoint API print-calc: tanpa CSRF (dilindungi token sendiri)
+        $middleware->validateCsrfTokens(except: ['api/print-log']);
+
         $middleware->redirectUsersTo(function () {
             $user = Auth::user();
             if ($user && ($user->isAdmin() || $user->hasPermission('dashboard'))) {
