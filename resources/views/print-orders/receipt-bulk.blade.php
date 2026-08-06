@@ -27,6 +27,7 @@
         td { padding: 3px 0; font-weight: 600; }
         .right { text-align: right; }
         .col-header { font-weight: 900; border-bottom: 2px solid #000; padding-bottom: 4px; font-size: 13px; }
+        .sub { font-size: 11px; color: #333; font-weight: 600; padding: 0 0 4px; }
         .grand-total td { font-weight: 900; font-size: 16px; border-top: 2px solid #000; padding-top: 6px; }
         .footer { text-align: center; margin-top: 12px; font-size: 13px; line-height: 1.6; }
         .footer p { margin: 3px 0; font-weight: 700; }
@@ -72,6 +73,15 @@
             <td class="right">{{ number_format($order->quantity, 0, ',', '.') }} lbr</td>
             <td class="right">{{ number_format($order->total, 0, ',', '.') }}</td>
         </tr>
+        <tr>
+            <td colspan="2" class="sub">@ Rp {{ number_format($order->price_per_unit, 0, ',', '.') }}/lbr</td>
+            <td class="right sub"></td>
+        </tr>
+        @if($order->description)
+        <tr>
+            <td colspan="3" class="sub">{{ $order->description }}</td>
+        </tr>
+        @endif
         @endforeach
         <tr>
             <td colspan="2" style="text-align:right;font-weight:900;padding-top:6px;">Total</td>
