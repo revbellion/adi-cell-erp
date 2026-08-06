@@ -51,6 +51,9 @@ class PrintLogApiController extends Controller
             return response()->json(['ok' => false, 'error' => 'Tanggal tidak boleh melebihi hari ini.'], 400);
         }
         $nama = mb_substr(trim((string) ($in['nama'] ?? '')), 0, 200);
+        if ($nama === '') {
+            return response()->json(['ok' => false, 'error' => 'Keterangan wajib diisi.'], 422);
+        }
 
         // 4) Items per kategori (qty = lembar cetak, price = harga/lembar tier)
         $items = $in['items'] ?? null;
@@ -99,9 +102,7 @@ class PrintLogApiController extends Controller
                 'service_type'   => 'print',
                 'quantity'       => $it['qty'],
                 'price_per_unit' => $it['price'],
-                'description'    => $nama !== ''
-                    ? "[PC-{$id}] {$nama} — {$it['qty']} lbr {$this->katLabels[$it['kat']]}"
-                    : "[PC-{$id}] Print {$it['qty']} lbr {$this->katLabels[$it['kat']]}",
+                'description'    => "[PC-{$id}] {$nama} — {$it['qty']} lbr {$this->katLabels[$it['kat']]}",
                 'account_id'     => $account->id,
             ]);
             $orderIds[] = $order->id;
