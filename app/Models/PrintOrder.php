@@ -14,6 +14,7 @@ class PrintOrder extends Model
         'price_per_unit',
         'total',
         'description',
+        'print_calc_ref',
         'account_id',
         'income_id',
     ];

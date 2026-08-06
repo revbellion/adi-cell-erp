@@ -37,7 +37,9 @@ class PrintLogApiController extends Controller
         if ($id === '' || strlen($id) > 64) {
             return response()->json(['ok' => false, 'error' => 'ID transaksi tidak valid.'], 400);
         }
-        if (PrintOrder::where('description', 'like', "%[PC-{$id}]%")->exists()) {
+        if (PrintOrder::where('print_calc_ref', $id)
+            ->orWhere('description', 'like', "%[PC-{$id}]%")
+            ->exists()) {
             return response()->json(['ok' => false, 'error' => 'Transaksi sudah terkirim sebelumnya.'], 409);
         }
 
@@ -102,7 +104,8 @@ class PrintLogApiController extends Controller
                 'service_type'   => 'print',
                 'quantity'       => $it['qty'],
                 'price_per_unit' => $it['price'],
-                'description'    => "[PC-{$id}] {$nama} — {$it['qty']} lbr {$this->katLabels[$it['kat']]}",
+                'description'    => "{$nama} — {$it['qty']} lbr {$this->katLabels[$it['kat']]}",
+                'print_calc_ref' => $id,
                 'account_id'     => $account->id,
             ]);
             $orderIds[] = $order->id;
